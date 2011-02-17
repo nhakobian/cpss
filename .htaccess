@@ -1,0 +1,16 @@
+Options +FollowSymLinks
+PythonInterpPerDirective On
+AddHandler mod_python .py
+PythonHandler cpss
+PythonDebug On
+RewriteEngine on
+
+RewriteCond %{REQUEST_URI} "./images/"
+RewriteRule (.*) $1 [L]
+RewriteCond %{REQUEST_URI} "./tac/"
+RewriteRule (.*) $1 [L]
+RewriteCond %{REQUEST_URI} "./file_clear.php"
+RewriteRule (.*) $1 [L]
+
+RewriteRule ^cpss(.*) - [L]
+RewriteRule ^(.*) ./cpss.py/$1 [L,QSA]

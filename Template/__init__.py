@@ -1,0 +1,1524 @@
+from mod_python import apache
+import copy
+import os
+import os.path
+import Image, ImageChops
+from pyPdf import PdfFileWriter, PdfFileReader
+
+class Template:
+    def __init__(self, req, template, cyclename, backend, propid, view,
+                 Fetch=True, justification=False):
+        self.theBackend = backend
+        self.req = req
+        self.cyclename = cyclename
+        self.error = False;
+        self.propid = propid
+        if (view == False):
+            self.view = False
+            self.edit = True
+        else:
+            self.view = True
+            self.edit = False
+        
+        if (template == 'template10'):
+            self.template = apache.import_module('template10')
+        if (template == 'template2009b'):
+            self.template = apache.import_module('template2009b')
+        if (template == 'template2010a'):
+            self.template = apache.import_module('template2010a')
+        if (template == 'template2010b'):
+            self.template = apache.import_module('template2010b')
+        if (template == 'template2011a'):
+            self.template = apache.import_module('template2011a')
+        self.template_name = template
+        self.tempclass = self.template.template()
+        self.sections = self.tempclass.sections
+        self.tables = self.tempclass.tables
+        self.justification = justification
+
+        if (Fetch == True):
+            self.proposal = self.theBackend.proposal_get(self.tempclass.tables,
+                                                         cyclename, propid) 
+            #Merge database data with template style
+            self.data_merge()
+
+    def calc_hours(self):
+        for section in self.sections:
+            if section['name'] == 'Source Information':
+                sources=section
+        sources = sources['data']
+        time = 0
+        for source in (sources):
+            hours = 0
+            for field in source[1]:
+                if (field['fieldname'] == 'hrs_a'):
+                    if field['data'] == None:
+                        continue
+                    elif (field['data'].count('.') <= 1):
+                        val = field['data'].replace('.', '')
+                        if (val.isdigit() == False):
+                            hours = -1
+                        else:
+                            hours += float(field['data'])
+                    else:
+                        hours = -1
+                elif (field['fieldname'] == 'hrs_b'):
+                    if field['data'] == None:
+                        continue
+                    elif (field['data'].count('.') <= 1):
+                        val = field['data'].replace('.', '')
+                        if (val.isdigit() == False):
+                            hours = -1
+                        else:
+                            hours += float(field['data'])
+                    else:
+                        hours = -1
+                elif (field['fieldname'] == 'hrs_c'):
+                    if field['data'] == None:
+                        continue
+                    elif (field['data'].count('.') <= 1):
+                        val = field['data'].replace('.', '')
+                        if (val.isdigit() == False):
+                            hours = -1
+                        else:
+                            hours += float(field['data'])
+                    else:
+                        hours = -1
+                elif (field['fieldname'] == 'hrs_d'):
+                    if field['data'] == None:
+                        continue
+                    elif (field['data'].count('.') <= 1):
+                        val = field['data'].replace('.', '')
+                        if (val.isdigit() == False):
+                            hours = -1
+                        else:
+                            hours += float(field['data'])
+                    else:
+                        hours = -1
+                elif (field['fieldname'] == 'hrs_e'):
+                    if field['data'] == None:
+                        continue
+                    elif (field['data'].count('.') <= 1):
+                        val = field['data'].replace('.', '')
+                        if (val.isdigit() == False):
+                            hours = -1
+                        else:
+                            hours += float(field['data'])
+                    else:
+                        hours = -1
+                elif (field['fieldname'] == 'hrs_sh'):
+                    if field['data'] == None:
+                        continue
+                    elif (field['data'].count('.') <= 1):
+                        val = field['data'].replace('.', '')
+                        if (val.isdigit() == False):
+                            hours = -1
+                        else:
+                            hours += float(field['data'])
+                    else:
+                        hours = -1               
+            if (hours == -1):
+                return -1
+            time += hours
+        return time
+        
+    def process_options(self, entry):
+        #this function verifies the types of data in the structures, and if
+        #an option is not set, it will set the default value.
+        if (entry.__contains__('line') == False):
+            entry['line'] = 1
+        return entry
+    
+    def data_merge(self):
+        for section in self.sections:
+            if (section['table'] == None):
+                continue
+            section['data'] = []
+            for dataline in self.proposal[section['table']]:
+                section['data'].append({})
+                data = section['data'][-1]
+                for entry in self.tables[section['table']]['value']:
+                    if (entry['section'] != section['section']):
+                        continue
+                    #Process options and add defaults
+                    entry = copy.deepcopy(entry)
+                    entry = self.process_options(entry)
+                    #Retrieve data from dataline and add to entry
+                    entry['data'] = dataline[entry['fieldname']]
+                    entry = self.element(entry, view=self.view, edit=self.edit)
+                    #Add to the section list and sort by line number
+                    if (data.__contains__(entry['line']) == False):
+                        data[entry['line']] = [entry]
+                    else:
+                        data[entry['line']] += [entry]
+
+    def make_html(self, section_choose=False, id=False):
+        #Validate section
+        if (section_choose != False):
+            valid = False
+            for section in self.sections:
+                if (section_choose == section['section']):
+                    valid = True
+                    do_sections = [section]
+            if (valid != True):
+                self.req.write("""This section does not exist. Please choose
+                                  another. If you believe this is in error,
+                                  please contact the administration.""")
+                return
+        else:
+            do_sections = self.sections
+
+        fetch = self.theBackend.proposal_status(self.propid)
+
+        ###Begin Page Header
+        self.req.write("""<div class="navbar, propheader">""")
+        if (self.cyclename != self.theBackend.options['cyclename']):
+            self.req.write("""<ul id="navlist">
+            <li><a href="%s">Current Proposal</a></li>""" %
+                           ("proposal/edit/" + str(self.propid)))
+        elif (fetch['status'] == 0):
+            self.req.write("""<ul id="navlist">
+            <li><a href="%s">Current Proposal</a></li>
+            <li><a href="%s">View Draft as PDF</a></li>
+            <li><a href="%s">Submit Proposal</a></li></ul>""" %
+                           ("proposal/edit/" + str(self.propid),
+                            "proposal/pdf/" + str(self.propid),
+                            "proposal/submit/" + str(self.propid)))
+        else:
+            self.req.write("""<ul id="navlist">
+            <li><a href="%s">Current Proposal</a></li>
+            <li><a href="%s">View Draft as PDF</a></li>
+            <li><a href="%s">View Submitted PDF</a></li>
+            <li><a href="%s">Re-Submit Proposal</a></li></ul>""" %
+                           ("proposal/edit/" + str(self.propid),
+                            "proposal/pdf/" + str(self.propid),
+                            "proposal/finalpdf/" + str(self.propid),
+                            "proposal/submit/" + str(self.propid)))
+
+        self.req.write("""</div>""")
+
+        ###End Page Header
+
+
+        ###Begin Page Body
+
+        ##If we are viewing the whole proposal:
+        if (section_choose == False):
+            for section in do_sections:
+                if (self.justification == True):
+                    if (section['section'] == 'scientific_justification'):
+                        continue
+                    if (section['section'] == 'technical_justification'):
+                        continue
+
+                if (section['type'] == 'general'):
+                    groups = section['data']
+                    keys = groups[0].keys()
+                    keys.sort()
+
+                    self.req.write("""<div id="editlist"><p>%s&nbsp;
+                    <a href="help_small/%s"
+                    onClick="return popup(this, 'help')">[?]</a>
+                    <a href="proposal/edit/%s?action=edit&section=%s">
+                    (edit)</a></p>""" % (section['name'],
+                                         section['section'],
+                                         self.propid,
+                                         section['section']))
+                    self.html_entry_view(groups, keys)                
+                elif (section['type'] == 'repeat'):
+                    groups = section['data']
+                    keys = groups[0].keys()
+                    keys.sort()
+
+                    addtext = "(add)"
+                    #The IsAuthor lines are part of the crude hack to make
+                    #Author#1 the PI. Revision 46
+                    IsAuthor = False
+                    if (section['section'] == 'author'):
+                        addtext = "(add additional author)"
+                        IsAuthor = True
+                    elif (section['section'] == 'source'):
+                        addtext = "(add additional source)"
+
+                    self.req.write("""<div id="editlist"><p>%s&nbsp;
+                    <a href="help_small/%s"
+                    onClick="return popup(this, 'help')">[?]</a>
+                    <a href="proposal/edit/%s?action=add&section=%s">
+                    %s</a></p>""" % (section['name'],
+                                     section['section'],
+                                        self.propid,
+                                        section['section'], addtext))
+                    for lines in groups:
+                        pathtext = "proposal/edit/%s" % self.propid
+                        lines = {keys[0] : lines[keys[0]]}
+                        keys = [keys[0]]
+                        lines[keys[0]] += [self.element({'name' : '&nbsp;',
+                                            'data' :
+                     """<a href="%s?action=edit&section=%s&id=%s">edit</a> |
+                     <a href="%s?action=delete&section=%s&id=%s">delete</a>"""%
+                                            (pathtext, section['section'],
+                                             lines[keys[0]][0]['data'],
+                                             pathtext, section['section'],
+                                             lines[keys[0]][0]['data'])},
+                                                       view=True)]
+                    self.html_entry_view(groups, keys, IsAuthor=IsAuthor)
+                    if (section['section'] == 'author'):
+                        self.req.write("""<div id="editlist"><table><tr>
+                                          <td style="width:50%%;
+                                                     text-align:center;
+                                                     font-weight:bold;">
+                                          Advisor must send a supporting
+                                          letter if Thesis is checked.
+                                          See Instructions.
+                                          </td></tr></table></div>""")
+                    if (section['section'] == 'source'):
+                        hours = self.calc_hours()
+                        if hours == -1:
+                            hours = "N/A"
+                        self.req.write("""<div id="editlist"><table><tr>
+                                          <th style="width:50%%;
+                                                     text-align:center;
+                                                     font-weight:bold;">
+                                          Total Hours: %s
+          <i><a href="help_small/tot_hours" onClick="return popup(this, 'help')">(Why is this number large?)</a></i>
+                                          </th></tr>
+<tr><td><sup>1</sup>Requests for A and B-configuration observations must include a description of the calibration strategy in the technical justification. Please see <a href="http://cedarflat.mmarray.org/observing/doc/instrument_desc.html">http://cedarflat.mmarray.org/observing/doc/instrument_desc.html</a>.</td></tr>
+</table></div>""" % hours)
+                elif (section['type'] == 'image'):
+                    self.req.write("""<div id="editlist"><p>
+                    Image Attachments
+                    <a href="help_small/%s"
+                    onClick="return popup(this, 'help')">[?]</a>
+                    <a href="proposal/edit/%s?action=add&section=%s">
+                    (add)</a></p>""" % (section['section'],
+                                        self.propid, 'image'))
+
+                    result = self.theBackend.images_get(self.propid)
+
+                    if (len(result) == 0):
+                        self.req.write("""<table><tr><td>None
+                                          </td></tr></table>""")
+                    else:
+                        self.req.write("""Please use the sample code provided
+                        and insert it in your justification section where you 
+                        would like the image to appear.""")
+                        self.req.write("""<table><tr><th>File Name</th><th>
+                                          Sample Code</th><th>&nbsp;</tr>""")
+
+                        for image in result:
+                            self.html_image_view(self.propid, image)
+                        self.req.write("""</table>""")
+
+                self.req.write("""</div><br>""")
+
+
+                if (section['section'] == 'prior_obs'):
+                    if (self.justification == False):
+                        web = 'selected'
+                        pdf = ''
+                    else:
+                        web = ''
+                        pdf = 'selected'
+                    self.req.write("""
+                    <div id="editlist">
+                    <p>Justification Type</p>
+                    <table><tr><td style="width:50%%;text-align:left;">
+                    Using this proposal submission tool, you have a choice of
+                    using the web-based tool to submit your Scientific and
+                    Technical Justification sections or to upload a LaTeX file
+                    containing this information using the template located
+                    <a href='images/justification.tar.gz'>here</a>.</td>
+                    <td>
+                    <form action='proposal/typechange/%s' method='post'
+                    name="form">
+                    I want to use: <select name="type">
+                    <option value="Website Justification" %s>Website
+                    Justification
+                    <option value="LaTeX Template" %s>LaTeX Template
+                    </select>
+                    <input type="submit" value="Select Choice" name="submit">
+                    </input>
+                    </form>""" % (self.propid, web, pdf))
+
+                    if (self.justification == True):
+                        self.req.write("""<br>
+                        <form enctype="multipart/form-data"
+                        action="%s?action=submit&section=justification"
+                        method="post">""" % ('proposal/edit/' +
+                                             str(self.propid)))
+
+                        data = self.theBackend.justification_get_data(
+                            self.propid)
+
+                        if ((len(data) == 0) or
+                            (data[0]['justification_pdf'] == None)):
+                            self.req.write("""
+                            <input type="file" name="file">
+                            </input><input type="submit" name="update"
+                            value="Submit"/></form>""")
+                        else:
+                            self.req.write("""
+                            <a href="%s?action=delete&section=justification">
+                            Delete Uploaded LaTeX Justification</a>
+                            </form>""" % ('proposal/edit/'+ str(self.propid)))
+                        
+                    self.req.write("""</td></tr></table></div><br>""")
+
+        ##If we are editing one section
+        else:
+            for section in do_sections:
+                if (section['type'] == 'repeat') and (id == False):
+                    self.req.write("""Please return to the proposal screen and
+                    select a valid piece of information to edit.""")
+                    return
+                
+                groups = section['data']
+                keys = groups[0].keys()
+                keys.sort()
+                self.req.write("""<div id="editdata">""")
+                self.req.write("""<p>%s&nbsp;</p>""" % (section['name']))
+                self.html_entry_edit(groups, keys, self.propid, id=id)
+                self.req.write("""</div><br>""")
+        ###End Page Body
+
+        ###Begin Page Footer
+        ###End Page Footer
+
+    def data_verify(self):
+        #Validate section
+        first_br = True
+        main_error = False
+        for section in self.sections:
+            if (section['section'] == 'image'):
+                continue
+
+            groups = section['data']
+            keys = groups[0].keys()
+            keys.sort()
+
+            if (section['section'] == 'author'):
+                type = 'Author'
+            elif (section['section'] == 'source'):
+                type = 'Source'
+
+            if (section['type'] == 'repeat'):
+                for line in keys:
+                    error = False
+                    first_line = True
+                    line_number = 1
+                    for lines in groups:
+                        line_error = False
+                        buf = ''
+                        for entry in lines[line]:
+                            if (entry['error'] != ''):
+                                buf += ("<li>%s : %s - %s </li>" % (
+                                    entry['name'], entry['data'],
+                                    entry['error']))
+                                line_error = True
+                                error = True
+                                main_error = True
+                        if ((line_error == True) and (first_line == True)):
+                            first_line = False
+                            if (first_br == True):
+                                self.req.write("<br>")
+                                first_br = False
+                            self.req.write("<br>%s<ul>" % (section['name']))
+                        if (line_error == True):
+                            self.req.write("<li>%s Number %s<ul>" % (type,
+                                           line_number))
+                            self.req.write(buf)
+                            self.req.write("</ul></li>")
+                        line_number = line_number + 1
+                    if (error == True):
+                        self.req.write("</ul>")
+            else:
+                for line in keys:
+                    error = False
+                    number = 1
+                    for lines in groups:
+                        buf = ("<br>%s<ul>" % section['name'])
+                        for entry in lines[line]:
+                            if (entry['error'] != ''):
+                                buf += ("<li>%s : %s - %s</li>" % (
+                                    entry['name'], entry['data'],
+                                    entry['error']))
+                                error = True
+                                main_error = True
+
+                if (error == False):
+                    pass
+                else:
+                    if (first_br == True):
+                        self.req.write("<br>")
+                        first_br = False
+                    self.req.write(buf)
+                    self.req.write("</ul>")
+
+        return main_error
+
+    def obsblock_verify(self):
+        #Validate section
+
+        obsblocks = []
+
+        for section in self.sections:
+            if (section['section'] != 'source'):
+                continue
+
+            groups = section['data']
+            keys = groups[0].keys()
+            keys.sort()
+
+            for line in keys:
+                for lines in groups:
+                    for entry in lines[line]:
+                        if (entry['fieldname'] == 'obsblock'):
+                            obsblocks.append(entry['data'])
+
+
+            error = False
+            first = True
+            obsblock_check = []
+            for obsblock in obsblocks:
+                if (obsblock_check.count(obsblock) >= 1):
+                    continue
+                if (obsblocks.count(obsblock) > 1):
+                    error = True
+                    if (first == True):
+                        self.req.write("<ul>")
+                        first = False
+                    self.req.write("""<li>You have used the obsblock name : "%s"
+                    on more than one source line. Each line must have a
+                    unique obsblock name.</li>""" % obsblock)
+                    obsblock_check.append(obsblock)
+            if (error == True):
+                self.req.write("</ul>")
+        return error
+                
+    def html_entry_view(self, groups, keys, buffer=False, IsAuthor=False):
+        buf = ""
+        for line in keys:
+            buf += ("""<table>""")
+
+            show_header = True
+            for lines in groups:
+                header = ""
+                data = ""
+                for entry in lines[line]:
+                    #allows an entry not to appear on the summary line
+                    if (entry.__contains__('nosummary') == True):
+                        if (entry['nosummary'] == True):
+                            continue
+                    if (len(lines[line]) == 1):
+                        header = ""
+                    else:
+                        if (entry.__contains__('shortname') == True):
+                            header += ("""<th>%s</th>""" % entry['shortname'])
+                        else:
+                            header += ("""<th>%s</th>""" % entry['name'])
+
+                    #Fairly Crude Hack to make author #1 the PI rev. 46
+                    if ((IsAuthor == True) and (entry['fieldname'] == 'numb')
+                        and (entry['data'] == 1)):
+                        entry['html'] = 'PI'
+                
+                    data += ("""<td>%s</td>""" % entry['html'])
+                    
+                if (len(lines[line]) == 1):
+                    show_header = False
+
+                if (show_header == False):
+                    buf += ("""<tr>%s</tr>""" % (data))
+                else:
+                    buf += ("""<tr>%s</tr><tr>%s</tr>""" %
+                                   (header, data))
+                show_header = False
+                
+            buf += ("""</table>""")
+
+        if (buffer == False):
+            self.req.write(buf)
+            return
+        else:
+            return buf
+                
+    def html_entry_edit(self, groups, keys, propid, id=False):
+        pathtext = 'proposal/edit/%s' % propid
+        if (id == False):
+            idtext = ''
+        else:
+            idtext = ('&id=%s' % id)
+        self.req.write("""<table><form
+        action='%s?action=submit&section=%s%s' method='post' name="form">""" %
+                       (pathtext, groups[0][keys[0]][0]['section'], idtext))
+        for line in keys:
+            for lines in groups:
+                if (id != False):
+                    if (str(lines[1][0]['data']) != str(id)):
+                        continue
+                for entry in lines[line]:
+                    if (len(lines[line]) == 1):
+                        self.req.write("""<tr><td>%s</td></tr>""" %
+                                       (entry['html']))
+                    else:
+                        if (entry.__contains__('info') == True):
+                            name = """%s (%s)""" % (entry['name'],
+                                                    entry['info'])
+                        else:
+                            name = """%s""" % entry['name']
+
+                        name = (name +
+                               """ [<a href="help_small/%s/%s"
+                                onClick="return popup(this, 'help')"
+                                >?</a>]""" % (groups[0][keys[0]][0]['section'],
+                                 '#' + entry['fieldname']))
+
+                        if (entry['error'] == ''):
+                            self.req.write("""<tr><td class="label">%s:</td>
+                                       <td class="data">%s</td>
+                                       <td class="valid">%s</td></tr>""" %
+                                       (name, entry['html'], ''))
+                        else:
+                            self.req.write("""<tr><td class="label">%s:</td>
+                                       <td class="data">%s</td>
+                                       <td class="error">%s</td></tr>""" %
+                                       (name, entry['html'], entry['error']))
+        self.req.write("""</table><center><input id="submit"
+                       type='submit' value='Save Changes'></ center></form>""")
+
+    def html_image_view(self, propid, image):
+        if (image['file'] == ''):
+            self.req.write("""<tr><form enctype="multipart/form-data"
+                               action="%s?action=submit&section=image&id=%s"
+                               method="post">""" % ('proposal/edit/' +
+                                                    str(propid),
+                                                    image['numb']))
+            self.req.write("""
+                <td><input type="file" name="file">
+                    </input><input type="submit" name="update"
+                                         value="Submit"/>
+                </td><td></td><td>
+                <a href="%s?action=delete&section=image&id=%s">Delete</a>
+                </td></tr></form>""" % ('proposal/edit/'+ str(propid),
+                                        image['numb']))
+        else:
+            fname = image['file']
+            fname = fname.split('/')
+            editfile = fname[-1]
+
+            sample_code = ("""\\begin{figure}[h!]<br>
+            \\begin{center}<br>
+            \\includegraphics{%s}<br>
+            \\caption{}<br>
+            \\end{center}<br>
+            \\end{figure}""" % (editfile))
+
+            self.req.write("""<tr style="border-bottom:1px solid black;"><td>
+                              %s</td><td style="text-align:left;">%s</td>
+                 <td id="button">
+                <a href="%s?action=delete&section=image&id=%s">Delete</a>
+                </td></tr>""" % (editfile, sample_code, 
+                                 'proposal/edit/' + str(propid),image['numb']))
+    def collapse_lines(self, group):
+        new_group = []
+        keys = group.keys()
+        keys.sort()
+        for key in keys:
+            for entry in group[key]:
+                new_group.append(entry)
+        return new_group
+
+    def process_fields(self, section_choose, fields, propid):
+
+#        file= open('/srv/www/htdocs/proposals/files/dump3.txt', 'a')
+#        file.write(str(section_choose) + " %%% " + str(fields) + " %%% " + str(propid))
+#        file.close()
+ 
+        #Pop out any field whose name begins with an underscore and do other
+        #cruddy processing
+        for field in fields.keys():
+            if (field[0] == "_"):
+                if (fields.keys().__contains__(field[1:]) == True):
+                    fields.pop(field)
+                else:
+                    fields[field[1:]] = fields[field]
+                    fields.pop(field)
+
+        if (fields.__contains__('numb') == False):
+            id = False
+        else:
+            id = fields.pop('numb')
+            
+        valid = False
+        for section in self.sections:
+            if (section_choose == section['section']):
+                valid = True
+                do_section = section
+                break
+        if (valid != True):
+            self.req.write("""This section does not exist. Please choose
+            another. If you believe this is in error,
+            please contact the administration.""")
+            return
+
+        #Collapse along line numbers and return value matching id.
+        final_group = None #defining this pre loop so it exists post-loop.
+        for group in do_section['data']:
+            final_group = self.collapse_lines(group)
+            if (id == False):
+                break
+            else:
+                for element in final_group:
+                    if ((element['fieldname'] == 'numb') and
+                        (str(element['data']) == str(id))):
+                        break
+                else:
+                    final_group = None
+                    continue
+                break
+
+        ##insert data validation and error checking here:
+
+        for data_field in final_group:
+            if (data_field['fieldtype'] == 'bool'):
+                if (fields.__contains__(data_field['fieldname']) == True):
+                    if (fields[data_field['fieldname']] == "on"):
+                        data_field['data'] = 1
+                    else:
+                        data_field['data'] = 0
+                else:
+                    data_field['data'] = 0
+            elif (data_field['fieldtype'] == 'date'):
+                data_field['data'] = 'CURDATE()'
+            elif (fields.__contains__(data_field['fieldname']) == True):
+                data_field['data'] = fields[data_field['fieldname']]
+                if (type(data_field['fieldtype']) == type(list())):
+                    if (data_field['data'] == "No Value Set"):
+                        data_field['data'] = None
+            else:
+                data_field['data'] = None
+#        file= open('/srv/www/htdocs/proposals/files/dump2.txt', 'a')
+#        file.write(str(do_section['table']) + " %%% " + str(propid) + " %%% " + str(final_group) + " %%% " + str(id))
+#        file.close()
+
+        self.theBackend.proposal_tagset(do_section['table'], propid,
+                                        final_group, id=id)
+
+    def process_image(self, fields):
+        if (fields['file'].filename != ''):
+
+            files_dir = (self.theBackend.config['base_directory'] +
+                         self.theBackend.config['files_directory'])
+            prop_dir = files_dir + self.propid + '/'
+            
+            if (os.path.isdir(prop_dir) == False):
+                os.mkdir(prop_dir)
+            if (os.path.isdir(prop_dir+'justification/') == False):
+                os.mkdir(prop_dir+'justification/')
+
+            return fields['file'].filename
+        else:
+            return ''
+        
+    def element(self, element, edit=False, view=False):
+        if (element.__contains__('fieldtype') == False):
+            element['fieldtype'] = None
+            element['fieldname'] = None
+            element['html'] = element['data']
+            return element
+
+        #self.req.write(str(element['fieldtype']))
+        #######################################################################
+        if (element['fieldtype'] == 'array'):
+            element['sqltype'] = """SET('A','B','C','D','E')"""
+            set = {'A': 0, 'B': 0, 'C':0, 'D':0, 'E':0}
+            if (element['data'] == None):
+                data = []
+            else:
+                data = element['data'].split(',')
+                for datum in data:
+                    if (datum == 'A'):
+                        set['A'] = 1
+                    elif (datum == 'B'):
+                        set['B'] = 1
+                    elif (datum == 'C'):
+                        set['C'] = 1
+                    elif (datum == 'D'):
+                        set['D'] = 1
+                    elif (datum == 'E'):
+                        set['E'] = 1
+                    
+            if (edit == True):
+                element['html'] = ""
+                keys = set.keys()
+                keys.sort()
+                for key in keys:
+                    if set[key] == 1:
+                        checked='checked'
+                    else:
+                        checked=''
+                    element['html'] += ("""&nbsp;&nbsp;%s<input id="check" type="checkbox"
+                                            name="%s" value="%s" %s>""" % (key,
+                                             element['fieldname'], key, checked))
+            if (view == True):
+                element['html'] = element['data']
+        #######################################################################
+        elif (type(element['fieldtype']) == type(list())):
+            element['sqltype'] = ("enum(" +
+                                  str(str(element['fieldtype'])[1:-1]) + ")")
+            if (edit == True):
+                element['fieldtype'] = ['No Value Set'] + element['fieldtype']
+                element['html'] = ("""<select name="%s">""" %
+                                   (element['fieldname']))
+                for value in element['fieldtype']:
+                    if (element['data'] != None):
+                        if (element['data'] == value):
+                            element['html'] += ("""<option value="%s" selected>
+                                                %s""" % (value, value))
+                        else:
+                            element['html'] += ("""<option value="%s">%s""" %
+                                                (value, value))
+                    else:
+                        element['html'] += ("""<option value="%s">%s""" %
+                                            (value, value))
+                element['html'] += """</select>"""
+            if (view == True):
+                element['html'] = element['data']
+        #######################################################################
+        elif (element['fieldtype'] == 'institution'):
+            element['sqltype'] = 'text'
+            if (edit == True):
+                values = ['Caltech', 'UC Berkeley', 'UMD', 'UIUC', 'UChicago']
+                element['html'] = ("""<select name="_%s" onChange="
+                                   databox = form.%s
+                                   selectbox = form._%s
+                                   if (selectbox.options[selectbox.selectedIndex].value == 'Other')
+                                   {
+                                       databox.value='Insert Institution Name Here';
+                                       databox.disabled=false;
+                                       databox.style.visibility='visible';
+                                   }
+                                   else
+                                   {
+                                       databox.style.visibility='hidden';
+                                       databox.disabled=true;
+                                       databox.value=selectbox.options[selectbox.selectedIndex].value;
+                                   }">""" % (element['fieldname'], element['fieldname'], element['fieldname']))
+
+                if (element['data'] == None):
+                    element['data'] = values[0]
+                
+                if (values.__contains__(element['data']) == True):
+                    for value in values:
+                        if (element['data'] == value):
+                            element['html'] += ("""<option value="%s"
+                                                    selected>%s"""
+                                                % (value, value))
+                        else:
+                            element['html'] += ("""<option value="%s">%s""" %
+                                                (value, value))
+                    element['html'] += """<option value="Other">Other"""
+
+                    element['html'] += """</select>"""
+                    element['html'] += ("""<input type="text" name="%s"
+                    value="%s" disabled style="visibility:hidden;">""" %
+                                        (element['fieldname'],element['data']))
+                else:
+                    for value in values:
+                        element['html'] += ("""<option value="%s">%s""" %
+                                            (value, value))
+                    element['html'] += """<option value="Other" selected>
+                                          Other"""
+
+                    element['html'] += """</select>"""
+                    element['html'] += ("""<input type="text" name="%s"
+                                           value="%s">""" %
+                                        (element['fieldname'],element['data']))
+            if (view == True):
+                element['html'] = element['data']
+        #######################################################################
+        elif (element['fieldtype'] == 'integer'):
+            element['sqltype'] = 'bigint(20)'
+            if (edit == True):
+                if (element['data'] == None):
+                    data = ""
+                else:
+                    data = element['data']
+
+                if (element['fieldname'] == 'numb'):
+                    element['html'] = ("""%s<input type="hidden" name="%s"
+                                          value="%s">""" % (
+                        data, element['fieldname'], data))
+                else:
+                    element['html'] = ("""<input type="text" name="%s"
+                                          value="%s">""" %
+                                       (element['fieldname'], data))
+            if (view == True):
+                element['html'] = element['data']
+        #######################################################################
+        elif (element['fieldtype'] == 'text'):
+            element['sqltype'] = 'text'
+            if (edit == True):
+                if (element['data'] == None):
+                    data = ""
+                else:
+                    data = element['data']
+
+                element['html'] = ("""<input type="text" name="%s"
+                                       value="%s">""" %
+                                   (element['fieldname'], str(data.replace('&', '&#38;').replace('"', '&#34;'))))
+            if (view == True):
+                if (element.__contains__('size') == True):
+                    front = '<div style="width:%spx;text-align:center;margin-left:auto;margin-right:auto">' % (element['size'])
+                    back = '</div>'
+                else:
+                    front = ''
+                    back = ''
+                if (element['data'] == None):
+                    element['html'] = element['data']
+                else:
+                    element['html'] = front + element['data'].replace('&', '&#38;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&#34;') + back
+        #######################################################################
+        elif (element['fieldtype'] == 'date'):
+            element['sqltype'] = 'date'
+            if (element['data'] != None):
+                if (type(element['data']) != type(str(''))):
+                    element['data'] = str(element['data'])[0:10]
+
+            if (edit == True):
+                if (element['data'] == None):
+                    data = ""
+                else:
+                    data = element['data']
+                element['html'] = ("""<input type="hidden" name="%s"
+                                     value="%s">%s""" % (element['fieldname'],
+                                                         data, data))
+            if (view == True):
+                if (element['data'] == None):
+                    element['html'] = None
+                else:
+                    element['html'] = element['data']
+        #######################################################################
+        elif (element['fieldtype'] == 'bool'):
+            element['sqltype'] = 'tinyint(1)'
+            if (edit == True):
+                if (element['data'] == None) or (element['data'] == 0):
+                    checked = ""
+                else:
+                    checked = "checked"
+                element['html'] = ("""<input id="check" type="checkbox"
+                                       name="%s"%s>""" % (
+                    element['fieldname'], checked))
+            if (view == True):
+                if (element['data'] == None):
+                    element['html'] = "None"
+                elif (str(element['data']) == "0"):
+                    element['html'] = """&mdash;"""
+                else:
+                    element['html'] = """X"""
+        #######################################################################
+        elif (element['fieldtype'] == 'longtext'):
+            element['sqltype'] = 'longtext'
+
+            if (edit == True):
+                if (element['data'] == None):
+                    data = ""
+                else:
+                    data = element['data']
+                element['html'] = ("""<textarea name="%s">%s</textarea>""" % (
+                    element['fieldname'], str(data.replace('&', '&#38;'))))
+
+            if (view == True):
+                if (element['data'] != None):
+                    data = ("<p class='textview'>" +
+                            str(element['data']).replace('&', '&#38;').replace('<', '&lt;').replace('>', '&gt;').replace('\n', "<br>") +
+                            "</p>")
+                else:
+                    data = element['data']
+                element['html'] = data
+        else:
+            element['html'] = element['data']
+
+        ##Begin Error Checking##
+        if (element.__contains__('check') == True):
+            if (element['check'] == []):
+                element['error'] = None
+            else:
+                a = ErrorCheck(element['data'], element['check'])
+                element['error'] = a.GetError()
+        else:
+            a = ErrorCheck(element['data'], ['NoNull'])
+            element['error'] = a.GetError()
+
+        if (element['error'] != None):
+            if (view == True):
+                element['html'] = ("""<font id="error">%s</font>""" %
+                                   element['html'])
+            self.error = True
+        else:
+            element['error'] = ''
+
+        if (self.justification == True):
+            if (element['fieldname'] == 'technical_justification'):
+                element['error'] = ''
+            if (element['fieldname'] == 'scientific_justification'):
+                element['error'] = ''
+                
+            
+        return element
+
+    def latex_generate(self, propid, css, file_send=True,
+                       carma_propno="Unsubmitted"):
+        base_dir = (self.theBackend.config['base_directory'])
+        files_dir = (self.theBackend.config['base_directory'] +
+                     self.theBackend.config['files_directory'])
+        prop_dir = files_dir + propid + '/'
+        just = ("""\documentclass[preprint, letterpaper, 12pt]{%saastex}
+\usepackage[letterpaper]{geometry}
+\usepackage{helvet}
+\\pagestyle{empty}
+\geometry{left=0.75in, right=0.75in, top=0.75in, bottom=0.75in}
+\\begin{document}
+\\newlength{\\carmaindent}
+\\setlength{\\carmaindent}{\\parindent}
+\\setlength{\\parskip}{0in}
+""" % (files_dir))      
+
+        tex = ("""\documentclass[preprint, letterpaper, 10pt]{%saastex}
+\usepackage[letterpaper]{geometry}
+\usepackage{helvet}
+\\pagestyle{empty}
+\geometry{left=0.5in, right=0.5in, top=0.5in, bottom=0.5in}
+\\begin{document}
+\\sffamily
+""" % (files_dir))
+        if (os.path.isdir(prop_dir) == False):
+            os.mkdir(prop_dir)
+        tex += ("""
+\\newlength{\\carmaindent}
+\\setlength{\\carmaindent}{\\parindent}
+\\setlength{\\parindent}{0in}
+\\setlength{\\parskip}{0in}
+
+  \\mbox{\\includegraphics[scale=.2]{%s}}
+  \\newlength{\\carmaheight}
+  \\settoheight{\\carmaheight}{\\includegraphics[scale=.2]{%s}}
+  \\hfill
+  \\parbox[b][\\carmaheight][t]{4in}{
+    \\begin{center}
+      \\textbf{
+        \\LARGE
+        Combined Array for Research in Millimeter-wave Astronomy\\\\
+        \\vskip .25in
+        \\large
+        Observing Proposal Cover Sheet\\\\}
+    \\end{center}
+    \\vfill}
+  \\hfill
+  \\fbox{\\parbox[b][\\carmaheight][t]{1.5in}{
+    \\begin{center}
+      \\textbf{Proposal Number}
+      \\vfill
+      \\LARGE \\textbf{%s}
+      \\vfill
+      \\textbf{ }
+    \\end{center}
+    }
+  }
+
+\\setlength{\\parindent}{\\carmaindent}
+\\vskip .15in
+        """ % (base_dir + 'images/carma.eps', base_dir + 'images/carma.eps',
+               carma_propno))
+
+        if (os.path.isdir(prop_dir + 'justification/') == False):
+            os.mkdir(prop_dir + 'justification/')
+
+        if (os.path.isfile(prop_dir + "aastex.cls") == False):
+            os.symlink("../aastex.cls", prop_dir+"aastex.cls")
+        if (os.path.isfile(prop_dir + "justification/aastex.cls") == False):
+            os.symlink("../aastex.cls", prop_dir+"justification/aastex.cls")
+
+        if (os.path.isfile(prop_dir + 'latex.pdf') == True):
+            os.unlink(prop_dir + 'latex.pdf')
+
+        if (os.path.isfile(prop_dir + 'latex.dvi') == True):
+            os.unlink(prop_dir + 'latex.dvi')
+
+        for section in self.sections:
+            if (self.justification == True):
+                if (section['section'] == 'technical_justification'):
+                    continue
+                if (section['section'] == 'scientific_justification'):
+                    continue
+
+            if (section['section'] == 'image'):
+                #Process the check for images. If image is not on disk,
+                #then copy it out of the database and put it on the
+                #temp directory.
+                result = self.theBackend.images_get(self.propid)
+                if (len(result) == 0):
+                    continue
+                else:
+                    for image in result:
+                        self.image_check(image, prop_dir)
+                continue
+
+            buf = ""
+            
+            groups = section['data']
+            keys = groups[0].keys()
+            keys.sort()
+
+            if (len(groups) == 1):
+                if (len((groups[0])[1]) == 1):
+###BEGINELSE###
+                    buf += ("""<html><head>
+<style type="text/css">
+%s
+</style></head><body><div id="editlist"><p>%s&nbsp;</p>
+</div></body></html>""" % (css, section['name']))
+
+                    if (self.theBackend.cache_check(propid,
+                                                 section['section']) == False):
+                        self.generate_ps(buf, section, propid)
+                        self.theBackend.cache_validate(propid,                                                       section['section'])
+                    crop = self.get_crop(propid, section)
+                    if ((self.justification == False) and ((section['section']=='technical_justification') or (section['section']=='scientific_justification'))):
+                        just += ("""\\setlength{\\parindent}{0in}\\noindent \includegraphics[trim=%sin %sin %sin %sin, clip]{%s}\n \\setlength{\\parindent}{\\carmaindent} \\\\ \indent""" % (crop['left'], crop['bottom'], crop['right']+.57, crop['top'], prop_dir + section['section'] + '.ps'))
+                        just += ("""\n%s\n\\vskip .15in\n""" %
+                            (groups[0][1][0]['data']))
+                    else:
+                        tex += ("""\\noindent \includegraphics[trim=%sin %sin %sin %sin, clip]{%s}\n""" % (crop['left'], crop['bottom'], crop['right'], crop['top'], prop_dir + section['section'] + '.ps'))
+                        tex += ("""\n%s\n\\vskip .15in\n""" %
+                                (groups[0][1][0]['data']))
+                    continue
+###ENDELSE###
+
+            if (section['type'] == 'general'):
+###BEGIN IF###
+                buf += ("""<html><head>
+<style type="text/css">
+%s
+</style></head><body>""" % css)
+
+                buf += ("""<div id="editlist"><p>%s&nbsp;</p>""" % (
+                    section['name']))
+                buf += self.html_entry_view(groups, keys, buffer=True)
+                buf += ("""</div><br>""")
+                buf += ("""</body></html>""")
+            
+                if (self.theBackend.cache_check(propid,
+                                                section['section']) == False):
+                    self.generate_ps(buf, section, propid)
+                    self.theBackend.cache_validate(propid, section['section'])
+                crop = self.get_crop(propid, section)
+                tex += ("""\\noindent \includegraphics[trim=%sin %sin %sin %sin, clip]{%s}
+\\vskip .15in
+""" % (crop['left'], crop['bottom'], crop['right'], crop['top'],
+       prop_dir + section['section'] + '.ps'))
+###ENDIF###
+            elif (section['section'] == 'author'):
+###BEGINELIF###
+                buf += ("""<html><head>
+<style type="text/css">
+%s
+</style></head><body>""" % css)
+
+                buf += ("""<div id="editlist"><p>%s&nbsp;</p>""" %
+                        (section['name']))
+                #IsAuthor is part of rev. 46 PI author #1 Hack.
+                buf += self.html_entry_view(groups, keys, buffer=True,
+                                                IsAuthor=True)
+                buf += ("""</div>""")
+                buf += ("""<div id="editlist"><table><tr>
+                                          <td style="width:50%%;
+                                                     text-align:center;
+                                                     font-weight:bold;">
+                                          Advisor must send a supporting
+                                          letter if Thesis is checked.
+                                          See Instructions.
+                                          </td></tr></table></div>""")
+                buf += ("""<br></body></html>""")
+            
+                if (self.theBackend.cache_check(propid,
+                                                section['section']) == False):
+                    self.generate_ps(buf, section, propid)
+                    self.theBackend.cache_validate(propid, section['section'])
+                crop = self.get_crop(propid, section)
+                tex += ("""\\noindent \includegraphics[trim=%sin %sin %sin %sin, clip]{%s}
+\\vskip .15in
+""" % (crop['left'], crop['bottom'], crop['right'], crop['top'],
+       prop_dir + section['section'] + '.ps'))
+###ENDELIF###
+            elif (section['type'] == 'repeat'):
+###BEGINELIF###
+                buf = ""
+                #id = lines[1][0]['data']
+
+                buf += ("""<html><head><style type="text/css">%s
+                           </style></head><body>""" % css)
+
+                buf += ("""<div id="editlist"><p>%s&nbsp;</p>""" %
+                        (section['name']))
+
+                buf += self.html_entry_view(groups, keys, buffer=True)
+                if (section['section'] == 'source'):
+                    hours = self.calc_hours()
+                    if hours == -1:
+                        hours = "N/A"
+
+                    buf += ("""<div id="editlist"><table><tr>
+                               <th style="width:50%%;
+                                text-align:center;
+                                font-weight:bold;">
+                                Total Hours: %s
+                                </th></tr></table></div>""" % hours)
+
+                buf += ("""</div></body></html>""")
+            
+                if (self.theBackend.cache_check(propid,
+                                                section['section']) == False):
+                    self.generate_ps(buf, section, propid)
+                    self.theBackend.cache_validate(propid,
+                                                   section['section'])
+                crop = self.get_crop(propid, section)
+                tex += ("""\\noindent \includegraphics[trim=%sin %sin %sin %sin, clip]{%s}
+\\vskip .15in
+""" % (crop['left'], crop['bottom'], crop['right'], crop['top'],
+       prop_dir + section['section'] + '.ps'))
+
+###ENDELIF###
+
+        tex +=("""\end{document}\n""")
+        tfile = open(prop_dir + 'latex.tex', 'w')
+        tfile.write(tex)
+        tfile.close()
+        if (self.justification == False):
+            just += ("""\end{document}\n""")
+            tfile = open(prop_dir + 'justification/justification.tex', 'w')
+            tfile.write(just)
+            tfile.close()
+
+        latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
+            prop_dir, prop_dir + 'latex.tex'), 'r')
+        latex_info = latex.readlines()
+        retval = latex.close()
+
+        if (retval != None):
+            return latex_info
+
+        #if no errors, run LaTeX a second time to get possible references correct.
+
+        latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
+            prop_dir, prop_dir + 'latex.tex'), 'r')
+        latex_info = latex.readlines()
+        retval = latex.close()
+
+        if (retval != None):
+            return latex_info
+
+        at = os.popen("""cd %s; dvips -t letter -o - %slatex.dvi | ps2pdf14 - %slatex.pdf""" %
+                  (prop_dir, prop_dir, prop_dir))
+        at.close()
+
+        if (os.path.isfile(prop_dir + 'justification/justification.pdf') == True):
+            os.unlink(prop_dir + 'justification/justification.pdf')
+        
+        just_skip = 0
+        if (self.justification == True):
+            justification = open(prop_dir + 'justification/justification.tex', 'wb')
+            data = self.theBackend.justification_get_data(self.propid)
+            if (len(data) == 0):
+                justification.write('')
+                just_skip = 1
+            else:
+                justification.write(data[0]['justification_pdf'])
+            justification.close()
+        #Since latex for justification is always, then always do below
+        if (just_skip == 0):
+            latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
+                prop_dir + 'justification/', prop_dir + 'justification/justification.tex'), 'r')
+            latex_info = latex.readlines()
+            retval = latex.close()
+
+            if (retval != None):
+                return latex_info
+
+            #same thing as above, make sure latex is run twice
+
+            latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
+                prop_dir + 'justification/', prop_dir + 'justification/justification.tex'), 'r')
+            latex_info = latex.readlines()
+            retval = latex.close()
+
+            if (retval != None):
+                return latex_info
+
+            at = os.popen("""cd %sjustification/; dvips -t letter -o - %sjustification/justification.dvi | ps2pdf14 - %sjustification/justification.pdf""" % (prop_dir, prop_dir, prop_dir))
+            at.close()
+
+        output_pdf = PdfFileWriter()
+
+        if (just_skip == 0):
+            justification_pdf = PdfFileReader(file(prop_dir + "justification/justification.pdf", "rb"))
+        latex_pdf = PdfFileReader(file(prop_dir + "latex.pdf", "rb"))
+
+        for i in xrange(latex_pdf.getNumPages()):
+            output_pdf.addPage(latex_pdf.getPage(i))
+
+        if (just_skip == 0):
+            if (justification_pdf.getNumPages() > 3):
+                num_just_pages = 3
+            else:
+                num_just_pages = justification_pdf.getNumPages()
+
+            for i in xrange(num_just_pages):
+                output_pdf.addPage(justification_pdf.getPage(i))
+        
+        output_stream_pdf = open(prop_dir + "latex-final.pdf", "wb")
+        output_pdf.write(output_stream_pdf)
+        output_stream_pdf.close()
+
+        if ((os.path.isfile(prop_dir + 'latex-final.pdf') == True) and
+            (file_send == True)):
+            self.req.headers_out.add('Content-Disposition',
+                                     'attachment; filename=%s.pdf' % (propid)) 
+            self.req.content_type='application/force-download'
+            pdf = open(prop_dir + 'latex-final.pdf', 'r')
+            data = pdf.read()
+            self.req.write(data)
+
+        return 0
+
+    def generate_ps(self, buf, section, propid, id=None):
+        files_dir = (self.theBackend.config['base_directory'] +
+                     self.theBackend.config['files_directory'])
+        prop_dir = files_dir + propid + '/'
+
+        if (id == None):
+            idtext = ''
+        else:
+            idtext = '_%s' % id
+
+        commandline = (self.theBackend.config['php'] + ' ' +
+                       self.theBackend.config['base_directory'] +
+                       'html2ps/pipeline.php "' +
+                       self.theBackend.config['base_directory'] +
+                       'html2ps/html2ps/" "' +
+                       prop_dir + section['section'] + idtext + '.ps"')
+
+        #Convert html to ps
+        file = os.popen(commandline, 'w')
+        file.write(buf)
+        file.close()
+
+    def get_crop(self, propid, section, file=False, id=None):
+        files_dir = (self.theBackend.config['base_directory'] +
+                     self.theBackend.config['files_directory'])
+        prop_dir = files_dir + propid + '/'
+        if (id == None):
+            idtext = ''
+        else:
+            idtext = '_%s' % id
+        
+        if (file==False):
+            filename = prop_dir + section['section'] + idtext + '.ps'
+        else:
+            filename = prop_dir + file
+                
+        im = Image.open(filename)
+        if im.mode != "RGB":
+            im = im.convert("RGB")
+        size = im.size
+        bg = Image.new("RGB", size, 'white')
+        diff = ImageChops.difference(im, bg)
+        bbox = diff.getbbox()
+
+        return {'left' : bbox[0]/72.,
+                'right' : (size[0]-bbox[2])/72.,
+                'top' : bbox[1]/72.,
+                'bottom' : (size[1]-bbox[3])/72.}
+
+    def image_check(self, image, propdir):
+        if (image['file'] == ''):
+            return
+        if (os.path.isfile(propdir + 'justification/' + image['file']) == True):
+            return
+        else:
+            file = open(propdir + 'justification/' + image['file'], 'wb')
+            file.write(image['ps_data'])
+            file.close()
+
+
+class ErrorCheck:
+    def __init__(self, value, error_list):
+        self.error = ''
+        self.order = ['NoNull',
+                      'NoSpaces',
+                      'AlphaNumeric',
+                      'Alpha',
+                      'Numeric',
+                      'Integer',
+                      'NoZero',
+                      'raCheck',
+                      'decCheck',
+                      'obsblockCheck',
+                      'timeCheck',
+                      'antCheck']
+        for error in self.order:
+            if (error_list.__contains__(error) == True):
+                self.__class__.__dict__[error](self, value)
+                if (self.error != ''):
+                    break
+
+    def AddError(self, error):
+        if (self.error == ''):
+            self.error += ' '
+        self.error += error
+
+    def GetError(self):
+        if (self.error == ''):
+            return None
+        else:
+            return self.error
+
+    def NoNull(self, value):
+        if (value == None):
+            self.AddError("This field must not be blank.")
+
+    def NoSpaces(self, value):
+        for i in value:
+            if (i == ' '):
+                self.AddError("This field must not contain spaces.")
+                break
+
+    def AlphaNumeric(self, value):
+        if (value.isalnum() == False):
+            self.AddError("This field must only contain alphanumeric characters.")
+
+    def Alpha(self, value):
+        if (value.isalpha() == False):
+            self.AddError("This field must only contain letters.")
+
+    def Numeric(self, value2):
+        if type(value2) == type(long()):
+            value = str(value2)
+        else:
+            value = value2
+        error = False
+        if (value.count('.') > 1):
+            error = True
+        else:
+            val = value.replace('.', '')
+            if (val.isdigit() == False):
+                error = True
+        if (error == True):
+            self.AddError("This field must only contain numbers.")
+
+    def Integer(self, value):
+        if (value.isdigit() == False):
+            self.AddError("This field must only contain integers.")
+
+    def NoZero(self, value):
+        if (value == '0'):
+            self.AddError("This value must be greater than 0.")
+
+    def raCheck(self, RA):
+        digit = []
+        for i in RA:
+            digit.append(i)
+        if (len(digit) != 5) or (digit.count(":") > 1):
+            self.AddError("Invalid format: must be HH:MM")
+        else:
+            if (not(digit[0].isdigit() and digit[1].isdigit and
+                    (digit[2] == ":") and
+                    digit[3].isdigit() and digit[4].isdigit())):
+                self.AddError("Invalid format: must be HH:MM")
+            hours = 10*int(digit[0]) + int(digit[1])
+            if (hours < 0 or hours > 23):
+                self.AddError("Invalid hours value.")
+
+            minutes = 10*int(digit[3]) + int(digit[4])
+            if(minutes < 0 or minutes > 59):
+                self.AddError("Invalid minutes value.")
+
+    def decCheck(self, DEC):
+        digit = []
+        negative = 0
+        for i in DEC:
+            digit.append(i)
+        else:
+            if(digit[0] == '-'):
+                negative = 1
+            if(digit[0] == '-' or digit[0] == '+'):
+                digit = digit[1:]
+            if(len(digit) != 5) or (digit.count(":") > 1):
+                self.AddError("Invalid format: must be (+/-)DD:MM")
+            elif(digit[0].isdigit() and digit[1].isdigit() and
+                 (digit[2] == ":") and
+                 digit[3].isdigit() and digit[4].isdigit()):
+                degrees = 10*int(digit[0]) + int(digit[1])
+                if (degrees >= 90 or ((negative == 1) and (degrees > 40))):
+                    self.AddError("""Invalid degrees value: must be -40 <
+                                   DD <= 90""")
+                minutes = 10*int(digit[3]) + int(digit[4])
+                if(minutes < 0 or minutes > 59):
+                    self.AddError("Invalid minutes value")
+            else:
+                self.AddError("Invalid format: must be (+/-)DD:MM")
+
+    def obsblockCheck(self, obsblock):
+            if(('%' in obsblock) or
+               ('#' in obsblock) or
+               ('>' in obsblock) or
+               ('<' in obsblock) or
+               ('.' in obsblock) or
+               ('\\' in obsblock) or
+               ('/' in obsblock) or
+               ('(' in obsblock) or
+               (')' in obsblock) or
+               ('[' in obsblock) or
+               (']' in obsblock) or
+               (' ' in obsblock) or
+               ('$' in obsblock) or
+               ('&' in obsblock) or
+               ('!' in obsblock) or
+               ('@' in obsblock) or
+               ('*' in obsblock) or
+               ('?' in obsblock) or
+               ('"' in obsblock) or
+               ("'" in obsblock)):
+                self.AddError("Invalid character in obsblock name.")
+
+    def timeCheck(self, time):
+        minTime = ''
+        maxTime = ''
+        dashFound = 0
+        dashes = 0
+        for i in time:
+            if(i == '-'):
+                dashFound = 1
+                dashes = dashes+1
+            elif(dashFound):
+                maxTime = maxTime + i
+            else:
+                minTime = minTime + i
+        if(dashes > 1):
+            self.AddError("Invalid format: it must be min-max")
+            return
+
+        try:
+            lowTime = float(minTime)
+            hiTime = float(maxTime)
+        except ValueError:
+            self.AddError("Invalid Minimum Time")
+            return
+
+        if(hiTime < lowTime):
+            self.AddError("Max value is less than min value")
+
+    def antCheck(self, numant):
+        ant = float(numant)
+        if ((ant < 1) or (ant > 15)):
+            self.AddError("The range of values must be between 1 and 15.")
