@@ -562,7 +562,7 @@ proposal-help@astro.uiuc.edu
                                 self.req.headers_out.add('Content-Disposition',
                            'attachment; filename=%s.pdf' % (result['carmaid']))
                                 self.req.content_type='application/force-download'
-                                self.req.write(pdf[0]['submitted_pdf'])
+                                self.req.write(pdf)
                             
                     elif (pathstr[1] == "pdf"):
                         result = self.theBackend.proposal_fetch(

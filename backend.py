@@ -508,15 +508,11 @@ class Backend:
         cursor.close()
 
     def pdf_get_data(self, proposalid):
-        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        cursor.execute("""SELECT * FROM %(prefix)spdf
-                          WHERE proposalid=%(propid)s LIMIT 1""" %
-                       {'prefix' : self.prefix,
-                        'propid' : self.literal(proposalid)})
-        result = cursor.fetchall()
-        cursor.close()
-        return result
-
+        pdf_file = open(self.config['data_directory'] + 'pdf/' + 
+                        str(proposalid) + '.pdf')
+        pdf = pdf_file.read()
+        pdf_file.close()
+        return pdf
 
     def justification_add_update(self, proposalid, pdfdata):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
