@@ -2,8 +2,11 @@ from mod_python import apache
 import copy
 import os
 import os.path
-import Image, ImageChops
 from pyPdf import PdfFileWriter, PdfFileReader
+from string import Template as baseTemplate
+
+class strTemplate(baseTemplate):
+    idpattern = r'[_a-z0-9][_a-z0-9]*'
 
 class Template:
     def __init__(self, req, template, cyclename, backend, propid, view,
@@ -151,6 +154,15 @@ class Template:
                         data[entry['line']] = [entry]
                     else:
                         data[entry['line']] += [entry]
+
+    def data_strip(self, data):
+        #This function strips all misc info from the array, creating a
+        #dictionary of fieldname : data. 
+        buff = {}
+        for num, line in data.items():
+            for segment in line:
+                buff[segment['fieldname']] = segment['data']
+        return buff
 
     def make_html(self, section_choose=False, id=False):
         #Validate section
@@ -967,7 +979,7 @@ class Template:
             
         return element
 
-    def latex_generate(self, propid, css, file_send=True,
+    def latex_generate(self, propid, file_send=True,
                        carma_propno="Unsubmitted"):
         base_dir = (self.theBackend.config['base_directory'])
         files_dir = (self.theBackend.config['base_directory'] +
@@ -984,52 +996,8 @@ class Template:
 \\setlength{\\parskip}{0in}
 """ % (files_dir))      
 
-        tex = ("""\documentclass[preprint, letterpaper, 10pt]{%saastex}
-\usepackage[letterpaper]{geometry}
-\usepackage{helvet}
-\\pagestyle{empty}
-\geometry{left=0.5in, right=0.5in, top=0.5in, bottom=0.5in}
-\\begin{document}
-\\sffamily
-""" % (files_dir))
         if (os.path.isdir(prop_dir) == False):
             os.mkdir(prop_dir)
-        tex += ("""
-\\newlength{\\carmaindent}
-\\setlength{\\carmaindent}{\\parindent}
-\\setlength{\\parindent}{0in}
-\\setlength{\\parskip}{0in}
-
-  \\mbox{\\includegraphics[scale=.2]{%s}}
-  \\newlength{\\carmaheight}
-  \\settoheight{\\carmaheight}{\\includegraphics[scale=.2]{%s}}
-  \\hfill
-  \\parbox[b][\\carmaheight][t]{4in}{
-    \\begin{center}
-      \\textbf{
-        \\LARGE
-        Combined Array for Research in Millimeter-wave Astronomy\\\\
-        \\vskip .25in
-        \\large
-        Observing Proposal Cover Sheet\\\\}
-    \\end{center}
-    \\vfill}
-  \\hfill
-  \\fbox{\\parbox[b][\\carmaheight][t]{1.5in}{
-    \\begin{center}
-      \\textbf{Proposal Number}
-      \\vfill
-      \\LARGE \\textbf{%s}
-      \\vfill
-      \\textbf{ }
-    \\end{center}
-    }
-  }
-
-\\setlength{\\parindent}{\\carmaindent}
-\\vskip .15in
-        """ % (base_dir + 'images/carma.eps', base_dir + 'images/carma.eps',
-               carma_propno))
 
         if (os.path.isdir(prop_dir + 'justification/') == False):
             os.mkdir(prop_dir + 'justification/')
@@ -1064,141 +1032,56 @@ class Template:
                         self.image_check(image, prop_dir)
                 continue
 
-            buf = ""
-            
             groups = section['data']
-            keys = groups[0].keys()
-            keys.sort()
 
-            if (len(groups) == 1):
-                if (len((groups[0])[1]) == 1):
-###BEGINELSE###
-                    buf += ("""<html><head>
-<style type="text/css">
-%s
-</style></head><body><div id="editlist"><p>%s&nbsp;</p>
-</div></body></html>""" % (css, section['name']))
+        propinfo = None
+        authors = None
+        sources = None
 
-                    if (self.theBackend.cache_check(propid,
-                                                 section['section']) == False):
-                        self.generate_ps(buf, section, propid)
-                        self.theBackend.cache_validate(propid,                                                       section['section'])
-                    crop = self.get_crop(propid, section)
-                    if ((self.justification == False) and ((section['section']=='technical_justification') or (section['section']=='scientific_justification'))):
-                        just += ("""\\setlength{\\parindent}{0in}\\noindent \includegraphics[trim=%sin %sin %sin %sin, clip]{%s}\n \\setlength{\\parindent}{\\carmaindent} \\\\ \indent""" % (crop['left'], crop['bottom'], crop['right']+.57, crop['top'], prop_dir + section['section'] + '.ps'))
-                        just += ("""\n%s\n\\vskip .15in\n""" %
-                            (groups[0][1][0]['data']))
-                    else:
-                        tex += ("""\\noindent \includegraphics[trim=%sin %sin %sin %sin, clip]{%s}\n""" % (crop['left'], crop['bottom'], crop['right'], crop['top'], prop_dir + section['section'] + '.ps'))
-                        tex += ("""\n%s\n\\vskip .15in\n""" %
-                                (groups[0][1][0]['data']))
-                    continue
-###ENDELSE###
-
-            if (section['type'] == 'general'):
-###BEGIN IF###
-                buf += ("""<html><head>
-<style type="text/css">
-%s
-</style></head><body>""" % css)
-
-                buf += ("""<div id="editlist"><p>%s&nbsp;</p>""" % (
-                    section['name']))
-                buf += self.html_entry_view(groups, keys, buffer=True)
-                buf += ("""</div><br>""")
-                buf += ("""</body></html>""")
-            
-                if (self.theBackend.cache_check(propid,
-                                                section['section']) == False):
-                    self.generate_ps(buf, section, propid)
-                    self.theBackend.cache_validate(propid, section['section'])
-                crop = self.get_crop(propid, section)
-                tex += ("""\\noindent \includegraphics[trim=%sin %sin %sin %sin, clip]{%s}
-\\vskip .15in
-""" % (crop['left'], crop['bottom'], crop['right'], crop['top'],
-       prop_dir + section['section'] + '.ps'))
-###ENDIF###
+        for section in self.sections :
+            if (section['section'] == 'propinfo'):
+                a = section['data']
+                propinfo = self.data_strip(section['data'][0])
             elif (section['section'] == 'author'):
-###BEGINELIF###
-                buf += ("""<html><head>
-<style type="text/css">
-%s
-</style></head><body>""" % css)
+                authors = []
+                for line in section['data']:
+                    authors.append(self.data_strip(line))
+            elif (section['section'] == 'source'):
+                sources = []
+                for line in section['data']:
+                    for cell in self.data_strip(line):
+                        
+                    sources.append(self.data_strip(line))
+            elif (section['section'] == 'prior_obs'):
+                temp = self.data_strip(section['data'][0])
+                propinfo['prior_obs'] = temp['prior_obs']
+            elif (section['section'] == 'special_requirements'):
+                temp = self.data_strip(section['data'][0])
+                propinfo['special_requirements'] = temp['special_requirements']
+            elif (section['section'] == 'abstract'):
+                temp = self.data_strip(section['data'][0])
+                propinfo['abstract'] = temp['abstract']
+            propinfo['total_time'] = self.calc_hours()
 
-                buf += ("""<div id="editlist"><p>%s&nbsp;</p>""" %
-                        (section['name']))
-                #IsAuthor is part of rev. 46 PI author #1 Hack.
-                buf += self.html_entry_view(groups, keys, buffer=True,
-                                                IsAuthor=True)
-                buf += ("""</div>""")
-                buf += ("""<div id="editlist"><table><tr>
-                                          <td style="width:50%%;
-                                                     text-align:center;
-                                                     font-weight:bold;">
-                                          Advisor must send a supporting
-                                          letter if Thesis is checked.
-                                          See Instructions.
-                                          </td></tr></table></div>""")
-                buf += ("""<br></body></html>""")
-            
-                if (self.theBackend.cache_check(propid,
-                                                section['section']) == False):
-                    self.generate_ps(buf, section, propid)
-                    self.theBackend.cache_validate(propid, section['section'])
-                crop = self.get_crop(propid, section)
-                tex += ("""\\noindent \includegraphics[trim=%sin %sin %sin %sin, clip]{%s}
-\\vskip .15in
-""" % (crop['left'], crop['bottom'], crop['right'], crop['top'],
-       prop_dir + section['section'] + '.ps'))
-###ENDELIF###
-            elif (section['type'] == 'repeat'):
-###BEGINELIF###
-                buf = ""
-                #id = lines[1][0]['data']
+        #self.req.content_type = "text/html"
+        #self.req.write(str(propinfo))
 
-                buf += ("""<html><head><style type="text/css">%s
-                           </style></head><body>""" % css)
+        c = open(base_dir + "/Template/frontpage.tex", 'r')
+        cover_template = c.read()
+        c.close()
+        
+        cover = strTemplate(cover_template)
+        out = cover.safe_substitute(propinfo, author_lines="", source_data="")
 
-                buf += ("""<div id="editlist"><p>%s&nbsp;</p>""" %
-                        (section['name']))
-
-                buf += self.html_entry_view(groups, keys, buffer=True)
-                if (section['section'] == 'source'):
-                    hours = self.calc_hours()
-                    if hours == -1:
-                        hours = "N/A"
-
-                    buf += ("""<div id="editlist"><table><tr>
-                               <th style="width:50%%;
-                                text-align:center;
-                                font-weight:bold;">
-                                Total Hours: %s
-                                </th></tr></table></div>""" % hours)
-
-                buf += ("""</div></body></html>""")
-            
-                if (self.theBackend.cache_check(propid,
-                                                section['section']) == False):
-                    self.generate_ps(buf, section, propid)
-                    self.theBackend.cache_validate(propid,
-                                                   section['section'])
-                crop = self.get_crop(propid, section)
-                tex += ("""\\noindent \includegraphics[trim=%sin %sin %sin %sin, clip]{%s}
-\\vskip .15in
-""" % (crop['left'], crop['bottom'], crop['right'], crop['top'],
-       prop_dir + section['section'] + '.ps'))
-
-###ENDELIF###
-
-        tex +=("""\end{document}\n""")
         tfile = open(prop_dir + 'latex.tex', 'w')
-        tfile.write(tex)
+        tfile.write(out)
         tfile.close()
-        if (self.justification == False):
-            just += ("""\end{document}\n""")
-            tfile = open(prop_dir + 'justification/justification.tex', 'w')
-            tfile.write(just)
-            tfile.close()
+
+#        if (self.justification == False):
+#            just += ("""\end{document}\n""")
+#            tfile = open(prop_dir + 'justification/justification.tex', 'w')
+#            tfile.write(just)
+#            tfile.close()
 
         latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
             prop_dir, prop_dir + 'latex.tex'), 'r')
@@ -1222,123 +1105,74 @@ class Template:
                   (prop_dir, prop_dir, prop_dir))
         at.close()
 
-        if (os.path.isfile(prop_dir + 'justification/justification.pdf') == True):
-            os.unlink(prop_dir + 'justification/justification.pdf')
+#        if (os.path.isfile(prop_dir + 'justification/justification.pdf') == True):
+#            os.unlink(prop_dir + 'justification/justification.pdf')
         
-        just_skip = 0
-        if (self.justification == True):
-            justification = open(prop_dir + 'justification/justification.tex', 'wb')
-            data = self.theBackend.justification_get_data(self.propid)
-            if (len(data) == 0):
-                justification.write('')
-                just_skip = 1
-            else:
-                justification.write(data[0]['justification_pdf'])
-            justification.close()
+#        just_skip = 0
+#        if (self.justification == True):
+#            justification = open(prop_dir + 'justification/justification.tex', 'wb')
+#            data = self.theBackend.justification_get_data(self.propid)
+#            if (len(data) == 0):
+#                justification.write('')
+#                just_skip = 1
+#            else:
+#                justification.write(data[0]['justification_pdf'])
+#            justification.close()
         #Since latex for justification is always, then always do below
-        if (just_skip == 0):
-            latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
-                prop_dir + 'justification/', prop_dir + 'justification/justification.tex'), 'r')
-            latex_info = latex.readlines()
-            retval = latex.close()
+#        if (just_skip == 0):
+#            latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
+#                prop_dir + 'justification/', prop_dir + 'justification/justification.tex'), 'r')
+#            latex_info = latex.readlines()
+#            retval = latex.close()
 
-            if (retval != None):
-                return latex_info
+#            if (retval != None):
+#                return latex_info
 
             #same thing as above, make sure latex is run twice
 
-            latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
-                prop_dir + 'justification/', prop_dir + 'justification/justification.tex'), 'r')
-            latex_info = latex.readlines()
-            retval = latex.close()
+#            latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
+#                prop_dir + 'justification/', prop_dir + 'justification/justification.tex'), 'r')
+#            latex_info = latex.readlines()
+#            retval = latex.close()
 
-            if (retval != None):
-                return latex_info
+#            if (retval != None):
+#                return latex_info
 
-            at = os.popen("""cd %sjustification/; dvips -t letter -o - %sjustification/justification.dvi | ps2pdf14 - %sjustification/justification.pdf""" % (prop_dir, prop_dir, prop_dir))
-            at.close()
+#            at = os.popen("""cd %sjustification/; dvips -t letter -o - %sjustification/justification.dvi | ps2pdf14 - %sjustification/justification.pdf""" % (prop_dir, prop_dir, prop_dir))
+#            at.close()
 
-        output_pdf = PdfFileWriter()
+#        output_pdf = PdfFileWriter()
 
-        if (just_skip == 0):
-            justification_pdf = PdfFileReader(file(prop_dir + "justification/justification.pdf", "rb"))
-        latex_pdf = PdfFileReader(file(prop_dir + "latex.pdf", "rb"))
+#        if (just_skip == 0):
+#            justification_pdf = PdfFileReader(file(prop_dir + "justification/justification.pdf", "rb"))
+#        latex_pdf = PdfFileReader(file(prop_dir + "latex.pdf", "rb"))
 
-        for i in xrange(latex_pdf.getNumPages()):
-            output_pdf.addPage(latex_pdf.getPage(i))
+#        for i in xrange(latex_pdf.getNumPages()):
+#            output_pdf.addPage(latex_pdf.getPage(i))
 
-        if (just_skip == 0):
-            if (justification_pdf.getNumPages() > 3):
-                num_just_pages = 3
-            else:
-                num_just_pages = justification_pdf.getNumPages()
+#        if (just_skip == 0):
+#            if (justification_pdf.getNumPages() > 3):
+#                num_just_pages = 3
+#            else:
+#                num_just_pages = justification_pdf.getNumPages()
 
-            for i in xrange(num_just_pages):
-                output_pdf.addPage(justification_pdf.getPage(i))
+#            for i in xrange(num_just_pages):
+#                output_pdf.addPage(justification_pdf.getPage(i))
         
-        output_stream_pdf = open(prop_dir + "latex-final.pdf", "wb")
-        output_pdf.write(output_stream_pdf)
-        output_stream_pdf.close()
+#        output_stream_pdf = open(prop_dir + "latex-final.pdf", "wb")
+#        output_pdf.write(output_stream_pdf)
+#        output_stream_pdf.close()
 
-        if ((os.path.isfile(prop_dir + 'latex-final.pdf') == True) and
+        if ((os.path.isfile(prop_dir + 'latex.pdf') == True) and
             (file_send == True)):
             self.req.headers_out.add('Content-Disposition',
                                      'attachment; filename=%s.pdf' % (propid)) 
             self.req.content_type='application/force-download'
-            pdf = open(prop_dir + 'latex-final.pdf', 'r')
+            pdf = open(prop_dir + 'latex.pdf', 'r')
             data = pdf.read()
             self.req.write(data)
 
         return 0
-
-    def generate_ps(self, buf, section, propid, id=None):
-        files_dir = (self.theBackend.config['base_directory'] +
-                     self.theBackend.config['files_directory'])
-        prop_dir = files_dir + propid + '/'
-
-        if (id == None):
-            idtext = ''
-        else:
-            idtext = '_%s' % id
-
-        commandline = (self.theBackend.config['php'] + ' ' +
-                       self.theBackend.config['base_directory'] +
-                       'html2ps/pipeline.php "' +
-                       self.theBackend.config['base_directory'] +
-                       'html2ps/html2ps/" "' +
-                       prop_dir + section['section'] + idtext + '.ps"')
-
-        #Convert html to ps
-        file = os.popen(commandline, 'w')
-        file.write(buf)
-        file.close()
-
-    def get_crop(self, propid, section, file=False, id=None):
-        files_dir = (self.theBackend.config['base_directory'] +
-                     self.theBackend.config['files_directory'])
-        prop_dir = files_dir + propid + '/'
-        if (id == None):
-            idtext = ''
-        else:
-            idtext = '_%s' % id
-        
-        if (file==False):
-            filename = prop_dir + section['section'] + idtext + '.ps'
-        else:
-            filename = prop_dir + file
-                
-        im = Image.open(filename)
-        if im.mode != "RGB":
-            im = im.convert("RGB")
-        size = im.size
-        bg = Image.new("RGB", size, 'white')
-        diff = ImageChops.difference(im, bg)
-        bbox = diff.getbbox()
-
-        return {'left' : bbox[0]/72.,
-                'right' : (size[0]-bbox[2])/72.,
-                'top' : bbox[1]/72.,
-                'bottom' : (size[1]-bbox[3])/72.}
 
     def image_check(self, image, propdir):
         if (image['file'] == ''):

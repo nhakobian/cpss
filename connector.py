@@ -584,12 +584,7 @@ proposal-help@astro.uiuc.edu
                                                           self.theBackend,
                                                           pathstr[2], True,
                                                    justification=justification)
-                            #open the embedded css
-                            css_ps = open(self.config['base_directory'] +
-                                          'cpss_ps.css', 'r')
-                            data = css_ps.read()
-                            css_ps.close()
-                            retval = template.latex_generate(pathstr[2], data)
+                            retval = template.latex_generate(pathstr[2])
 
                             if (retval != 0):
                                 self.do_header()
@@ -634,13 +629,8 @@ proposal-help@astro.uiuc.edu
                                                            self.theBackend,
                                                            pathstr[2], True,
                                                    justification=justification)
-                                css_ps = open(self.config['base_directory'] +
-                                              'cpss_ps.css', 'r')
-                                css = css_ps.read()
-                                css_ps.close()
                                 
                                 ret = template.latex_generate(template.propid,
-                                                              css,
                                                           file_send = False,
                                                           carma_propno = idstr)
 
