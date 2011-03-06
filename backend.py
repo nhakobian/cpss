@@ -289,7 +289,8 @@ class Backend:
                           %(prefix)soptions.maint_key,
                           %(prefix)soptions.maint_warn,
                           %(prefix)soptions.maint_message,
-                          %(prefix)soptions.next_propno
+                          %(prefix)soptions.next_propno,
+                          %(prefix)soptions.create
                           FROM %(prefix)soptions, %(prefix)scycles WHERE
                           %(prefix)soptions.cyclename=
                           %(prefix)scycles.cyclename

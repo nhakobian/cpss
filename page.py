@@ -490,9 +490,11 @@ class Page:
         """)
 
     def proposal_list(self, list, name):
-#        self.req.write("""<h3>%s's Proposals
-#                          (<a href="proposal/add">Add New Proposal</a>)</h3>""" % name)
-        self.req.write("""<h3>%s's Proposals</h3>""" % name)
+        if self.options["create"] == True:
+            self.req.write("""<h3>%s's Proposals
+                 (<a href="proposal/add">Add New Proposal</a>)</h3>""" % name)
+        else:
+            self.req.write("""<h3>%s's Proposals</h3>""" % name)
 
         if (len(list) == 0):
             self.req.write("""<div id="proplist"><p><i>You have no saved
