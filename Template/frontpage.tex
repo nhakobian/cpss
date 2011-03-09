@@ -67,7 +67,7 @@
     \begin{center}
       \textbf{Proposal Number}
       \vfill
-      \LARGE \textbf{c0570}
+      \LARGE \textbf{${propno}}
       \vfill
       \textbf{ }
     \end{center}
@@ -76,6 +76,8 @@
 \setlength{\parindent}{\carmaindent}
 \setlength\arrayrulewidth{1pt}
 \setlength\minrowclearance{0pt}
+
+\small
 
 \sectitle{General Proposal Information}
 \begin{tabularx}{\textwidth}{Zcccc}
@@ -89,30 +91,24 @@
 \end{tabularx}
 
 \sectitle{Authors}
-\begin{tabularx}{\textwidth}{ccZcccc}
+\begin{tabularx}{\textwidth}{cZZcccc}
   \hhline{-------}
   \rowcolor{gray!45}
   \textbf{\#} & \textbf{Name} & \textbf{E-mail} & \textbf{Phone} & \textbf{Institution} & \textbf{Thesis} & \textbf{Grad} \\
-  ${author_lines}
-  %PI & Nicholas Hakobian & nhakobi2@astro.uiuc.edu & 510-295-7113 & UIUC & X & X \\
-  %2 & Richard Crutcher & crutcher@uiuc.edu & 217-333-9581 & UIUC & N & N \\
-  \multicolumn{7}{c}{\cellcolor{gray!37}\textbf{Advisor must send a supporting letter if Thesis is checked. See Instructions.}} \\
+${author_lines}
+\multicolumn{7}{c}{\cellcolor{gray!37}\textbf{Advisor must send a supporting letter if Thesis is checked. See Instructions.}} \\
 \end{tabularx}
 
 \sectitlel{Abstract}
 ${abstract}
 
 \sectitle{Source Information}
-\begin{tabularx}{\textwidth}{c Z c c c c c c c Z c c}
-  \hhline{------------}
+\begin{tabularx}{\textwidth}{c Z c c c c c c c c c c Z c c}
+  \hhline{---------------}
   \rowcolor{gray!45}
-  \textbf{\#} & \textbf{Source} & \textbf{RA} & \textbf{DEC} & \textbf{Freq} & \textbf{C} & \textbf{D} & \textbf{E} & \textbf{\# Fields} & \textbf{Species} & \textbf{Imag/SNR} & \textbf{Flex.HA}\\
-%  1 & OMC1 & 05:35 & -05:23 & 93.173 & 6 & 0 & 0 & 1 & N2H+ & Imaging & -\\
-%  2 & G10.6 & 18:10 & -19:55 & 113.490 & 0 & 0 & 4 & 1 & CN 1-0 & Imaging & - \\
-%  3 & S255 & 06:12 & 17:59 & 113.490 & 0 & 4 & 4 & 1 & CN 1-0 & Imaging & - \\
-%  4 & S255 & 06:12 & 17:59 & 93.173 & 0 & 4 & 4 & 1 & N2H+ & Imaging & - \\
-  ${source_data}
-  \multicolumn{12}{c}{\cellcolor{gray!37}\textbf{Total Hours: ${total_time}}} \\
+  \textbf{\#} & \textbf{Source} & \textbf{RA} & \textbf{DEC} & \textbf{Freq} & \textbf{A} & \textbf{B} & \textbf{C} & \textbf{D} & \textbf{E} & \textbf{SL} & \textbf{\# Fields} & \textbf{Species} & \textbf{Imag/SNR} & \textbf{Flex.HA}\\
+${source_data}
+\multicolumn{15}{c}{\cellcolor{gray!37}\textbf{Total Hours: ${total_time}}} \\
 \end{tabularx}
 
 \sectitlel{Special Requirements}

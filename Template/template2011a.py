@@ -35,6 +35,14 @@ class template:
                    'section':'author',
                    'shortname' : 'Grad'}]
 
+        self.author_order = { 1 : 'numb',
+                         2 : 'name',
+                         3 : 'email',
+                         4 : 'phone',
+                         5 : 'institution',
+                         6 : 'thesis',
+                         7 : 'grad' }
+
         proposal = [{'name':'ProposalID',
                      'fieldname':'proposalid',
                      'fieldtype':'integer',
@@ -65,9 +73,12 @@ class template:
 #                     'check':['numeric']},
                     {'name':'Scientific Category',
                      'fieldname':'scientific_category',
-                     'fieldtype':['Cometary', 'Planetary', 'Solar', 'Stellar', 'High-mass Star Formation',
-                                  'Low-mass Star Formation', 'Chemistry / Interstellar Medium',
-                                  'Other Galactic', 'Galaxies - Detection', 'Galaxies - Mapping',
+                     'fieldtype':['Cometary', 'Planetary', 'Solar', 'Stellar',
+                                  'High-mass Star Formation',
+                                  'Low-mass Star Formation', 
+                                  'Chemistry / Interstellar Medium',
+                                  'Other Galactic', 'Galaxies - Detection', 
+                                  'Galaxies - Mapping',
                                   'Cosmology', 'Other Extragalactic'],
                      'section':'propinfo',
                      'line' : 2},
@@ -247,6 +258,23 @@ class template:
                    'section':'source',
                    'line' : 1,
                    'info' : 'Check if yes'}]
+
+        self.source_order = { 1 : 'numb',
+                              2 : 'name',
+                              3 : 'ra',
+                              4 : 'dec',
+                              5 : 'corr_frequency',
+                              6 : 'hrs_a',
+                              7 : 'hrs_b',
+                              8 : 'hrs_c',
+                              9 : 'hrs_d',
+                              10: 'hrs_e',
+                              11: 'hrs_sl',
+                              12: 'numb_fields',
+                              13: 'species',
+                              14: 'imaging',
+                              15: 'flexha' }
+                              
        
         self.sections = [{'section' : 'propinfo',
                           'name'    : 'General Proposal Information',

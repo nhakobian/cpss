@@ -161,7 +161,10 @@ class Template:
         buff = {}
         for num, line in data.items():
             for segment in line:
-                buff[segment['fieldname']] = segment['data']
+                if (segment.__contains__('text') == True):
+                    buff[segment['fieldname']] = segment['text']
+                else:
+                    buff[segment['fieldname']] = segment['data']
         return buff
 
     def make_html(self, section_choose=False, id=False):
@@ -867,6 +870,8 @@ class Template:
                                        (element['fieldname'], data))
             if (view == True):
                 element['html'] = element['data']
+                if element['data'] == None:
+                    element['text'] = "0"
         #######################################################################
         elif (element['fieldtype'] == 'text'):
             element['sqltype'] = 'text'
@@ -888,6 +893,7 @@ class Template:
                     back = ''
                 if (element['data'] == None):
                     element['html'] = element['data']
+                    element['text'] = "{\cellcolor{red!45}$\Box$}"
                 else:
                     element['html'] = front + element['data'].replace('&', '&#38;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&#34;') + back
         #######################################################################
@@ -926,8 +932,10 @@ class Template:
                     element['html'] = "None"
                 elif (str(element['data']) == "0"):
                     element['html'] = """&mdash;"""
+                    element['text'] = """--"""
                 else:
                     element['html'] = """X"""
+                    element['text'] = """X"""
         #######################################################################
         elif (element['fieldtype'] == 'longtext'):
             element['sqltype'] = 'longtext'
@@ -1049,8 +1057,6 @@ class Template:
             elif (section['section'] == 'source'):
                 sources = []
                 for line in section['data']:
-                    for cell in self.data_strip(line):
-                        
                     sources.append(self.data_strip(line))
             elif (section['section'] == 'prior_obs'):
                 temp = self.data_strip(section['data'][0])
@@ -1066,12 +1072,35 @@ class Template:
         #self.req.content_type = "text/html"
         #self.req.write(str(propinfo))
 
+        author_lines = ""
+        source_data = ""
+
+        for author in authors:
+            for i in xrange(1, len(self.tempclass.author_order.keys())+1):
+                if ((self.tempclass.author_order[i] == 'numb') and 
+                    (author[self.tempclass.author_order[i]] == 1)):
+                    data = "PI"
+                else:
+                    data = str(author[self.tempclass.author_order[i]])
+
+                author_lines  = (author_lines + data + " & ")
+            author_lines = author_lines[:-2] + " \\\\\n"
+
+        for source in sources:
+            for i in xrange(1, len(self.tempclass.source_order.keys())+1):
+                source_data  = (source_data + 
+                                 str(source[self.tempclass.source_order[i]]) +
+                                 " & ")
+            source_data = source_data[:-2] + " \\\\\n"
+
         c = open(base_dir + "/Template/frontpage.tex", 'r')
         cover_template = c.read()
         c.close()
         
         cover = strTemplate(cover_template)
-        out = cover.safe_substitute(propinfo, author_lines="", source_data="")
+        out = cover.safe_substitute(propinfo, author_lines=author_lines, 
+                                    source_data=source_data, 
+                                    propno=carma_propno)
 
         tfile = open(prop_dir + 'latex.tex', 'w')
         tfile.write(out)
@@ -1083,23 +1112,14 @@ class Template:
 #            tfile.write(just)
 #            tfile.close()
 
-        latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
-            prop_dir, prop_dir + 'latex.tex'), 'r')
-        latex_info = latex.readlines()
-        retval = latex.close()
+        # Run latex right to get any references correct
+        for i in xrange(0, 2):
+            latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (prop_dir, prop_dir + 'latex.tex'), 'r')
+            latex_info = latex.readlines()
+            retval = latex.close()
 
-        if (retval != None):
-            return latex_info
-
-        #if no errors, run LaTeX a second time to get possible references correct.
-
-        latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
-            prop_dir, prop_dir + 'latex.tex'), 'r')
-        latex_info = latex.readlines()
-        retval = latex.close()
-
-        if (retval != None):
-            return latex_info
+            if (retval != None):
+                return latex_info
 
         at = os.popen("""cd %s; dvips -t letter -o - %slatex.dvi | ps2pdf14 - %slatex.pdf""" %
                   (prop_dir, prop_dir, prop_dir))
