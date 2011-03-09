@@ -712,9 +712,6 @@ class Template:
                         data_field['data'] = None
             else:
                 data_field['data'] = None
-#        file= open('/srv/www/htdocs/proposals/files/dump2.txt', 'a')
-#        file.write(str(do_section['table']) + " %%% " + str(propid) + " %%% " + str(final_group) + " %%% " + str(id))
-#        file.close()
 
         self.theBackend.proposal_tagset(do_section['table'], propid,
                                         final_group, id=id)
@@ -1006,18 +1003,14 @@ class Template:
 
         if (os.path.isdir(prop_dir) == False):
             os.mkdir(prop_dir)
-
         if (os.path.isdir(prop_dir + 'justification/') == False):
             os.mkdir(prop_dir + 'justification/')
-
         if (os.path.isfile(prop_dir + "aastex.cls") == False):
             os.symlink("../aastex.cls", prop_dir+"aastex.cls")
         if (os.path.isfile(prop_dir + "justification/aastex.cls") == False):
             os.symlink("../aastex.cls", prop_dir+"justification/aastex.cls")
-
         if (os.path.isfile(prop_dir + 'latex.pdf') == True):
             os.unlink(prop_dir + 'latex.pdf')
-
         if (os.path.isfile(prop_dir + 'latex.dvi') == True):
             os.unlink(prop_dir + 'latex.dvi')
 
@@ -1069,9 +1062,6 @@ class Template:
                 propinfo['abstract'] = temp['abstract']
             propinfo['total_time'] = self.calc_hours()
 
-        #self.req.content_type = "text/html"
-        #self.req.write(str(propinfo))
-
         author_lines = ""
         source_data = ""
 
@@ -1112,7 +1102,7 @@ class Template:
 #            tfile.write(just)
 #            tfile.close()
 
-        # Run latex right to get any references correct
+        # Run latex twice to get any references correct
         for i in xrange(0, 2):
             latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (prop_dir, prop_dir + 'latex.tex'), 'r')
             latex_info = latex.readlines()

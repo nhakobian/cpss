@@ -177,7 +177,6 @@ class Backend:
             elif (tag['data'] == None):
                 tagtext += """`%s`= NULL, """ % (tag['fieldname'])
             elif (tag['fieldtype'] == 'array'):
-                #self.req.write(str(tag))
                 tagtext = "`%s`='" % (tag['fieldname'])
                 for array in tag['data']:
                     tagtext += array + ","
@@ -200,9 +199,6 @@ class Backend:
                  'tag'    : tagtext,
                  'where'  : wheretext}) 
         
-#        file = open('/srv/www/htdocs/proposals/files/dump.txt', 'a')
-#        file.write(text + '\n')
-#        file.close()
         cursor.execute(text)
         cursor.close()
     

@@ -56,10 +56,6 @@ def handler(req):
             theBackend.close()
     else:
         try:
-#            fields = util.FieldStorage(req)
-#            file = open('/srv/www/htdocs/proposals/files/url.txt', 'a')
-#            file.write(str(pathstr) + str(fields) + '\n\n\n')
-#            file.close()
             result = theConnector.Dispatch(pathstr)
         finally:
             theBackend.close()
