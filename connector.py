@@ -67,10 +67,6 @@ class Connector:
             self.Help(pathstr)
         elif (pathstr[0] == 'help_small'):
             self.HelpSmall(pathstr)
-        elif (pathstr[0] == 'bugs'):
-            self.do_header()
-            self.thePage.bugs()
-            self.do_footer()
         #Anything above this line will be available at any time.
         #Anything below this line will only be available when logged in and
         # user has an activated account.
@@ -83,6 +79,8 @@ class Connector:
                 self.Proposal(pathstr)
             elif (pathstr[0] == 'user'):
                 self.User()
+            else:
+                self.do_404()
         #Everything below will only be available when people are logged out.
         elif (self.theSession['authenticated'] == False):
             if (pathstr[0] == 'create'):
