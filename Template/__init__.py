@@ -990,16 +990,6 @@ class Template:
         files_dir = (self.theBackend.config['base_directory'] +
                      self.theBackend.config['files_directory'])
         prop_dir = files_dir + propid + '/'
-        just = ("""\documentclass[preprint, letterpaper, 12pt]{%saastex}
-\usepackage[letterpaper]{geometry}
-\usepackage{helvet}
-\\pagestyle{empty}
-\geometry{left=0.75in, right=0.75in, top=0.75in, bottom=0.75in}
-\\begin{document}
-\\newlength{\\carmaindent}
-\\setlength{\\carmaindent}{\\parindent}
-\\setlength{\\parskip}{0in}
-""" % (files_dir))      
 
         if (os.path.isdir(prop_dir) == False):
             os.mkdir(prop_dir)
@@ -1013,27 +1003,9 @@ class Template:
             os.unlink(prop_dir + 'latex.pdf')
         if (os.path.isfile(prop_dir + 'latex.dvi') == True):
             os.unlink(prop_dir + 'latex.dvi')
-
-        for section in self.sections:
-            if (self.justification == True):
-                if (section['section'] == 'technical_justification'):
-                    continue
-                if (section['section'] == 'scientific_justification'):
-                    continue
-
-            if (section['section'] == 'image'):
-                #Process the check for images. If image is not on disk,
-                #then copy it out of the database and put it on the
-                #temp directory.
-                result = self.theBackend.images_get(self.propid)
-                if (len(result) == 0):
-                    continue
-                else:
-                    for image in result:
-                        self.image_check(image, prop_dir)
-                continue
-
-            groups = section['data']
+        if (os.path.isfile(prop_dir + 'justification/justification.pdf') == True):
+            os.unlink(prop_dir + 'justification/justification.pdf')
+        ### Create the cover sheet
 
         propinfo = None
         authors = None
@@ -1096,12 +1068,6 @@ class Template:
         tfile.write(out)
         tfile.close()
 
-#        if (self.justification == False):
-#            just += ("""\end{document}\n""")
-#            tfile = open(prop_dir + 'justification/justification.tex', 'w')
-#            tfile.write(just)
-#            tfile.close()
-
         # Run latex twice to get any references correct
         for i in xrange(0, 2):
             latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (prop_dir, prop_dir + 'latex.tex'), 'r')
@@ -1115,70 +1081,109 @@ class Template:
                   (prop_dir, prop_dir, prop_dir))
         at.close()
 
-#        if (os.path.isfile(prop_dir + 'justification/justification.pdf') == True):
-#            os.unlink(prop_dir + 'justification/justification.pdf')
+        ### Create the justification PDF
+            # the image check needs to be re-written for file-based stuff
+            #if (section['section'] == 'image'):
+            #    #Process the check for images. If image is not on disk,
+            #    #then copy it out of the database and put it on the
+            #    #temp directory.
+            #    result = self.theBackend.images_get(self.propid)
+            #    if (len(result) == 0):
+            #        continue
+            #    else:
+            #        for image in result:
+            #            self.image_check(image, prop_dir)
+            #    continue
+
+        if self.justification == False:
+            just = (r"""\documentclass[preprint, letterpaper, 12pt]{aastex}
+\usepackage[table,rgb]{xcolor}
+\usepackage[letterpaper]{geometry}
+\usepackage{helvet}
+\usepackage{tabularx}
+\pagestyle{empty}
+\geometry{left=0.75in, right=0.75in, top=0.75in, bottom=0.75in}
+\begin{document}
+\newlength{\carmaindent}
+\setlength{\carmaindent}{\parindent}
+\setlength{\parskip}{0in}
+\newlength{\sectitlelength}
+\newcommand{\sectitlel}[1]{
+  \setlength{\sectitlelength}{\parindent}
+  \setlength{\parindent}{0in}
+  \vskip 0.15in
+  \begin{tabularx}{\textwidth}{@{}l@{}}
+    \hiderowcolors
+    {\sffamily \Large \textbf{#1} \normalfont} \\
+    \hline
+    \showrowcolors
+  \end{tabularx}
+  \setlength{\parindent}{\sectitlelength}
+  \vskip -0.3cm
+}
+""")      
+            for section in self.sections:
+                if (section['section'] == 'technical_justification'):
+                    just += "\sectitlel{Techical Justification}\n"
+                    just += str(self.data_strip(section['data'][0])['technical_justification'])
+                elif (section['section'] == 'scientific_justification'):
+                    just += "\sectitlel{Scientific Justification}\n"
+                    just += str(self.data_strip(section['data'][0])['scientific_justification'])
+            just += ("""\end{document}\n""")
+            tfile = open(prop_dir + 'justification/justification.tex', 'w')
+            tfile.write(just)
+            tfile.close()
         
-#        just_skip = 0
-#        if (self.justification == True):
-#            justification = open(prop_dir + 'justification/justification.tex', 'wb')
-#            data = self.theBackend.justification_get_data(self.propid)
-#            if (len(data) == 0):
-#                justification.write('')
-#                just_skip = 1
-#            else:
-#                justification.write(data[0]['justification_pdf'])
-#            justification.close()
-        #Since latex for justification is always, then always do below
-#        if (just_skip == 0):
-#            latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
-#                prop_dir + 'justification/', prop_dir + 'justification/justification.tex'), 'r')
-#            latex_info = latex.readlines()
-#            retval = latex.close()
+        if (self.justification == True):
+            justification = open(prop_dir + 'justification/justification.tex',
+                                 'wb')
+            data = self.theBackend.justification_get_data(self.propid)
+            if (len(data) == 0):
+                justification.write('')
+                just_skip = 1
+            else:
+                justification.write(data[0]['justification_pdf'])
+            justification.close()
 
-#            if (retval != None):
-#                return latex_info
+        # Run latex twice to get any references correct
+        for i in xrange(0,2):
+            latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (prop_dir + 'justification/', prop_dir + 'justification/justification.tex'), 'r')
+            latex_info = latex.readlines()
+            retval = latex.close()
 
-            #same thing as above, make sure latex is run twice
+            if (retval != None):
+                return latex_info
 
-#            latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (
-#                prop_dir + 'justification/', prop_dir + 'justification/justification.tex'), 'r')
-#            latex_info = latex.readlines()
-#            retval = latex.close()
+        at = os.popen("""cd %sjustification/; dvips -t letter -o - %sjustification/justification.dvi | ps2pdf14 - %sjustification/justification.pdf""" % (prop_dir, prop_dir, prop_dir))
+        at.close()
 
-#            if (retval != None):
-#                return latex_info
+        # Merge the two PDF files together
 
-#            at = os.popen("""cd %sjustification/; dvips -t letter -o - %sjustification/justification.dvi | ps2pdf14 - %sjustification/justification.pdf""" % (prop_dir, prop_dir, prop_dir))
-#            at.close()
+        output_pdf = PdfFileWriter()
 
-#        output_pdf = PdfFileWriter()
+        justification_pdf = PdfFileReader(file(prop_dir + "justification/justification.pdf", "rb"))
+        latex_pdf = PdfFileReader(file(prop_dir + "latex.pdf", "rb"))
 
-#        if (just_skip == 0):
-#            justification_pdf = PdfFileReader(file(prop_dir + "justification/justification.pdf", "rb"))
-#        latex_pdf = PdfFileReader(file(prop_dir + "latex.pdf", "rb"))
+        for i in xrange(latex_pdf.getNumPages()):
+            output_pdf.addPage(latex_pdf.getPage(i))
 
-#        for i in xrange(latex_pdf.getNumPages()):
-#            output_pdf.addPage(latex_pdf.getPage(i))
-
-#        if (just_skip == 0):
-#            if (justification_pdf.getNumPages() > 3):
-#                num_just_pages = 3
-#            else:
-#                num_just_pages = justification_pdf.getNumPages()
-
-#            for i in xrange(num_just_pages):
-#                output_pdf.addPage(justification_pdf.getPage(i))
+        if (justification_pdf.getNumPages() > 3):
+            num_just_pages = 3
+        else:
+            num_just_pages = justification_pdf.getNumPages()
+        for i in xrange(0, num_just_pages):
+            output_pdf.addPage(justification_pdf.getPage(i))
         
-#        output_stream_pdf = open(prop_dir + "latex-final.pdf", "wb")
-#        output_pdf.write(output_stream_pdf)
-#        output_stream_pdf.close()
+        output_stream_pdf = open(prop_dir + "latex-final.pdf", "wb")
+        output_pdf.write(output_stream_pdf)
+        output_stream_pdf.close()
 
-        if ((os.path.isfile(prop_dir + 'latex.pdf') == True) and
+        if ((os.path.isfile(prop_dir + 'latex-final.pdf') == True) and
             (file_send == True)):
             self.req.headers_out.add('Content-Disposition',
                                      'attachment; filename=%s.pdf' % (propid)) 
             self.req.content_type='application/force-download'
-            pdf = open(prop_dir + 'latex.pdf', 'r')
+            pdf = open(prop_dir + 'latex-final.pdf', 'r')
             data = pdf.read()
             self.req.write(data)
 
