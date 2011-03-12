@@ -33,6 +33,8 @@ class Template:
             self.template = apache.import_module('template2010b')
         if (template == 'template2011a'):
             self.template = apache.import_module('template2011a')
+        if (template == 'template2011b'):
+            self.template = apache.import_module('template2011b')
         self.template_name = template
         self.tempclass = self.template.template()
         self.sections = self.tempclass.sections
@@ -54,7 +56,13 @@ class Template:
         for source in (sources):
             hours = 0
             for field in source[1]:
-                if (field['fieldname'] == 'hrs_a'):
+                if ((field['fieldname'] == 'hrs_a') or
+                    (field['fieldname'] == 'hrs_b') or
+                    (field['fieldname'] == 'hrs_c') or
+                    (field['fieldname'] == 'hrs_d') or
+                    (field['fieldname'] == 'hrs_e') or
+                    (field['fieldname'] == 'hrs_sh') or
+                    (field['fieldname'] == 'hrs_sl')) :
                     if field['data'] == None:
                         continue
                     elif (field['data'].count('.') <= 1):
@@ -65,61 +73,6 @@ class Template:
                             hours += float(field['data'])
                     else:
                         hours = -1
-                elif (field['fieldname'] == 'hrs_b'):
-                    if field['data'] == None:
-                        continue
-                    elif (field['data'].count('.') <= 1):
-                        val = field['data'].replace('.', '')
-                        if (val.isdigit() == False):
-                            hours = -1
-                        else:
-                            hours += float(field['data'])
-                    else:
-                        hours = -1
-                elif (field['fieldname'] == 'hrs_c'):
-                    if field['data'] == None:
-                        continue
-                    elif (field['data'].count('.') <= 1):
-                        val = field['data'].replace('.', '')
-                        if (val.isdigit() == False):
-                            hours = -1
-                        else:
-                            hours += float(field['data'])
-                    else:
-                        hours = -1
-                elif (field['fieldname'] == 'hrs_d'):
-                    if field['data'] == None:
-                        continue
-                    elif (field['data'].count('.') <= 1):
-                        val = field['data'].replace('.', '')
-                        if (val.isdigit() == False):
-                            hours = -1
-                        else:
-                            hours += float(field['data'])
-                    else:
-                        hours = -1
-                elif (field['fieldname'] == 'hrs_e'):
-                    if field['data'] == None:
-                        continue
-                    elif (field['data'].count('.') <= 1):
-                        val = field['data'].replace('.', '')
-                        if (val.isdigit() == False):
-                            hours = -1
-                        else:
-                            hours += float(field['data'])
-                    else:
-                        hours = -1
-                elif (field['fieldname'] == 'hrs_sh'):
-                    if field['data'] == None:
-                        continue
-                    elif (field['data'].count('.') <= 1):
-                        val = field['data'].replace('.', '')
-                        if (val.isdigit() == False):
-                            hours = -1
-                        else:
-                            hours += float(field['data'])
-                    else:
-                        hours = -1               
             if (hours == -1):
                 return -1
             time += hours
