@@ -1008,7 +1008,7 @@ class Template:
                                  " & ")
             source_data = source_data[:-2] + " \\\\\n"
 
-        c = open(base_dir + "/Template/frontpage.tex", 'r')
+        c = open(base_dir + "/Template/" + self.template_name + ".tex", 'r')
         cover_template = c.read()
         c.close()
         
