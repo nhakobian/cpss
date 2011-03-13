@@ -597,11 +597,6 @@ class Template:
         return new_group
 
     def process_fields(self, section_choose, fields, propid):
-
-#        file= open('/srv/www/htdocs/proposals/files/dump3.txt', 'a')
-#        file.write(str(section_choose) + " %%% " + str(fields) + " %%% " + str(propid))
-#        file.close()
- 
         #Pop out any field whose name begins with an underscore and do other
         #cruddy processing
         for field in fields.keys():
@@ -987,6 +982,13 @@ class Template:
                 propinfo['abstract'] = temp['abstract']
             propinfo['total_time'] = self.calc_hours()
 
+        # Set internal flag if the project is a key_project
+        if ((propinfo.__contains__('key_project') == True) and 
+            (propinfo['key_project'] == "X")):
+            is_key_project = True
+        else:
+            is_key_project = False
+
         author_lines = ""
         source_data = ""
 
@@ -1030,11 +1032,9 @@ class Template:
             if (retval != None):
                 return latex_info
 
-        at = os.popen("""cd %s; dvips -t letter -o - %slatex.dvi | ps2pdf14 - %slatex.pdf""" %
-                  (prop_dir, prop_dir, prop_dir))
+        at = os.popen("""cd %s; dvips -t letter -o - %slatex.dvi | ps2pdf14 - %slatex.pdf""" % (prop_dir, prop_dir, prop_dir))
         at.close()
 
-        ### Create the justification PDF
             # the image check needs to be re-written for file-based stuff
             #if (section['section'] == 'image'):
             #    #Process the check for images. If image is not on disk,
@@ -1120,8 +1120,15 @@ class Template:
         for i in xrange(latex_pdf.getNumPages()):
             output_pdf.addPage(latex_pdf.getPage(i))
 
-        if (justification_pdf.getNumPages() > 3):
-            num_just_pages = 3
+        # If key project is set to true, then set the max number of pages 
+        # to 8. Else set to 3
+        if is_key_project == True:
+            max_pages = 8
+        else:
+            max_pages = 3
+
+        if (justification_pdf.getNumPages() > max_pages):
+            num_just_pages = max_pages
         else:
             num_just_pages = justification_pdf.getNumPages()
         for i in xrange(0, num_just_pages):
