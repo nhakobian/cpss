@@ -563,3 +563,43 @@ class Backend:
                         'type'   : self.literal(type),
                         'propid' : self.literal(proposalid)})
         cursor.close()
+
+    def justification_type_latex(self, proposalid):
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        cursor.execute("""SELECT pdf_justification FROM %(prefix)sproposals
+                          WHERE proposalid=%(propid)s""" %
+                       {'prefix' : self.prefix,
+                        'propid' : self.literal(proposalid)})
+        result = cursor.fetchone()
+        cursor.close()
+
+        if result['pdf_justification'] == 1 :
+            return True
+        else:
+            return False
+
+    def is_key_project(self, proposalid):
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        cursor.execute("""SELECT * FROM %(prefix)sproposals,
+                          %(prefix)scycles WHERE 
+                          %(prefix)sproposals.cyclename=%(prefix)scycles.cyclename AND
+                          %(prefix)sproposals.proposalid=%(propid)s LIMIT 1""" %
+                       {'prefix' : self.prefix,
+                        'propid' : self.literal(proposalid)})
+        result = cursor.fetchone()
+        proptable = result['proposal']
+
+        cursor.execute("""SELECT * FROM %(proptable)s WHERE
+                          proposalid=%(propid)s LIMIT 1""" %
+                       {'proptable' : proptable,
+                        'propid' : self.literal(proposalid)})
+
+        result = cursor.fetchone()
+        cursor.close()
+        if result.__contains__('key_project') == True:
+            if result['key_project'] == 1 :
+                return True
+            else:
+                return False
+        else:
+            return False

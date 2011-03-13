@@ -11,7 +11,15 @@ class strTemplate(baseTemplate):
 class Template:
     def __init__(self, req, template, cyclename, backend, propid, view,
                  Fetch=True, justification=False):
+
         self.theBackend = backend
+        self.justification = justification
+
+        self.is_key_project = self.theBackend.is_key_project(propid)
+
+        if (self.is_key_project != self.theBackend.justification_type_latex(propid)):
+            self.theBackend.justification_type_set(propid, 1)
+            self.justification = True
         self.req = req
         self.cyclename = cyclename
         self.error = False;
@@ -39,7 +47,7 @@ class Template:
         self.tempclass = self.template.template()
         self.sections = self.tempclass.sections
         self.tables = self.tempclass.tables
-        self.justification = justification
+
 
         if (Fetch == True):
             self.proposal = self.theBackend.proposal_get(self.tempclass.tables,
@@ -166,7 +174,7 @@ class Template:
         self.req.write("""</div>""")
 
         ###End Page Header
-
+        self.req.write("""is_key_project == """ + str(self.is_key_project))
 
         ###Begin Page Body
 
@@ -281,13 +289,14 @@ class Template:
 
 
                 if (section['section'] == 'prior_obs'):
-                    if (self.justification == False):
-                        web = 'selected'
-                        pdf = ''
-                    else:
-                        web = ''
-                        pdf = 'selected'
-                    self.req.write("""
+                    if self.is_key_project == False:
+                        if (self.justification == False):
+                            web = 'selected'
+                            pdf = ''
+                        else:
+                            web = ''
+                            pdf = 'selected'
+                        self.req.write("""
                     <div id="editlist">
                     <p>Justification Type</p>
                     <table><tr><td style="width:50%%;text-align:left;">
@@ -307,6 +316,13 @@ class Template:
                     <input type="submit" value="Select Choice" name="submit">
                     </input>
                     </form>""" % (self.propid, web, pdf))
+                    else:
+                        self.req.write("""<div id="editlist"><p>Justification Type</p>
+                    <table><tr><td style="width:50%%;text-align:left;">Key projects are
+                    required to upload a latex file for their justification. A latex 
+                    template specifically for Key Projects is available here. This 
+                    template conforms to all the necessary requirements. Individual 
+                    specifics for Key Projects is available here.""")
 
                     if (self.justification == True):
                         self.req.write("""<br>
