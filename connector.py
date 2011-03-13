@@ -248,8 +248,6 @@ proposal-help@astro.uiuc.edu
                                 #put error here
                                 pass
 
-                        self.theBackend.cache_invalidate(pathstr[2], section)
-
                         if (section == 'image'):
                             id = self.theBackend.images_add(pathstr[2])
                             self.do_header(refresh='proposal/edit/' +
@@ -329,8 +327,6 @@ proposal-help@astro.uiuc.edu
 
                             
                         else:
-                            self.theBackend.cache_invalidate(pathstr[2],
-                                                             section)
                             done = self.theBackend.proposal_table_delrow(
                                 tablename, pathstr[2], numb=id)
                             
@@ -343,10 +339,6 @@ proposal-help@astro.uiuc.edu
                             in the %s section. You may not delete this last
                             value.""" % section_name)
                 elif (self.fields['action'] == 'submit'):
-#                    file = open('/srv/www/htdocs/proposals/files/dump4.txt', 'a')
-#                    file.write(str(self.fields) + '\n\n\n')
-#                    file.close()
-
                     result = self.theBackend.proposal_fetch(
                         self.theSession['username'], pathstr[2])
                     if (result == False):
@@ -410,8 +402,6 @@ proposal-help@astro.uiuc.edu
                                         pathstr[2], pdf_data)
                                     self.do_header(refresh=pathtext)
                             else:
-                                self.theBackend.cache_invalidate(pathstr[2],
-                                                                 section)
                                 fields = template.process_fields(section,
                                                                  fields,
                                                                  pathstr[2])

@@ -366,68 +366,12 @@ class Backend:
                           WHERE proposalid=%(propid)s""" %
                        {'prefix' : self.prefix,
                         'propid' : self.literal(proposalid)})
-        self.cache_invalidate(proposalid, None)
+        #self.cache_invalidate(proposalid, None)
+        #delete images, etc.
         cursor.close()
 
     def close(self):
         self.Database.close()
-
-    def cache_check(self, proposalid, section, numb=False):
-        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        if (numb == False):
-            numb_text = " IS NULL"
-        else:
-            numb_text = "=%s" % self.literal(str(numb))
-
-        cursor.execute("""SELECT * FROM %(prefix)scache
-                          WHERE proposalid=%(propid)s AND section=%(section)s
-                          AND numb%(numbtext)s LIMIT 1""" %
-                       {'prefix'   : self.prefix,
-                        'propid'   : self.literal(proposalid),
-                        'section'  : self.literal(section),
-                        'numbtext' : numb_text})
-        result = len(cursor.fetchall())
-        cursor.close()
-        if (result == 0):
-            return False
-        else:
-            return True
-
-    def cache_invalidate(self, proposalid, section, numb=False):
-        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        if (numb == False):
-            numb_text = " IS NULL"
-        else:
-            numb_text = "=%s" % self.literal(numb)
-
-        if (section == None):
-            section_text = ""
-        else:
-            section_text = ("""section=%s AND """ % self.literal(section))
-
-        cursor.execute("""DELETE FROM %(prefix)scache
-                          WHERE proposalid=%(propid)s
-                          AND %(section)s`numb`%(numb)s""" %
-                       {'prefix'  : self.prefix,
-                        'propid'  : self.literal(proposalid),
-                        'section' : section_text,
-                        'numb'    : numb_text})
-        cursor.close()
-
-    def cache_validate(self, proposalid, section, numb=False):
-        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        if (numb == False):
-            numb_text = "NULL"
-        else:
-            numb_text = self.Database.escape_string(numb)
-        cursor.execute("""INSERT INTO %(prefix)scache
-                          SET proposalid=%(propid)s, section=%(section)s,
-                          numb=%(numb)s""" %
-                       {'prefix'   : self.prefix,
-                        'propid'   : self.literal(proposalid),
-                        'section' : self.literal(section),
-                        'numb'     : numb_text})
-        cursor.close()
 
     def images_get(self, proposalid, numb=False):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
