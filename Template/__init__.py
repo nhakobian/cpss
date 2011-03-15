@@ -174,8 +174,6 @@ class Template:
         self.req.write("""</div>""")
 
         ###End Page Header
-        self.req.write("""is_key_project == """ + str(self.is_key_project))
-
         ###Begin Page Body
 
         ##If we are viewing the whole proposal:
