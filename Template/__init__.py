@@ -267,7 +267,7 @@ class Template:
                     (add)</a></p>""" % (section['section'],
                                         self.propid, 'image'))
 
-                    result = self.theBackend.images_get(self.propid)
+                    result = self.theBackend.images_list(self.propid)
 
                     if (len(result) == 0):
                         self.req.write("""<table><tr><td>None
@@ -1048,18 +1048,10 @@ class Template:
         at = os.popen("""cd %s; dvips -t letter -o - %slatex.dvi | ps2pdf14 - %slatex.pdf""" % (prop_dir, prop_dir, prop_dir))
         at.close()
 
-            # the image check needs to be re-written for file-based stuff
-            #if (section['section'] == 'image'):
-            #    #Process the check for images. If image is not on disk,
-            #    #then copy it out of the database and put it on the
-            #    #temp directory.
-            #    result = self.theBackend.images_get(self.propid)
-            #    if (len(result) == 0):
-            #        continue
-            #    else:
-            #        for image in result:
-            #            self.image_check(image, prop_dir)
-            #    continue
+        result = self.theBackend.images_list(self.propid)
+        if (len(result) != 0):
+            for image in result:
+                self.image_check(image, prop_dir)
 
         if self.justification == False:
             just = (r"""\documentclass[preprint, letterpaper, 12pt]{aastex}
@@ -1168,8 +1160,9 @@ class Template:
         if (os.path.isfile(propdir + 'justification/' + image['file']) == True):
             return
         else:
-            file = open(propdir + 'justification/' + image['file'], 'wb')
-            file.write(image['ps_data'])
+            imdata = self.theBackend.images_get(image['proposalid'], image['numb'])[0]
+            file = open(propdir + 'justification/' + imdata['file'], 'wb')
+            file.write(imdata['ps_data'])
             file.close()
 
 

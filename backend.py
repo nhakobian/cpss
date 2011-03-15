@@ -371,14 +371,18 @@ class Backend:
                           WHERE proposalid=%(propid)s""" %
                        {'prefix' : self.prefix,
                         'propid' : self.literal(proposalid)})
-        #self.cache_invalidate(proposalid, None)
-        #delete images, etc.
+        # Delete images
+        result = self.images_list(proposalid)
+        for res in result:
+            self.images_delete(proposalid, res['numb'])
         cursor.close()
+        # Justification delete
+        self.justification_delete_data(proposalid)
 
     def close(self):
         self.Database.close()
 
-    def images_get(self, proposalid, numb=False):
+    def images_list(self, proposalid, numb=False):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
         if (numb == False):
             numb_text = ""
@@ -395,8 +399,20 @@ class Backend:
         cursor.close()
         return result
 
+    def images_get(self, proposalid, numb=False):
+        result = self.images_list(proposalid, numb)
+        # Pull out the raw data from files and merge into the result structure.
+        # Using number offsets since we are adjusting the original structure instead of
+        # returning a modified data.
+        for i in xrange(0, len(result)):
+            if os.path.isfile(self.path_images + str(result[i]['proposalid']) + '.' + str(result[i]['numb']) + '.gz') == True:
+                im = gzip.open(self.path_images + str(result[i]['proposalid']) + '.' + str(result[i]['numb']) + '.gz', 'rb')
+                result[i]['ps_data'] = im.read()
+                im.close()
+        return result
+
     def images_add(self, proposalid):
-        result = self.images_get(proposalid)
+        result = self.images_list(proposalid)
         if (len(result) == 0):
             numb = 1
         else:
@@ -412,15 +428,18 @@ class Backend:
 
     def images_update(self, proposalid, filename, numb, bin_data):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        cursor.execute("""UPDATE %(prefix)simages SET file=%(filename)s,
-                          ps_data=%(bin_data)s WHERE
+        cursor.execute("""UPDATE %(prefix)simages SET file=%(filename)s
+                          WHERE
                           proposalid=%(propid)s AND numb=%(numb)s""" %
                        {'prefix'   : self.prefix,
                         'filename' : self.literal(filename),
-                        'bin_data' : self.literal(bin_data),
                         'propid'   : self.literal(proposalid),
                         'numb'     : self.literal(numb)})
         cursor.close()
+        # File is now written after the tag is written to the database.
+        im = gzip.open(self.path_images + str(proposalid) + '.' + str(numb) + '.gz', 'wb')
+        im.write(bin_data)
+        im.close()
 
     def images_delete(self, proposalid, numb):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
@@ -430,6 +449,9 @@ class Backend:
                         'propid' : self.literal(proposalid),
                         'numb'   : self.literal(numb)})
         cursor.close()
+        # File is deleted now that the tag is not in database anymore.
+        if os.path.isfile(self.path_images + str(proposalid) + '.' + str(numb) + '.gz') == True:
+            os.unlink(self.path_images + str(proposalid) + '.' + str(numb) + '.gz')
 
     def pdf_add_update(self, proposalid, pdfdata):
         pdf_file = open(self.path_pdf + str(proposalid) + '.pdf', 'wb')
