@@ -205,7 +205,7 @@ class Page:
 
     def main(self):
         self.req.write("""
-        <center><h2>Semester 2011b: Deadline 02 May 2011 5PM CDT (1000 UT)</h2></center>
+        <center><h2>Semester 2011b: Deadline 02 May 2011 5PM CDT (2200 UT)</h2></center>
 
         Welcome to the CARMA Proposal System. We hope that you will
         find this system will make it straightforward for you to apply
