@@ -432,29 +432,12 @@ class Backend:
         cursor.close()
 
     def pdf_add_update(self, proposalid, pdfdata):
-        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        cursor.execute("""SELECT proposalid FROM %(prefix)spdf WHERE
-                          proposalid=%(propid)s LIMIT 1""" %
-                       {'prefix' : self.prefix,
-                        'propid' : self.literal(proposalid)})
-        result = cursor.fetchall()
-        if (len(result) == 0):
-            cursor.execute("""INSERT INTO %(prefix)spdf
-                              SET proposalid=%(propid)s,
-                              submitted_pdf=%(pdf)s""" %
-                           {'prefix' : self.prefix,
-                            'propid' : self.literal(proposalid),
-                            'pdf'    : self.literal(pdfdata)})
-        else:
-            cursor.execute("""UPDATE %(prefix)spdf SET submitted_pdf=%(pdf)s
-                              WHERE proposalid=%(propid)s""" %
-                           {'prefix' : self.prefix,
-                            'pdf'    : self.literal(pdfdata),
-                            'propid' : self.literal(proposalid)})
-        cursor.close()
+        pdf_file = open(self.path_pdf + str(proposalid) + '.pdf', 'wb')
+        pdf_file.write(pdfdata)
+        pdf_file.close()
 
     def pdf_get_data(self, proposalid):
-        pdf_file = open(self.path_pdf + str(proposalid) + '.pdf')
+        pdf_file = open(self.path_pdf + str(proposalid) + '.pdf', 'rb')
         pdf = pdf_file.read()
         pdf_file.close()
         return pdf
