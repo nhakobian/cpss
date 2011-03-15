@@ -15,11 +15,13 @@ class Template:
         self.theBackend = backend
         self.justification = justification
 
-        self.is_key_project = self.theBackend.is_key_project(propid)
+        if (Fetch == True):
+            self.is_key_project = self.theBackend.is_key_project(propid)
 
-        if (self.is_key_project != self.theBackend.justification_type_latex(propid)):
-            self.theBackend.justification_type_set(propid, 1)
-            self.justification = True
+            if (self.is_key_project != self.theBackend.justification_type_latex(propid)):
+                self.theBackend.justification_type_set(propid, 1)
+                self.justification = True
+ 
         self.req = req
         self.cyclename = cyclename
         self.error = False;
