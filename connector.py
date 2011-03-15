@@ -578,7 +578,7 @@ proposal-help@astro.uiuc.edu
                                 self.do_header()
                                 self.req.write("""<b>A LaTeX error occured. The
                                 output is displayed below:</b><br><br>%s""" %
-                                              (self.lines2text(retval[23:-2])))
+                                              (self.lines2text(retval[7:])))
                                 self.do_footer()
                     elif (pathstr[1] == 'submit'):
                         result = self.theBackend.proposal_fetch(
