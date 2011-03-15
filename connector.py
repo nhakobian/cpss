@@ -430,22 +430,22 @@ proposal-help@astro.uiuc.edu
                                     "Website Justification"):
                                     self.theBackend.justification_type_set(
                                         pathstr[2], 0)
-                                    #self.theBackend.justification_delete_data(
-                                    #    pathstr[2])
+                                    self.theBackend.justification_delete_data(
+                                        pathstr[2])
 
-                                    #files_dir = (self.theBackend.config['base_directory'] + self.theBackend.config['files_directory'])
-                                    #prop_dir = files_dir + pathstr[2] + '/justification/'
+                                    files_dir = (self.theBackend.config['base_directory'] + self.theBackend.config['files_directory'])
+                                    prop_dir = files_dir + pathstr[2] + '/justification/'
 
-                                    #if (os.path.isfile(prop_dir +
-                                    #                   'justification.pdf')
-                                    #    == True):
-                                    #    os.unlink(prop_dir +
-                                    #              'justification.pdf')
-                                    #if (os.path.isfile(prop_dir +
-                                    #                   'justification-up.pdf')
-                                    #    == True):
-                                    #    os.unlink(prop_dir +
-                                    #              'justification-up.pdf')
+                                    if (os.path.isfile(prop_dir +
+                                                       'justification.pdf')
+                                        == True):
+                                        os.unlink(prop_dir +
+                                                  'justification.pdf')
+                                    if (os.path.isfile(prop_dir +
+                                                       'justification-up.pdf')
+                                        == True):
+                                        os.unlink(prop_dir +
+                                                  'justification-up.pdf')
                                 if (self.fields['type'] ==
                                     "LaTeX Template"):
                                     self.theBackend.justification_type_set(

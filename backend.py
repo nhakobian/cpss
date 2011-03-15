@@ -460,45 +460,26 @@ class Backend:
         return pdf
 
     def justification_add_update(self, proposalid, pdfdata):
-        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        cursor.execute("""SELECT proposalid FROM %(prefix)sjustifications
-                          WHERE proposalid=%(propid)s LIMIT 1""" %
-                       {'prefix' : self.prefix,
-                        'propid' : self.literal(proposalid)})
-        result = cursor.fetchall()
-        if (len(result) == 0):
-            cursor.execute("""INSERT INTO %(prefix)sjustifications SET
-                              proposalid=%(propid)s,
-                              justification_pdf=%(pdf)s""" %
-                           {'prefix' : self.prefix,
-                            'propid' : self.literal(proposalid),
-                            'pdf'    : self.literal(pdfdata)})
-        else:
-            cursor.execute("""UPDATE %(prefix)sjustifications SET
-                              justification_pdf=%(pdf)s
-                              WHERE proposalid=%(propid)s""" %
-                           {'prefix' : self.prefix,
-                            'pdf'    : self.literal(pdfdata),
-                            'propid' : self.literal(proposalid)})
-        cursor.close()
+        just_file = open(self.path_justification + str(proposalid) + ".pdf", 'wb')
+        just_file.write(pdfdata)
+        just_file.close()
 
     def justification_get_data(self, proposalid):
         # Even though all justifications are now LaTeX files (.tex) they were originally
         # pdf files.
         if os.path.isfile(self.path_justification + str(proposalid) + ".pdf") == True:
-            pass
+            just_file = open(self.path_justification + str(proposalid) + ".pdf", 'r')
+            just = just_file.read()
+            just_file.close()
+            return just
         else:
             return None
 
     def justification_delete_data(self, proposalid):
-        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        cursor.execute("""DELETE FROM %(prefix)sjustifications
-                          WHERE proposalid=%(propid)s LIMIT 1""" %
-                       {'prefix' : self.prefix,
-                        'propid' : self.literal(proposalid)})
-        result = cursor.fetchone()
-        cursor.close()
-        return result
+        if os.path.isfile(self.path_justification + str(proposalid) + ".pdf") == True:
+            return os.unlink(self.path_justification + str(proposalid) + ".pdf")
+        else:
+            return None        
 
     def justification_type_set(self, proposalid, type):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
