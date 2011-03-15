@@ -332,8 +332,7 @@ class Template:
                         data = self.theBackend.justification_get_data(
                             self.propid)
 
-                        if ((len(data) == 0) or
-                            (data[0]['justification_pdf'] == None)):
+                        if (data == None):
                             self.req.write("""
                             <input type="file" name="file">
                             </input><input type="submit" name="update"
@@ -1105,11 +1104,11 @@ class Template:
             justification = open(prop_dir + 'justification/justification.tex',
                                  'wb')
             data = self.theBackend.justification_get_data(self.propid)
-            if (len(data) == 0):
+            if (data == None):
                 justification.write('')
                 just_skip = 1
             else:
-                justification.write(data[0]['justification_pdf'])
+                justification.write(data)
             justification.close()
 
         # Run latex twice to get any references correct

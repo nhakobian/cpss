@@ -1,6 +1,7 @@
 import MySQLdb
 import md5
 import string
+import os.path
 from random import choice
 
 class Backend:
@@ -16,6 +17,10 @@ class Backend:
         self.config = config
         self.literal = self.Database.literal
         self.options = self.options_get()
+        self.path_justification = self.config['data_directory'] + self.prefix + 'justifications/'
+        self.path_pdf = self.config['data_directory'] + self.prefix + 'pdf/'
+        self.path_images = self.config['data_directory'] + self.prefix + 'images/'
+
 
     def verify_user(self, username, password):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
@@ -449,8 +454,7 @@ class Backend:
         cursor.close()
 
     def pdf_get_data(self, proposalid):
-        pdf_file = open(self.config['data_directory'] + 'pdf/' + 
-                        str(proposalid) + '.pdf')
+        pdf_file = open(self.path_pdf + str(proposalid) + '.pdf')
         pdf = pdf_file.read()
         pdf_file.close()
         return pdf
@@ -479,14 +483,12 @@ class Backend:
         cursor.close()
 
     def justification_get_data(self, proposalid):
-        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        cursor.execute("""SELECT * FROM %(prefix)sjustifications WHERE
-                          proposalid=%(propid)s LIMIT 1""" %
-                       {'prefix' : self.prefix,
-                        'propid' : self.literal(proposalid)})
-        result = cursor.fetchall()
-        cursor.close()
-        return result
+        # Even though all justifications are now LaTeX files (.tex) they were originally
+        # pdf files.
+        if os.path.isfile(self.path_justification + str(proposalid) + ".pdf") == True:
+            pass
+        else:
+            return None
 
     def justification_delete_data(self, proposalid):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
