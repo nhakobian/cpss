@@ -320,9 +320,9 @@ class Template:
                         self.req.write("""<div id="editlist"><p>Justification Type</p>
                     <table><tr><td style="width:50%%;text-align:left;">Key projects are
                     required to upload a latex file for their justification. A latex 
-                    template specifically for Key Projects is available here. This 
+                    template specifically for Key Projects is available <a href="images/justification_key.tar.gz">here</a>. This 
                     template conforms to all the necessary requirements. Individual 
-                    specifics for Key Projects is available here.""")
+                    specifics for Key Projects is available <a href="http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html">here</a>.""")
 
                     if (self.justification == True):
                         self.req.write("""<br>

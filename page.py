@@ -207,9 +207,9 @@ class Page:
         self.req.write("""
         <center><h2>Semester 2011b: Deadline 02 May 2011 5PM CDT (2200 UT)</h2></center>
 
-        Welcome to the CARMA Proposal System. We hope that you will
-        find this system will make it straightforward for you to apply
-        for observing time on CARMA. If you have comments, or if you
+        Welcome to the CARMA Proposal System. This system is used to 
+        proposose for time on the CARMA array during TAC-approved proposal
+        calls. If you have comments, or
         encounter difficulties and need help, please send email to: <a
         href="mailto:proposal-help@astro.uiuc.edu">
         proposal-help@astro.uiuc.edu</a><br><br>
@@ -252,8 +252,8 @@ class Page:
 
         If you wish to have more control over your justification 
         section, you may upload a completed LaTeX file. You are required
-        to use our template, located <a href="images/justification.tar.gz">
-        here</a>. Please follow the guidelines listed below for the 
+        to use our <a href="images/justification.tar.gz">
+        template</a>. Please follow the guidelines listed below for the 
         justification sections. Non-compliant proposals will not be forwarded
         to the TAC.
         <ul>
@@ -262,7 +262,35 @@ class Page:
         <li>Do Not change the style sheet, or amend margins, type face, line spacing, etc.</li>
         </ul>
 
-        <br/>
+        <h3>Key Projects</h3>
+
+        If you are submitting a proposal for a Key Project, the justification
+        requirements are different. <b>Make sure you select the 'Key Project'
+        option listed in the 'General Proposal Information' section. Adjustments
+        to the length of key projects are listed below.</b> For more information about
+        these projects, visit the <a href="http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html">Key Project</a> page. For the Key Project justification, you must upload a LaTeX file containing the content. We provide a <a href="images/justification_key.tar.gz">template</a> that you must adhere to in order for your proposal to be considered (this template is slightly different that the one for standard proposals).
+
+        <ul> <li>Proposal text (5 pages maximum):<br> The proposal
+        text must contain the following information:<br> a) Scientific
+        Justification and anticipated scientific impact of the
+        proposed observations.<br> b) Technical justification, including the
+        timeline for the proposed observations. <br> c) Management. This
+        section should provide a plan for the overall management of
+        the project. This should include (i) a description of the data
+        products and data release plans, (ii) key benchmarks covering
+        the duration of the project against which progress may be
+        gauged, and (iii) how the project team will contribute to
+        CARMA operations and provide regular feedback on data quality.</li><br>
+
+        <li>Figures, Table, and References (3 pages maximum):<br> If
+        the complete source list is not entered on the cover sheet,
+        then a table must be included that contains the complete
+        source list. For each source, the table should indicate the
+        coordinates, observed frequencies, velocities, and time per
+        configuration. The total time for the project per
+        configuration per semester must be clearly indicated.</li>
+        </ul>
+
         If your proposal is accepted and observations are successful,
         we ask that you acknowledge CARMA in relevant publications and
         lectures. The form for acknowledgement in papers is on the
