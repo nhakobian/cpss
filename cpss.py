@@ -12,7 +12,7 @@ def handler(req):
     config = { 'html_base' : "http://carma-prop.astro.illinois.edu/proposals/",
                'base_directory' : '/srv/www/htdocs/proposals/',
                'files_directory' : 'files/',
-               'data_directory' : '/home/nick/cpss/cpss-data/',
+               'data_directory' : '/home/carmaweb/cpss-data/',
                'sendemail' : True}
     
     Page = apache.import_module("page")
