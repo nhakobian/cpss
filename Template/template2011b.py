@@ -70,7 +70,7 @@ class template:
                      'fieldname':'key_project',
                      'fieldtype':'bool',
                      'section':'propinfo',
-                     'info':'Select if your project meets the requirements for a Key Project. See here for more information.'},
+                     'info':'Select if your project meets the requirements for a Key Project. See <a href="http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html" target="_blank">here</a> for more information.'},
                     {'name':'Scientific Category',
                      'fieldname':'scientific_category',
                      'fieldtype':['Cometary', 'Planetary', 'Solar', 'Stellar',
