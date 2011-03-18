@@ -258,7 +258,7 @@ class Template:
                                           Total Hours: %s
           <i><a href="help_small/tot_hours" onClick="return popup(this, 'help')">(Why is this number large?)</a></i>
                                           </th></tr>
-<tr><td><sup>1</sup>Requests for A and B-configuration observations must include a description of the calibration strategy in the technical justification. Please see <a href="http://cedarflat.mmarray.org/observing/doc/instrument_desc.html">http://cedarflat.mmarray.org/observing/doc/instrument_desc.html</a>.</td></tr>
+<tr><td><sup>1</sup>Requests for A and B-configuration observations must include a description of the calibration strategy in the technical justification. Please see <a href="http://cedarflat.mmarray.org/observing/doc/instrument_desc.html" target="_blank">http://cedarflat.mmarray.org/observing/doc/instrument_desc.html</a>.</td></tr>
 </table></div>""" % hours)
                 elif (section['type'] == 'image'):
                     self.req.write("""<div id="editlist"><p>
@@ -322,7 +322,7 @@ class Template:
                     required to upload a latex file for their justification. A latex 
                     template specifically for Key Projects is available <a href="images/justification_key.tar.gz">here</a>. This 
                     template conforms to all the necessary requirements. Individual 
-                    specifics for Key Projects is available <a href="http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html">here</a>.""")
+                    specifics for Key Projects is available <a href="http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html" target="_blank">here</a>.""")
 
                     if (self.justification == True):
                         self.req.write("""<br>
