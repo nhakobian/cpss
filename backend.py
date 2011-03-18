@@ -3,6 +3,8 @@ import md5
 import string
 import os.path
 from random import choice
+import gzip
+
 
 class Backend:
     def __init__(self, req, Template, config):
