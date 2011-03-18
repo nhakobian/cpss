@@ -31,10 +31,10 @@ class Page:
         maintain = ""
         if (self.theSession.__contains__('maint_mode') == True):
             if (self.theSession['maint_mode'] == 1):
-                maintain = """<div class="maintainence">""" + self.options['maint_warn'] + "</div>"
+                maintain = """<div class="maintenance">""" + self.options['maint_warn'] + "</div>"
             elif ((self.theSession['maint_mode'] == 2) and
                   (self.theSession['maint_allow'] == True)):
-                maintain = """<div class="maintainence">A maintainence or debugging cycle is currently in effect. Beware that some features currently are not working as intended. To see the maintenance page that is shown to people who do not have access during a maintenance cycle, please click <a href='invalidate/'>here</a>. This will log out out if you are currently logged in.</div>"""
+                maintain = """<div class="maintenance">A maintenance or debugging cycle is currently in effect. Beware that some features currently are not working as intended. To see the maintenance page that is shown to people who do not have access during a maintenance cycle, please click <a href='invalidate/'>here</a>. This will log out out if you are currently logged in.</div>"""
 
         if (logon==True):
             onLoad = "document.getElementById('login').style.visibility='visible';"

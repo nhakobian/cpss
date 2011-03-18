@@ -739,7 +739,7 @@ link.
                             self.req.write("""</ul>""")
 
                             if ((error == False) and (error2 == False)):
-                                self.req.write("""<div class="maintainence"
+                                self.req.write("""<div class="maintenance"
                                 style="text-align:left;padding:1em;">
                                 Follow these instructions to submit.<br>
                                 <br><li>Make sure you have proofread your

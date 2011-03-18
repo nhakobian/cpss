@@ -5,7 +5,7 @@ body {
 	font-family : arial, sans-serif;
      }
 
-div.maintainence, div.browser_error {
+div.maintenance, div.browser_error {
 	background : red;
 	color: white;
 	width : 650px;
