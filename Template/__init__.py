@@ -275,9 +275,10 @@ class Template:
                         self.req.write("""<table><tr><td>None
                                           </td></tr></table>""")
                     else:
-                        self.req.write("""Please use the sample code provided
+                        self.req.write("""<span style="font-size:small;">Please use the sample code provided
                         and insert it in your justification section where you 
-                        would like the image to appear.""")
+                        would like the image to appear. Only Postscript (ps and eps)
+                        image attachments are supported.</span>""")
                         self.req.write("""<table><tr><th>File Name</th><th>
                                           Sample Code</th><th>&nbsp;</tr>""")
 
@@ -318,11 +319,10 @@ class Template:
                     </form>""" % (self.propid, web, pdf))
                     else:
                         self.req.write("""<div id="editlist"><p>Justification Type</p>
-                    <table><tr><td style="width:50%%;text-align:left;">Key projects are
-                    required to upload a latex file for their justification. A latex 
+                    <table><tr><td style="width:50%%;text-align:left;">Key Projects are
+                    required to upload a <b>LaTeX</b> file for their justification. A LaTeX
                     template specifically for Key Projects is available <a href="images/justification_key.tar.gz">here</a>. This 
-                    template conforms to all the necessary requirements. Individual 
-                    specifics for Key Projects is available <a href="http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html" target="_blank">here</a>.""")
+                    template conforms to all the necessary requirements. Use the following link for more details about <a href="http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html" target="_blank">Key Projects</a>.""")
 
                     if (self.justification == True):
                         self.req.write("""<br>
