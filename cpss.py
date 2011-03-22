@@ -5,10 +5,11 @@ import os
 
 _backend = apache.import_module("backend")
 db = None
+text = apache.import_module("text")
+
 Page = apache.import_module("page")
 Connector = apache.import_module("connector")
 Template = apache.import_module("Template/__init__")
-Text = apache.import_module("text")
 
 config = { 'html_base' : "http://localhost/proposals/",
            'base_directory' : '/var/www/proposals/',
@@ -27,7 +28,6 @@ config = { 'html_base' : "http://localhost/proposals/",
 options = None # This will be filled with the SQL options.
 session = None
 req = None
-
 
 def handler(request):
     os.umask(2)

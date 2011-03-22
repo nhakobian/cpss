@@ -38,7 +38,7 @@ class Page:
         else:
             onLoad = ""
             
-        self.req.write(cpss.Text.page_header % (self.base, onLoad, maintain,
+        self.req.write(cpss.text.page_header % (self.base, onLoad, maintain,
                                 self.config['html_base']))
 
         if (login == False):
@@ -57,39 +57,13 @@ class Page:
     def footer(self):
         #The second set of head tags assure that Internet Explorer will not
         #cache these pages. This would be bad...
-        self.req.write("""
-        </div>
-        </div>
-        </body>
-        </html>""")
+        self.req.write(cpss.text.page_footer)
         
     def do_404(self):
         self.req.write("<center>This page cannot be found</center>")
         
     def logon(self, Error='', Username=''):
-        self.req.write("""
-        <div class="login" id="login" style="visibility:hidden;width:500px;margin:0 auto 0 auto"><center>
-        Please enter your information to login. If you do not have a
-        username or password, <a href="create">create one</a>. Your
-        username is the e-mail address that you registered with.
-        <br><br>
-        If you have
-        forgotten your password, type in your e-mail address and click
-        password reset. A new password will then be sent to you.
-
-        <br><font color="red">%s</font>
-        
-        <form action="login" method="post">
-        <table><tr><td>
-        E-mail:</td><td><input type="text" name="user" value="%s"></td></tr>
-        <tr><td>
-        Password:</td><td> <input type="password" name="pass"></td></tr>
-        <tr><td colspan=2><center><input type="submit" name="submit" value="Submit">
-            <input type="submit" name="forgotpw" value="Password Reset"></center></td></tr>
-        </table>
-        </form>
-        </center>
-        </div>""" % (Error, Username))
+        self.req.write(cpss.text.page_logon % (Error, Username))
 
     def user_create(self, Name="", Email="", Error="", random=""):
         buffer = ("""
@@ -127,100 +101,7 @@ class Page:
         """ % (name, email))
 
     def main(self):
-        self.req.write("""
-        <center><h2>Semester 2011b: Deadline 02 May 2011 5PM CDT (2200 UT)</h2></center>
-
-        Welcome to the CARMA Proposal System. This system is used to 
-        proposose for time on the CARMA array during TAC-approved proposal
-        calls. If you have comments, or
-        encounter difficulties and need help, please send email to: <a
-        href="mailto:proposal-help@astro.uiuc.edu">
-        proposal-help@astro.uiuc.edu</a><br><br>
-        
-        Information for proposers, including a link to information on
-        the CARMA Array status, is available at:
-        <a href="http://www.mmarray.org/">www.mmarray.org</a><br><br>
-
-        The CARMA Proposal System will ask you to establish an account
-        for your proposals. You can work on proposals and save partial
-        and draft results, and come back later to edit and finish your
-        proposals. Old proposals will be kept on the system as reference.
-        <br><br>
-
-        Most people try to write proposals the
-        last day or last hour before the deadline. Be aware that
-        things may be very busy near the deadline, with the proposal
-        computer response slower than normal and our ability to help
-        you with problems in time for you to meet the deadline
-        reduced. It would be to your advantage to get proposals into
-        the system as early as possible. Even after you submit a
-        proposal, you can come back and revise it anytime before the
-        deadline, so getting a complete proposal in early insures that
-        you will meet the deadline without compromising your ability
-        to make last minute changes.<br><br>
-
-        <h3>Scientific and Technical Justification</h3>
-
-        This part of the proposal is strictly limited to 3
-        pages, 2 pages of text and 1 page of figures and tables. One
-        way to enter this information is to type or paste LaTex into
-        the Scientific Justification and Technical Justification
-        sections. The
-        <a href="http://www.journals.uchicago.edu/AAS/AASTeX/">AASTeX<a>
-        system is fully supported. Postscript figures may be uploaded
-        for inclusion using standard LaTex figure conventions. When
-        you submit, the proposal system will compile your LaTex and
-        display a PDF file on your screen for you to check (make sure
-        the total justification is no more than 3 pages).
-
-        If you wish to have more control over your justification 
-        section, you may upload a completed LaTeX file. You are required
-        to use our <a href="images/justification.tar.gz">
-        template</a>. Please follow the guidelines listed below for the 
-        justification sections. Non-compliant proposals will not be forwarded
-        to the TAC.
-        <ul>
-        <li>2 Pages of text, no embedded figures.</li>
-        <li>1 Page for figures, tables, and references.</li>
-        <li>Do Not change the style sheet, or amend margins, type face, line spacing, etc.</li>
-        </ul>
-
-        <h3>Key Projects</h3>
-
-        If you are submitting a proposal for a Key Project, the justification
-        requirements are different. <b>Make sure you select the 'Key Project'
-        option listed in the 'General Proposal Information' section. Adjustments
-        to the length of key projects are listed below.</b> For more information about
-        these projects, visit the <a href="http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html">Key Project</a> page. For the Key Project justification, you must upload a LaTeX file containing the content. We provide a <a href="images/justification_key.tar.gz">template</a> that you must adhere to in order for your proposal to be considered (this template is slightly different that the one for standard proposals).
-
-        <ul> <li>Proposal text (5 pages maximum):<br> The proposal
-        text must contain the following information:<br> a) Scientific
-        Justification and anticipated scientific impact of the
-        proposed observations.<br> b) Technical justification, including the
-        timeline for the proposed observations. <br> c) Management. This
-        section should provide a plan for the overall management of
-        the project. This should include (i) a description of the data
-        products and data release plans, (ii) key benchmarks covering
-        the duration of the project against which progress may be
-        gauged, and (iii) how the project team will contribute to
-        CARMA operations and provide regular feedback on data quality.</li><br>
-
-        <li>Figures, Table, and References (3 pages maximum):<br> If
-        the complete source list is not entered on the cover sheet,
-        then a table must be included that contains the complete
-        source list. For each source, the table should indicate the
-        coordinates, observed frequencies, velocities, and time per
-        configuration. The total time for the project per
-        configuration per semester must be clearly indicated.</li>
-        </ul>
-
-        If your proposal is accepted and observations are successful,
-        we ask that you acknowledge CARMA in relevant publications and
-        lectures. The form for acknowledgement in papers is on the
-        CARMA website. Please also advise Mary Daniel (mary @
-        mmarray.org) of any publications that use CARMA data.
-
-        """)
+        self.req.write(cpss.text.page_main)
 
     def activate(self, Error=""):
         self.req.write("""

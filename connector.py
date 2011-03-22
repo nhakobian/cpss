@@ -143,43 +143,7 @@ class Connector:
             return
         mail = smtplib.SMTP()
         mail.connect()
-        msg = ("""To: "%s" <%s>
-From: "CARMA Proposal System" <no_not_reply@carma-prop.astro.illinois.edu>
-Subject: CARMA Proposal System Activation Code
-Content-Type: text/plain;
-
-Dear %s,
-
-This automatically generated message is to inform you that you have
-successfully registered for the CARMA Proposal system website. If
-you believe you have recieved this message in error, please disregard
-or forward it to the e-mail address below.
-
-To activate your account:
-
-1. Point your browser to http://carma-prop.astro.illinois.edu/proposals
-2. Log into your account with the username (email address) and
-   password that you created when signing up for the account. For
-   security purposes, the password will not be displayed here. If
-   you have forgotten your password, please contact the person below
-   and request that it be reset. The password can never be seen or
-   retrieved by the Proposal system staff, only reset.
-3. Since this is your first time logging in, it will display a page
-   requesting an activation code. Your activation code is:
-   %s
-   This is a one time procedure and you will never see or need this
-   code again. It is used to verify that the e-mail address you
-   have provided is accurate in case we need to contact you.
-4. Press the activate button and you are ready to use the system!
-
-If you have any questions or comments, please direct them to the
-e-mail address below. This address is not checked and any message
-directed to it will be returned with an error.
-
-Thank You,
-CARMA Proposal Staff
-proposal-help@astro.uiuc.edu
-""" % (name, email, name, code))
+        msg = (cpss.text.email_activation % (name, email, name, code))
         mail.sendmail("do_not_reply@carma-prop.astro.illinois.edu", email, msg)
         mail.quit()
 
@@ -605,14 +569,7 @@ proposal-help@astro.uiuc.edu
                                 self.do_header()
 
                                 if (ret != 0):
-                                    self.req.write("""
-<div class="browser_error">
-Submission failed!<br>
-Please go back and check your document for LaTeX errors. Your proposal
-has NOT been submitted. You may use the "View as PDF" option to view your
-proposal and any errors that were generated. You must complete the submit
-process again.<br>Click <a href="proposal/edit/%s">here</a> to continue.</div>
-""" % pathstr[2])
+                                    self.req.write(cpss.text.submit_failed_error % pathstr[2])
                                 else:
                                     pdf = open(self.config['base_directory']
                                                + self.config['files_directory'] +
@@ -622,35 +579,13 @@ process again.<br>Click <a href="proposal/edit/%s">here</a> to continue.</div>
                                     pdf.close()
 
                                     if (len(pdf_data) > (1024*1024*14)):
-                                        self.req.write("""
-<div class=browser_error>
-Submission Failed!<br><br>
-The size of the final PDF file is over the limit that the submission system can
-handle. The usual cause of this is using large bitmapped images in your
-proposal. One way of reducing this size is to reduce the resolution of your
-source image. If you still have a problem, please contact someone at
-proposal-help@astro.uiuc.edu.
-Click <a href="proposal/edit/%s">here</a> to continue.</div>
-""" % pathstr[2])
+                                        self.req.write(cpss.text.submit_failed_size % pathstr[2])
                                     else:
                                         cpss.db.pdf_add_update(
                                             pathstr[2], pdf_data)
                                         cpss.db.proposal_submit(
                                             pathstr[2])
-                                        self.req.write("""<div class=submitted>
-Congratulations! You have submitted your proposal sucessfully!<br>
-To view your final proposal, click on the Proposals button above to return
-to the screen which lists your proposals, and click on the "view final pdf" link
-available there.<br><br>
-
-If you find a mistake in your proposal after you submit it, you may correct
-the errors by editing your proposal and re-submitting it.<br><br>
-
-Reminder: If you make corrections to your proposal and do not re-submit it,
-the changes will NOT be reflected in the final PDF. You can always view the
-final PDF by opening your proposals page and clicking on the "view final pdf"
-link.
-</div>""")
+                                        self.req.write(cpss.text.submit_success)
                                 self.do_footer()
                             else:
                                 self.do_header(refresh=('proposal/submit/%s' %
@@ -787,311 +722,38 @@ link.
             pathstr.append('')
             
         if (pathstr[1] == 'propinfo'):
-            self.req.write("""
+            self.req.write(cpss.text.help_propinfo)
 
-            <div class="helptext"> The <b>General Proposal
-            Information</b> section is intended for the proposer to
-            give some general information about their proposed
-            project. Below is a description of what information is
-            requested in this section.  </div>
-
-            <a name="title" />
-            <div class="helptitle">Title</div>
-            <div class="helptext">The title of your proposal (no LaTeX
-            characters are allowed).<br></div>
-
-            <a name="date" />
-            <div class="helptitle">Date</div>
-            <div class="helptext">This date is set automatically to when
-            you last edited the information on your proposal.</div>
-
-            <a name="toe" />
-            <div class="helptitle">Time Critical</div>
-            <div class="helptext">Check this box if the object(s) you
-            wish to observe need to be scheduled only at specific
-            times (whether known in advance or not) (e.g. cometary
-            observations, solar flares, transient source follow-up,
-            coordinated observations).</div>
-
-            <a name="priority" />
-            <div class="helptitle">Priority</div>
-            <div class="helptext">If you are submitting several
-            proposals, you may assign a priority number to each proposal
-            if you wish to designate one project as being more
-            important than another. No error checking is performed on
-            this field.</div>
-
-            <a name="scientific_category" />
-            <div class="helptitle">Scientific Category</div>
-            <div class="helptext">What general category best describes
-            your project?</div>
-
-            <a name="type_of_observation" />
-            <div class="helptitle">Type of Observation</div>
-            <div class="helptext">Is this a spectral line observation,
-            continuum observation, or both?</div>
-
-            <a name="frequency_band" />
-            <div class="helptitle">Frequency / Receiver Band</div>
-            <div class="helptext">What receiver band are you
-            requesting for your obervations?</div>
-
-            <a name="help_required" />
-            <div class="helptitle">Level of Help Required</div>
-            <div class="helptext">Choose "Consultation" for help preparing
-            for your observations. A collaborator is currently recommended
-            if you are not already familiar with millimeter
-            interferometer data reduction techniques.</div>
-            """)
         elif (pathstr[1] == 'abstract'):
-            self.req.write("""
+            self.req.write(cpss.text.help_abstract)
 
-            <div class="helptext"> Please keep the abstract
-            to 1/4 of a page maximum. You may use LaTeX commands, but
-            please keep them to a minimum. The abstract will be
-            stored in the project database and any LaTeX commands will
-            be stripped out.</div>
-
-            """)
         elif (pathstr[1] == 'author'):
-            self.req.write("""
+            self.req.write(cpss.text.help_author)
 
-            <div class="helptext">The <b>Authors List</b> section
-            is intended for observers to give information regarding
-            who is working on this proposed project, what institutions
-            they are from, and whether or not the individuals are
-            graduate students.</div>
-
-            <a name="name" />
-            <div class="helptitle">Name</div>
-            <div class="helptext">Please insert your/your co-author(s)
-            name(s) here.</div>
-
-            <a name="email" />
-            <div class="helptitle">E-mail</div>
-            <div class="helptext">Please enter the e-mail addresses of
-            you and your colleagues here.</div>
-
-            <a name="phone" />
-            <div class="helptitle">Phone Number</div>
-            <div class="helptext">Please enter the contact phone
-            number here.</div>
-
-            <a name="institution" />
-            <div class="helptitle">Institution</div>
-            <div class="helptext">Please select your institution name
-            here from the drop down box.  If you are not at one of the
-            CARMA member institutions, select 'Other' and enter your
-            institution name in the box that appears below.</div>
-
-            <a name="grad" />
-            <div class="helptitle">Graduate Student</div>
-            <div class="helptext">Is this person a graduate student?</div>
-
-            <a name="thesis" /> <div class="helptitle">Thesis</div> <div
-            class="helptext">Is this proposal part of an approved graduate
-            student thesis project? If this box is checked, a supporting
-            e-mail from the advisor must be sent to Nikolaus Volgenau
-            (volgenau@mmarray.org). The e-mail should describe the role of the
-            observations in the thesis.</div>
-            """)
         elif (pathstr[1] == 'source'):
-            self.req.write("""
+            self.req.write(cpss.text.help_source)
 
-            <div class="helptext">The <b>Source Information</b> section
-            allows the proposer to enter information about what sources
-            he/she wants to observe using CARMA. If you have any questions
-            as to what types of data are expected in the fields, please
-            read the descriptions below. Please enter sources in the list in
-            priority order.</div>
-            
-            <a name="array_config" />
-            <div class="helptitle">Array Configuration</div>
-            <div class="helptext">Which array configuration(s) are you
-            requesting? See
-            <a href="http://cedarflat.mmarray.org/observing/doc/instrument_desc.html"
-            target="_blank">this
-            page</a> for a description of the different array
-            configurations. Please also see the definition of hours requested.
-            </div>
-
-            <a name="corr_frequency" />
-            <div class="helptitle">Frequency of Observation</div>
-            <div class="helptext">Please give the frequency of your
-            observations in GHz.</div>
-
-            <a name="name" />
-            <div class="helptitle">Source Name</div>
-            <div class="helptext">A short, simple, descriptive name
-            for the object that you are observing.</div>
-
-            <a name="ra" />
-            <div class="helptitle">Right Ascension</div>
-            <div class="helptext">Please give coordinates to the object
-            or region that you are observing in J2000 format. If your
-            proposal is accepted, you will be able to give more accurate
-            coordinates at that time. Make sure that your Right Ascension
-            is in the format HH MM or HH:MM.</div>
-
-            <a name="dec" />
-            <div class="helptitle">Declination</div>
-            <div class="helptext">Please give the Declination of the
-            object you are observing. See the restrictions and notes for
-            Right Ascension above.</div>
-
-            <a name="numb_fields" />
-            <div class="helptitle">Number of Mosaic Fields</div>
-            <div class="helptext">How many different pointings are
-            involved in the observations of this source?</div>
-
-            <a name="species" />
-            <div class="helptitle">Species / Transition Name</div>
-            <div class="helptext">If these are molecular line
-            observations what species and transition are being
-            observed. For continuum projects just enter
-            "continuum".</div>
-
-            <a name="self_cal" />
-            <div class="helptitle">Can Self-Calibrate</div>
-            <div class="helptext">Can your source be self-calibrated?</div>
-
-            <a name="min_max" />          
-            <div class="helptitle">Time Requested</div>
-            <div class="helptext">How long are you requesting to
-            observe this obsblock in hours (this time includes your
-            source(s) and any calibrators observed), per array configuration?
-            If the time requested
-            is longer than can be accomodated in a single track, the
-            observation will be on multiple days. Track lengths will
-            depend on declination and whether the project is primarily
-            an imaging project, or requires the best SNR. See
-            <a href="http://cedarflat.mmarray.org/observing/doc/instrument_desc.html"
-             target="_blank">this page</a> for more details.</div>
-
-            <a name="imaging" />
-            <div class="helptitle">Imaging/SNR</div>
-            <div class="helptext">If the aim of this obsblock is to
-            get the most complete UV coverage (and thus the best image
-            possible) then select IMAGE. For detection projects, or other
-            projects where signal to noise is critical, select SNR. Such
-            projects can often be observed in smaller pieces or off transit
-            to increase the scheduling efficiency of the telescope. To allow
-            this, and receive compensation in the form of increased
-            observing time, please check the "Flexible HA" box.</div>
-
-            <a name="flexha" />
-            <div class="helptitle">Flexible Hour Angle (Flex.HA)</div>
-            <div class="helptext">Check this box if the observations for
-            this obsblock may be usefully made in small pieces at any time
-            the source is up. Checking this box will increase
-            the scheduling efficiency of the telescope, and could thus
-            increase the TAC disposition to your project and the
-            likelihood of observations. Compensation in the form of
-            increased observation time will be made if you elect this
-            option.</div>
-
-            """)
         elif (pathstr[1] == 'special_requirements'):
-            self.req.write("""
+            self.req.write(cpss.text.help_specialreq)
 
-            <div class="helptext">The special requirements section is
-            designed for the proposer to describe any unusual observing
-            constraints that are not defined anywhere else in the proposal.
-            This includes a summary of special equipment, special observing
-            conditions, required dates, or any other information even if it
-            is described in another section.</div>
-            
-            """)
         elif (pathstr[1] == 'prior_obs'):
-            self.req.write("""
+            self.req.write(cpss.text.help_priorobs)
 
-            <div class="helptext">The Status of Prior CARMA Observations
-            section allows the proposer to report on the status of the
-            PI's prior CARMA observations. For example, whether they are
-            reduced, in press, published, etc. Include previous project
-            codes.
-            </div>
-            
-            """)
         elif (pathstr[1] == 'scientific_justification'):
-            self.req.write("""
+            self.req.write(cpss.text.help_scientificjust)
 
-            <div class="helptext">In the <b>Scientific
-            Justification</b> section describe the scientific
-            motivation for the project. The Scientific and Technical
-            Justification sections combined may be no longer than
-            three pages: 2 pages of text, and 1 for tables, figures, and references. LaTeX text may
-            be used in this section. If you need to make a reference
-            to an article or paper, please use inline references.
-            </div>
-
-            """)
         elif (pathstr[1] == 'technical_justification'):
-            self.req.write("""
-
-            <div class="helptext">In the <b>Technical
-            Justification</b> section justify the proposed
-            observations on technical grounds. Include any information
-            that will allow the TAC to assess the technical viability
-            of the project. The Scientific and Technical Justification
-            sections combined may be no longer than three pages: 2 pages of text, and 1 for
-            tables, figures, and references. LaTeX text may be used in
-            this section. If you need to make a reference to an
-            article or paper, please use inline references.</div>
-            """)
+            self.req.write(cpss.text.help_technicaljust)
 
         elif (pathstr[1] == 'image'):
-            self.req.write("""
-
-            <div class="helptext">Use the images section to attach any images
-            to your proposal. The images must be in postscript (PS or EPS)
-            format. If you upload any other type of image, you will get
-            an error when you attempt to view the PDF of your proposal.
-            If you
-            need to make any adjustments to the attached image (i.e.
-            rotation, scale, cropping) please refer to the documentation for
-            the LaTeX package graphicx. The maximum file size for an image is
-            ~14MB.</div>
-
-            """)
+            self.req.write(cpss.text.help_image)
 
         elif (pathstr[1] == 'tot_hours'):
-            self.req.write("""
-
-            <div class="helptext">The total number of hours is calculated by
-            adding up how many hours per source you have requested, by
-            multiplying Hours Requested by the number of array configurations
-            you requested the source to be observed in. For example, if you requested
-            a single source to be observed in the A, B, C, and D arrays for 8 hours,
-            the Total Hours will be 32.</div>
-
-            """)
-
+            self.req.write(cpss.text.help_tothours)
             
         elif (pathstr[1] ==  'index'):
-            self.req.write("""<span style="font-weight:bold;font-size:14pt">
-            Choose a help topic below:</span>
-            <ul style="help">
-            <li><a href="%shelp/propinfo">General Proposal Information</a></li>
-            <li><a href="%shelp/author">Authors List</a></li>
-            <li><a href="%shelp/abstract">Abstract</a></li>
-            <li><a href="%shelp/source">Source Information</a></li>
-            <li><a href="%shelp/special_requirements">
-                Special Requirements</a></li>
-            <li><a href="%shelp/scientific_justification">
-                Scientific Justification</a></li>
-            <li><a href="%shelp/technical_justification">
-                Technical Justification</a></li>
-            <li><a href="%shelp/image">Image Attachments</a></li>
-            <ul>
-            <br>
-            If you have an issue or question (whether it is a technical
-            problem with the proposal site or a clarification on what
-            type of information is expected) please send an e-mail to
-            proposal-help@astro.uiuc.edu . If it is a technical issue,
-            please make sure to give exact information as to what you
-            were trying to do, and what the error message (if any) said.
-            """ % (self.config['html_base'], self.config['html_base'],
+            self.req.write(cpss.text.help_index % (
+                       self.config['html_base'], self.config['html_base'],
                        self.config['html_base'], self.config['html_base'],
                        self.config['html_base'], self.config['html_base'],
                        self.config['html_base'], self.config['html_base']))
@@ -1114,27 +776,7 @@ link.
                 cpss.db.password_change(email, newpw)
                 mail = smtplib.SMTP()
                 mail.connect()                
-                msg = ("""To: %s
-From: "CARMA Proposal System" <no_not_reply@carma-prop.astro.illinois.edu>
-Subject: CARMA Proposal System Password Reset
-Content-Type: text/plain;
-
-You have requested a password reset for the account:
-%s
-
-Your new password is:
-%s
-
-You can change the password if you log in, click on the user option
-and enter the information in the "Change Password" section. 
-
-If you have any questions or problems feel free to contact us at the
-address listed below.
-
-Thank You,
-CARMA Proposal Staff
-proposal-help@astro.uiuc.edu
-""" % (email, email, newpw))
+                msg = (cpss.text.email_pwreset % (email, email, newpw))
                 mail.sendmail("do_not_reply@carma-prop.astro.illinois.edu", email, msg)
                 mail.quit()
 
@@ -1274,3 +916,4 @@ proposal-help@astro.uiuc.edu
         for line in lines:
             buffer += line + "<br>" 
         return buffer
+
