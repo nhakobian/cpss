@@ -2,9 +2,9 @@ import MySQLdb
 import md5
 import string
 import os.path
-from random import choice
+import os
 import gzip
-
+from random import choice
 
 class Backend:
     def __init__(self, req, Template, config):
