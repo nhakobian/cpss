@@ -96,7 +96,7 @@ class Page:
         // -->
         </script>
         <base href="%s" />
-        <link rel="stylesheet" href="cpss.css" type="text/css">
+        <link rel="stylesheet" href="static/cpss.css" type="text/css">
         </head>
         <body onLoad="%s">
         %s
@@ -110,7 +110,7 @@ class Page:
                        
         <div class="container">
         <div class="top">
-        <table><tr><td><a href="%s"><img src="images/carmasmall.jpg"></img>
+        <table><tr><td><a href="%s"><img src="static/carmasmall.jpg"></img>
         </a></td><td>
         CARMA Proposal Submission System</td></tr></table>
         </div>

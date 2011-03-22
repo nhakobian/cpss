@@ -1,5 +1,5 @@
 import MySQLdb
-import md5
+import hashlib
 import string
 import os.path
 import os
@@ -7,15 +7,14 @@ import gzip
 from random import choice
 
 class Backend:
-    def __init__(self, req, Template, config):
-        password = ""
+    def __init__(self, req, config):
         self.req = req
         self.prefix = ''
-        self.Template = Template
-        self.Database = MySQLdb.connect(host="", 
-                                        user="", passwd=password, 
-                                        db="", 
-                                        unix_socket="")
+        self.Database = MySQLdb.connect(host = config['db']['host'],
+                                        user = config['db']['user'],
+                                        passwd = config['db']['passwd'],
+                                        db = config['db']['db'],
+                                        unix_socket = config['db']['unix_socket'])
         self.config = config
         self.literal = self.Database.literal
         self.options = self.options_get()
@@ -34,7 +33,7 @@ class Backend:
         if (len(result) == 0):
             return (False, 0)
         user = result[0]
-        md5_pass = md5.md5(password).hexdigest()
+        md5_pass = hashlib.md5(password).hexdigest()
         cursor.close()
         if((user['email'] == username) and (user['password'] == md5_pass)):
             return (True, user)
