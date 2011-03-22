@@ -7,6 +7,7 @@ Page = apache.import_module("page")
 Connector = apache.import_module("connector")
 Backend = apache.import_module("backend")
 Template = apache.import_module("Template/__init__")
+Text = apache.import_module("text")
 
 config = { 'html_base' : "http://localhost/proposals/",
            'base_directory' : '/var/www/proposals/',
@@ -22,8 +23,17 @@ config = { 'html_base' : "http://localhost/proposals/",
                     },
            }
 
-def handler(req):
+options = None # This will be filled with the SQL options.
+theBackend = None
+session = None
+req = None
+
+
+def handler(request):
     os.umask(2)
+
+    global req
+    req = request
 
     #Figure out which page is requested.
     pathstr = []
@@ -32,6 +42,7 @@ def handler(req):
             pathstr.append(item)
 
     #begin session and read information 6 hour timeout
+    global session
     session = Session.Session(req, timeout=21600)
     if session.is_new():
         session['authenticated'] = False
@@ -41,11 +52,12 @@ def handler(req):
         session['maint_allow'] = False
     session.save()
         
-    theBackend = Backend.Backend(req, config)
+    global theBackend 
+    theBackend = Backend.Backend()
+    global options
     options = theBackend.options_get()
-    thePage = Page.Page(req, config, session, options)
-    theConnector = Connector.Connector(req, Template, theBackend, thePage,
-                                       session, config, options)
+    thePage = Page.Page()
+    theConnector = Connector.Connector(thePage)
 
     if (config['debug'] == False):
         try:

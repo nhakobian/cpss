@@ -7,17 +7,19 @@ import os
 import string
 from random import choice
 
+cpss = apache.import_module("cpss")
+
 class Connector:
-    def __init__(self, req, Template, Backend, Page, session, config, options):
-        self.req = req
-        self.theBackend = Backend
+    def __init__(self, Page):
+        self.req = cpss.req
+        self.theBackend = cpss.theBackend
         self.thePage = Page
-        self.theSession = session
-        self.Template = Template
+        self.theSession = cpss.session
+        self.Template = cpss.Template
         #Parse the GET/POST fields
         self.fields = util.FieldStorage(self.req)
-        self.config = config
-        self.options = options
+        self.config = cpss.config
+        self.options = cpss.options
         
     def do_header(self, login=False, **keywords):
         if (self.theSession['authenticated'] == False):

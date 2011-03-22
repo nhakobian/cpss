@@ -2,12 +2,12 @@ from mod_python import apache
 cpss = apache.import_module("cpss")
 
 class Page:
-    def __init__(self, req, config, session, options):
-        self.req = req
-        self.config = config
+    def __init__(self):
+        self.req = cpss.req
+        self.config = cpss.config
         self.base = self.config['html_base']
-        self.theSession = session
-        self.options = options
+        self.theSession = cpss.session
+        self.options = cpss.options
 
     def register(self, Connector, Backend):
         self.theBackend = Backend

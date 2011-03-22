@@ -5,22 +5,22 @@ import os.path
 import os
 import gzip
 from random import choice
+from mod_python import apache
+cpss = apache.import_module("cpss")
 
 class Backend:
-    def __init__(self, req, config):
-        self.req = req
+    def __init__(self):
         self.prefix = ''
-        self.Database = MySQLdb.connect(host = config['db']['host'],
-                                        user = config['db']['user'],
-                                        passwd = config['db']['passwd'],
-                                        db = config['db']['db'],
-                                        unix_socket = config['db']['unix_socket'])
-        self.config = config
+        self.Database = MySQLdb.connect(host = cpss.config['db']['host'],
+                                        user = cpss.config['db']['user'],
+                                        passwd = cpss.config['db']['passwd'],
+                                        db = cpss.config['db']['db'],
+                                        unix_socket = cpss.config['db']['unix_socket'])
         self.literal = self.Database.literal
         self.options = self.options_get()
-        self.path_justification = self.config['data_directory'] + self.prefix + 'justifications/'
-        self.path_pdf = self.config['data_directory'] + self.prefix + 'pdf/'
-        self.path_images = self.config['data_directory'] + self.prefix + 'images/'
+        self.path_justification = cpss.config['data_directory'] + self.prefix + 'justifications/'
+        self.path_pdf = cpss.config['data_directory'] + self.prefix + 'pdf/'
+        self.path_images = cpss.config['data_directory'] + self.prefix + 'images/'
 
 
     def verify_user(self, username, password):
