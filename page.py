@@ -1,4 +1,5 @@
 from mod_python import apache
+cpss = apache.import_module("cpss")
 
 class Page:
     def __init__(self, req, config, session, options):
@@ -41,81 +42,7 @@ class Page:
         else:
             onLoad = ""
             
-        self.req.write("""<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-        <html>
-        <head>
-        <title>CARMA Proposal Submission System
-        </title>
-        <script type="text/javascript">
-        <!--
-
-        function popup(link, windowname)
-        {
-           if (! window.focus) return true;
-           var href;
-           if (typeof(link) == 'string')
-              href = link;
-           else
-              href = link.href;
-
-           newwin = window.open(href, windowname, 'width=400,height=200,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,resizable=yes,dependent=yes');
-           if (window.focus) {newwin.focus();}
-           return false;
-        }
-
-        function getCookie(name)
-        {
-           var newName = name + "=";
-           var nameLength = newName.length;
-           var cookieLength = document.cookie.length;
-           var i = 0;
-           while(i < cookieLength)
-           {
-              var j = i + nameLength;
-              if(document.cookie.substring(i,j) == newName)
-              {
-                 return true;
-              }
-              i = document.cookie.indexOf(" ",i) + 1;
-              if (i == 0) break;
-           }
-           return false;
-        }
-        
-        document.cookie = 'test=junk';
-        if(getCookie('test'))
-        {
-           // delete the cookie
-           document.cookie = name + '=' + '; expires=Thu, 01-Jan-70 00:00:01 GMT';
-        }
-        else
-        {
-           document.write("<div class=browser_error id=test1>If you are seeing this message then cookies are not enabled on this browser. Cookies are required for this system to work properly. Please enable cookies and click <a href='login/'>here</a> to continue.</div>");
-        }
-        
-        // -->
-        </script>
-        <base href="%s" />
-        <link rel="stylesheet" href="static/cpss.css" type="text/css">
-        </head>
-        <body onLoad="%s">
-        %s
-
-        <noscript>
-        <div class="browser_error">If you are seeing this message
-        it is because you do not have javascript enabled. Javascript is
-        required for this site to work properly. Please enable javascript and
-        click <a href="login/">here</a> to continue.</div>
-        </noscript>
-                       
-        <div class="container">
-        <div class="top">
-        <table><tr><td><a href="%s"><img src="static/carmasmall.jpg"></img>
-        </a></td><td>
-        CARMA Proposal Submission System</td></tr></table>
-        </div>
-        <div class="navbar">
-        <ul id="navlist">""" % (self.base, onLoad, maintain,
+        self.req.write(cpss.Text.page_header % (self.base, onLoad, maintain,
                                 self.config['html_base']))
 
         if (login == False):
