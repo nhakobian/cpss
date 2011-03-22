@@ -14,7 +14,6 @@ class Connector:
         self.req = cpss.req
         self.thePage = Page
         self.theSession = cpss.session
-        self.Template = cpss.Template
         #Parse the GET/POST fields
         self.fields = util.FieldStorage(self.req)
         self.config = cpss.config
@@ -207,11 +206,8 @@ proposal-help@astro.uiuc.edu
                         else:
                             id = False
 
-                        template = self.Template.Template(self.req,
-                                                          result['template'],
-                                                          result['cyclename'],
-                                                          cpss.db,
-                                                          pathstr[2], False)
+                        template = cpss.Template.Template(result['template'],
+                          result['cyclename'], pathstr[2], False)
                         self.do_header()
                         template.make_html(section_choose=section, id=id)
                         self.do_footer()
@@ -235,12 +231,8 @@ proposal-help@astro.uiuc.edu
                         for a in pathstr:
                             pathtext += a + '/'
 
-                        template = self.Template.Template(self.req,
-                                                          result['template'],
-                                                          result['cyclename'],
-                                                          cpss.db,
-                                                          pathstr[2],
-                                                          True, Fetch=False)
+                        template = cpss.Template.Template(result['template'],
+                          result['cyclename'], pathstr[2], True, Fetch=False)
 
                         for tempsection in template.sections:
                             if (tempsection['section'] == section):
@@ -284,12 +276,9 @@ proposal-help@astro.uiuc.edu
                         for a in pathstr:
                             pathtext += a + '/'
 
-                        template = self.Template.Template(self.req,
-                                                          result['template'],
-                                                          result['cyclename'],
-                                                          cpss.db,
-                                                          pathstr[2],
-                                                          True)
+                        template = cpss.Template.Template(result['template'],
+                          result['cyclename'], pathstr[2], True)
+
                         for tempsection in template.tempclass.sections:
                             if (tempsection['section'] == section):
                                 tablename = tempsection['table']
@@ -356,9 +345,10 @@ proposal-help@astro.uiuc.edu
                             self.do_header(refresh=pathtext)
                             self.do_footer()
                         else:
-                            template = self.Template.Template(self.req,
-                                       result['template'], result['cyclename'],
-                                       cpss.db, pathstr[2], False)
+                            template = cpss.Template.Template(
+                              result['template'], result['cyclename'],
+                              pathstr[2], False)
+
                             fields = dict(self.fields)
                             fields.pop('action')
                             section = fields.pop('section')
@@ -474,12 +464,9 @@ proposal-help@astro.uiuc.edu
                             else:
                                 justification = False
                                 
-                            template = self.Template.Template(self.req,
-                                                          result['template'],
-                                                          result['cyclename'],
-                                                          cpss.db,
-                                                          pathstr[2], True,
-                                                   justification=justification)
+                            template = cpss.Template.Template(
+                              result['template'], result['cyclename'],
+                              pathstr[2], True, justification=justification)
 
                             template.make_html()
                             self.do_footer()
@@ -498,11 +485,10 @@ proposal-help@astro.uiuc.edu
                             that has already been submitted.""")
                             self.do_footer()
                         elif (self.fields.__contains__('delete') == True):
-                            template = self.Template.Template(self.req,
-                                                          result['template'],
-                                                          result['cyclename'],
-                                                          cpss.db,
-                                                          pathstr[2], True)
+                            template = cpss.Template.Template(
+                              result['template'], result['cyclename'],
+                              pathstr[2], True)
+
                             cpss.db.proposal_delete(
                                 self.theSession['username'],
                                 result['proposalid'],
@@ -513,11 +499,10 @@ proposal-help@astro.uiuc.edu
                             pathtext = ""
                             for a in pathstr:
                                 pathtext += a + '/'
-                            template = self.Template.Template(self.req,
-                                                          result['template'],
-                                                          result['cyclename'],
-                                                          cpss.db,
-                                                          pathstr[2], True)
+                            template = cpss.Template.Template(
+                              result['template'], result['cyclename'],
+                              pathstr[2], True)
+
                             title = None
                             for asection in template.sections:
                                 if (asection['section'] == 'propinfo'):
@@ -567,12 +552,9 @@ proposal-help@astro.uiuc.edu
                                 justification = False
                             else:
                                 justification = True
-                            template = self.Template.Template(self.req,
-                                                          result['template'],
-                                                          result['cyclename'],
-                                                          cpss.db,
-                                                          pathstr[2], True,
-                                                   justification=justification)
+                            template = cpss.Template.Template(
+                              result['template'], result['cyclename'],
+                              pathstr[2], True, justification=justification)
                             retval = template.latex_generate(pathstr[2])
 
                             if (retval != 0):
@@ -612,12 +594,9 @@ proposal-help@astro.uiuc.edu
                                 else:
                                     justification = True
 
-                                template = self.Template.Template(self.req,
-                                                           result['template'],
-                                                           result['cyclename'],
-                                                           cpss.db,
-                                                           pathstr[2], True,
-                                                   justification=justification)
+                                template = cpss.Template.Template(
+                                  result['template'], result['cyclename'],
+                                  pathstr[2], True,justification=justification)
                                 
                                 ret = template.latex_generate(template.propid,
                                                           file_send = False,
@@ -684,12 +663,9 @@ link.
                             else:
                                 justification = True
                                 
-                            template = self.Template.Template(self.req,
-                                                          result['template'],
-                                                          result['cyclename'],
-                                                          cpss.db,
-                                                          pathstr[2], True,
-                                                   justification=justification)
+                            template = cpss.Template.Template(
+                              result['template'], result['cyclename'],
+                              pathstr[2], True, justification=justification)
                             self.do_header()
                         
                             self.req.write("""<div class="navbar,
@@ -770,12 +746,8 @@ link.
                 elif (items == 2):
                     if (pathstr[1] == "add"):
                         options = cpss.db.options_get()
-                        template = self.Template.Template(self.req,
-                                                          options['template'],
-                                                          options['cyclename'],
-                                                          cpss.db,
-                                                          None,
-                                                          True, Fetch=False)
+                        template = cpss.Template.Template(options['template'],
+                          options['cyclename'], None, True, Fetch=False)
                         propno = cpss.db.proposal_add(
                             self.theSession['username'],
                             template.tempclass.tables,

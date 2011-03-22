@@ -11,11 +11,11 @@ class strTemplate(baseTemplate):
     idpattern = r'[_a-z0-9][_a-z0-9]*'
 
 class Template:
-    def __init__(self, req, template, cyclename, backend, propid, view,
+    def __init__(self, template, cyclename, propid, view,
                  Fetch=True, justification=False):
 
         self.justification = justification
-
+        
         if (Fetch == True):
             self.is_key_project = cpss.db.is_key_project(propid)
 
@@ -23,7 +23,7 @@ class Template:
                 cpss.db.justification_type_set(propid, 1)
                 self.justification = True
  
-        self.req = req
+        self.req = cpss.req
         self.cyclename = cyclename
         self.error = False;
         self.propid = propid
