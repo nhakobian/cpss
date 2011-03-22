@@ -3,9 +3,10 @@ from mod_python import Session
 from mod_python import util
 import os
 
+_backend = apache.import_module("backend")
+db = None
 Page = apache.import_module("page")
 Connector = apache.import_module("connector")
-Backend = apache.import_module("backend")
 Template = apache.import_module("Template/__init__")
 Text = apache.import_module("text")
 
@@ -24,7 +25,6 @@ config = { 'html_base' : "http://localhost/proposals/",
            }
 
 options = None # This will be filled with the SQL options.
-theBackend = None
 session = None
 req = None
 
@@ -52,10 +52,12 @@ def handler(request):
         session['maint_allow'] = False
     session.save()
         
-    global theBackend 
-    theBackend = Backend.Backend()
+    # Initialize database and connect. ##TODO: Add error checking.
+    global db
+    db = _backend.Backend()
+
     global options
-    options = theBackend.options_get()
+    options = db.options_get()
     thePage = Page.Page()
     theConnector = Connector.Connector(thePage)
 
@@ -68,10 +70,10 @@ def handler(request):
             please contact the person in charge of this site.
             </center>""")
             result = apache.OK
-            theBackend.close()
+            db.close()
     else:
         try:
             result = theConnector.Dispatch(pathstr)
         finally:
-            theBackend.close()
+            db.close()
     return result

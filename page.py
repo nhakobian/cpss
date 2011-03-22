@@ -9,10 +9,6 @@ class Page:
         self.theSession = cpss.session
         self.options = cpss.options
 
-    def register(self, Connector, Backend):
-        self.theBackend = Backend
-        Self.theConnector = Connector
-    
     def header(self, login=False, refresh=None, logon=False):
         logout_bar = [["Login", "login/"], ["Help","help/"], 
                       ["Create Account","create/"]]

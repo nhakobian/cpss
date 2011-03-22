@@ -12,7 +12,6 @@ cpss = apache.import_module("cpss")
 class Connector:
     def __init__(self, Page):
         self.req = cpss.req
-        self.theBackend = cpss.theBackend
         self.thePage = Page
         self.theSession = cpss.session
         self.Template = cpss.Template
@@ -115,7 +114,7 @@ class Connector:
             if ((pass1 == "") or (pass1 != pass2)):
                 error = "You must supply matching passwords."
             if (error == ""):
-                if (self.theBackend.user_exists(email) == True):
+                if (cpss.db.user_exists(email) == True):
                     error = """There already is a user with this e-mail address
                                registered in the system. If you believe this
                                is in error, please contact the website
@@ -127,7 +126,7 @@ class Connector:
                 else:
                     code = self.randomcode()
                     self.activation_mail(name, email, code)
-                    self.theBackend.add_user(name, email, pass1, code)
+                    cpss.db.add_user(name, email, pass1, code)
                     self.do_header()
                     self.thePage.user_create_success(name, email)
                     self.do_footer()
@@ -189,7 +188,7 @@ proposal-help@astro.uiuc.edu
         if (self.theSession['authenticated'] == True):
             if (self.fields.__contains__('action') == True):
                 if (self.fields['action'] == 'edit'):
-                    result = self.theBackend.proposal_fetch(
+                    result = cpss.db.proposal_fetch(
                         self.theSession['username'], pathstr[2])
                     if (result == False):
                         self.do_header(refresh="proposal/")
@@ -211,13 +210,13 @@ proposal-help@astro.uiuc.edu
                         template = self.Template.Template(self.req,
                                                           result['template'],
                                                           result['cyclename'],
-                                                          self.theBackend,
+                                                          cpss.db,
                                                           pathstr[2], False)
                         self.do_header()
                         template.make_html(section_choose=section, id=id)
                         self.do_footer()
                 elif (self.fields['action'] == 'add'):
-                    result = self.theBackend.proposal_fetch(
+                    result = cpss.db.proposal_fetch(
                         self.theSession['username'], pathstr[2])
                     if (result == False):
                         self.do_header(refresh="proposal/")
@@ -239,7 +238,7 @@ proposal-help@astro.uiuc.edu
                         template = self.Template.Template(self.req,
                                                           result['template'],
                                                           result['cyclename'],
-                                                          self.theBackend,
+                                                          cpss.db,
                                                           pathstr[2],
                                                           True, Fetch=False)
 
@@ -251,16 +250,16 @@ proposal-help@astro.uiuc.edu
                                 pass
 
                         if (section == 'image'):
-                            id = self.theBackend.images_add(pathstr[2])
+                            id = cpss.db.images_add(pathstr[2])
                             self.do_header(refresh='proposal/edit/' +
                                            pathstr[2])
                         else:
-                            id = self.theBackend.proposal_table_addrow(
+                            id = cpss.db.proposal_table_addrow(
                                 tablename, pathstr[2], numb=True)
                             self.do_header(refresh='proposal/edit/%s/?action=edit&section=%s&id=%s' % (pathstr[2], section, id))
 
                 elif (self.fields['action'] == 'delete'):
-                    result = self.theBackend.proposal_fetch(
+                    result = cpss.db.proposal_fetch(
                         self.theSession['username'], pathstr[2])
                     if (result == False):
                         self.do_header(refresh="proposal/")
@@ -288,7 +287,7 @@ proposal-help@astro.uiuc.edu
                         template = self.Template.Template(self.req,
                                                           result['template'],
                                                           result['cyclename'],
-                                                          self.theBackend,
+                                                          cpss.db,
                                                           pathstr[2],
                                                           True)
                         for tempsection in template.tempclass.sections:
@@ -301,11 +300,11 @@ proposal-help@astro.uiuc.edu
 
                         if (section == 'image'):
                             done = True
-                            image = self.theBackend.images_get(pathstr[2], id)
-                            self.theBackend.images_delete(pathstr[2], id)
+                            image = cpss.db.images_get(pathstr[2], id)
+                            cpss.db.images_delete(pathstr[2], id)
                             
-                            files_dir = (self.theBackend.config['base_directory'] +
-                                         self.theBackend.config['files_directory'])
+                            files_dir = (cpss.db.config['base_directory'] +
+                                         cpss.db.config['files_directory'])
                             prop_dir = files_dir + pathstr[2] + '/justification/'
                                             
                             if (os.path.isfile(prop_dir + image[0]['file'])
@@ -313,11 +312,11 @@ proposal-help@astro.uiuc.edu
                                 os.unlink(prop_dir + image[0]['file'])
                         elif (section == 'justification'):
                             done = True
-                            self.theBackend.justification_delete_data(
+                            cpss.db.justification_delete_data(
                                 pathstr[2])
 
-                            files_dir = (self.theBackend.config['base_directory'] +
-                                         self.theBackend.config['files_directory'])
+                            files_dir = (cpss.db.config['base_directory'] +
+                                         cpss.db.config['files_directory'])
                             prop_dir = files_dir + pathstr[2] + '/justification/'
 
                             if (os.path.isfile(prop_dir + 'justification.pdf')
@@ -329,7 +328,7 @@ proposal-help@astro.uiuc.edu
 
                             
                         else:
-                            done = self.theBackend.proposal_table_delrow(
+                            done = cpss.db.proposal_table_delrow(
                                 tablename, pathstr[2], numb=id)
                             
                         if (done == True):
@@ -341,7 +340,7 @@ proposal-help@astro.uiuc.edu
                             in the %s section. You may not delete this last
                             value.""" % section_name)
                 elif (self.fields['action'] == 'submit'):
-                    result = self.theBackend.proposal_fetch(
+                    result = cpss.db.proposal_fetch(
                         self.theSession['username'], pathstr[2])
                     if (result == False):
                         self.do_header(refresh="proposal/")
@@ -359,7 +358,7 @@ proposal-help@astro.uiuc.edu
                         else:
                             template = self.Template.Template(self.req,
                                        result['template'], result['cyclename'],
-                                       self.theBackend, pathstr[2], False)
+                                       cpss.db, pathstr[2], False)
                             fields = dict(self.fields)
                             fields.pop('action')
                             section = fields.pop('section')
@@ -380,7 +379,7 @@ proposal-help@astro.uiuc.edu
                                         """)
                                         self.do_footer()
                                     else:
-                                        self.theBackend.images_update(
+                                        cpss.db.images_update(
                                             pathstr[2],
                                             fname, fields['id'],
                                             image_data)
@@ -400,7 +399,7 @@ proposal-help@astro.uiuc.edu
                                     """)
                                     self.do_footer()
                                 else:
-                                    self.theBackend.justification_add_update(
+                                    cpss.db.justification_add_update(
                                         pathstr[2], pdf_data)
                                     self.do_header(refresh=pathtext)
                             else:
@@ -418,7 +417,7 @@ proposal-help@astro.uiuc.edu
                 items = len(pathstr)
                 if (items == 3):
                     if (pathstr[1] == "typechange"):
-                        result = self.theBackend.proposal_fetch(
+                        result = cpss.db.proposal_fetch(
                             self.theSession['username'], pathstr[2])
                         if (result == False):
                             self.do_header(refresh="proposal/")
@@ -430,12 +429,12 @@ proposal-help@astro.uiuc.edu
                             if (self.fields.__contains__('type') == True):
                                 if (self.fields['type'] ==
                                     "Website Justification"):
-                                    self.theBackend.justification_type_set(
+                                    cpss.db.justification_type_set(
                                         pathstr[2], 0)
-                                    self.theBackend.justification_delete_data(
+                                    cpss.db.justification_delete_data(
                                         pathstr[2])
 
-                                    files_dir = (self.theBackend.config['base_directory'] + self.theBackend.config['files_directory'])
+                                    files_dir = (cpss.db.config['base_directory'] + cpss.db.config['files_directory'])
                                     prop_dir = files_dir + pathstr[2] + '/justification/'
 
                                     if (os.path.isfile(prop_dir +
@@ -450,7 +449,7 @@ proposal-help@astro.uiuc.edu
                                                   'justification-up.pdf')
                                 if (self.fields['type'] ==
                                     "LaTeX Template"):
-                                    self.theBackend.justification_type_set(
+                                    cpss.db.justification_type_set(
                                         pathstr[2], 1)
                                 self.do_header(refresh=("""proposal/edit/%s"""
                                                         % pathstr[2]))
@@ -459,7 +458,7 @@ proposal-help@astro.uiuc.edu
                             
 
                     elif (pathstr[1] == "edit"):
-                        result = self.theBackend.proposal_fetch(
+                        result = cpss.db.proposal_fetch(
                             self.theSession['username'], pathstr[2])
                         if (result == False):
                             self.do_header(refresh="proposal/")
@@ -478,14 +477,14 @@ proposal-help@astro.uiuc.edu
                             template = self.Template.Template(self.req,
                                                           result['template'],
                                                           result['cyclename'],
-                                                          self.theBackend,
+                                                          cpss.db,
                                                           pathstr[2], True,
                                                    justification=justification)
 
                             template.make_html()
                             self.do_footer()
                     elif (pathstr[1] == "delete"):
-                        result = self.theBackend.proposal_fetch(
+                        result = cpss.db.proposal_fetch(
                             self.theSession['username'], pathstr[2])
                         if (result == False):
                             self.do_header(refresh="proposal/")
@@ -502,9 +501,9 @@ proposal-help@astro.uiuc.edu
                             template = self.Template.Template(self.req,
                                                           result['template'],
                                                           result['cyclename'],
-                                                          self.theBackend,
+                                                          cpss.db,
                                                           pathstr[2], True)
-                            self.theBackend.proposal_delete(
+                            cpss.db.proposal_delete(
                                 self.theSession['username'],
                                 result['proposalid'],
                                 template.tables, result['cyclename'])
@@ -517,7 +516,7 @@ proposal-help@astro.uiuc.edu
                             template = self.Template.Template(self.req,
                                                           result['template'],
                                                           result['cyclename'],
-                                                          self.theBackend,
+                                                          cpss.db,
                                                           pathstr[2], True)
                             title = None
                             for asection in template.sections:
@@ -532,7 +531,7 @@ proposal-help@astro.uiuc.edu
                             self.thePage.delete_verify(pathtext, str(title))
                             self.do_footer()
                     elif (pathstr[1] == "finalpdf"):
-                        result = self.theBackend.proposal_fetch(
+                        result = cpss.db.proposal_fetch(
                             self.theSession['username'], pathstr[2])
                         if (result == False):
                             self.do_header(refresh="proposal/")
@@ -541,7 +540,7 @@ proposal-help@astro.uiuc.edu
                             try again.""")
                             self.do_footer()
                         else:
-                            pdf = self.theBackend.pdf_get_data(pathstr[2])
+                            pdf = cpss.db.pdf_get_data(pathstr[2])
                             if (len(pdf) == 0):
                                 self.do_header()
                                 self.req.write("""You have not submitted this
@@ -555,7 +554,7 @@ proposal-help@astro.uiuc.edu
                                 self.req.write(pdf)
                             
                     elif (pathstr[1] == "pdf"):
-                        result = self.theBackend.proposal_fetch(
+                        result = cpss.db.proposal_fetch(
                             self.theSession['username'], pathstr[2])
                         if (result == False):
                             self.do_header(refresh="proposal/")
@@ -571,7 +570,7 @@ proposal-help@astro.uiuc.edu
                             template = self.Template.Template(self.req,
                                                           result['template'],
                                                           result['cyclename'],
-                                                          self.theBackend,
+                                                          cpss.db,
                                                           pathstr[2], True,
                                                    justification=justification)
                             retval = template.latex_generate(pathstr[2])
@@ -583,7 +582,7 @@ proposal-help@astro.uiuc.edu
                                               (self.lines2text(retval[7:])))
                                 self.do_footer()
                     elif (pathstr[1] == 'submit'):
-                        result = self.theBackend.proposal_fetch(
+                        result = cpss.db.proposal_fetch(
                             self.theSession['username'], pathstr[2])
                         if (result == False):
                             self.do_header(refresh="proposal/")
@@ -601,9 +600,9 @@ proposal-help@astro.uiuc.edu
                                         for i in xrange(0, 4 - length):
                                             idstr = "0" + idstr
                                     idstr = "c" + idstr
-                                    self.theBackend.set_next_propno(self.options['next_propno'] + 1, result['cyclename'])
-                                    self.theBackend.pw_generate(pathstr[2])
-                                    self.theBackend.proposal_setcarmaid(pathstr[2], idstr)
+                                    cpss.db.set_next_propno(self.options['next_propno'] + 1, result['cyclename'])
+                                    cpss.db.pw_generate(pathstr[2])
+                                    cpss.db.proposal_setcarmaid(pathstr[2], idstr)
                                 else:
                                     idstr = result['carmaid']
 
@@ -616,7 +615,7 @@ proposal-help@astro.uiuc.edu
                                 template = self.Template.Template(self.req,
                                                            result['template'],
                                                            result['cyclename'],
-                                                           self.theBackend,
+                                                           cpss.db,
                                                            pathstr[2], True,
                                                    justification=justification)
                                 
@@ -655,9 +654,9 @@ proposal-help@astro.uiuc.edu.
 Click <a href="proposal/edit/%s">here</a> to continue.</div>
 """ % pathstr[2])
                                     else:
-                                        self.theBackend.pdf_add_update(
+                                        cpss.db.pdf_add_update(
                                             pathstr[2], pdf_data)
-                                        self.theBackend.proposal_submit(
+                                        cpss.db.proposal_submit(
                                             pathstr[2])
                                         self.req.write("""<div class=submitted>
 Congratulations! You have submitted your proposal sucessfully!<br>
@@ -688,7 +687,7 @@ link.
                             template = self.Template.Template(self.req,
                                                           result['template'],
                                                           result['cyclename'],
-                                                          self.theBackend,
+                                                          cpss.db,
                                                           pathstr[2], True,
                                                    justification=justification)
                             self.do_header()
@@ -770,14 +769,14 @@ link.
                         self.do_404()
                 elif (items == 2):
                     if (pathstr[1] == "add"):
-                        options = self.theBackend.options_get()
+                        options = cpss.db.options_get()
                         template = self.Template.Template(self.req,
                                                           options['template'],
                                                           options['cyclename'],
-                                                          self.theBackend,
+                                                          cpss.db,
                                                           None,
                                                           True, Fetch=False)
-                        propno = self.theBackend.proposal_add(
+                        propno = cpss.db.proposal_add(
                             self.theSession['username'],
                             template.tempclass.tables,
                             options['cyclename'])
@@ -787,7 +786,7 @@ link.
                         self.do_404()
                 elif (items == 1):
                     self.do_header()
-                    result = self.theBackend.proposal_list(
+                    result = cpss.db.proposal_list(
                         self.theSession['username'])
                     self.thePage.proposal_list(result, self.theSession['name'])
                     self.do_footer()
@@ -1134,13 +1133,13 @@ link.
         Error = ""
         if (self.fields.getfirst('forgotpw') == 'Password Reset'):
             username = self.fields.getfirst('user')
-            if (self.theBackend.user_exists(username) == False):
+            if (cpss.db.user_exists(username) == False):
                 Error = "That username does not exist."
             else:
                 Error = "A new password has been sent to your email address."
                 email = username
                 newpw = self.randomcode()
-                self.theBackend.password_change(email, newpw)
+                cpss.db.password_change(email, newpw)
                 mail = smtplib.SMTP()
                 mail.connect()                
                 msg = ("""To: %s
@@ -1172,7 +1171,7 @@ proposal-help@astro.uiuc.edu
             password = self.fields.getfirst('pass')
 
             if (username == 'admin'):
-                options = self.theBackend.options_get()
+                options = cpss.db.options_get()
                 if (md5.md5(password).hexdigest() == options['admin_pw']):
                     self.theSession['admin'] = True
                     self.theSession['authenticated'] = True
@@ -1194,7 +1193,7 @@ proposal-help@astro.uiuc.edu
                 Error = "You must enter both a username and a password."
                 authenticate = False
             else:
-                (authenticate, user) = self.theBackend.verify_user(username,
+                (authenticate, user) = cpss.db.verify_user(username,
                                                                    password)
             if (authenticate == False):
                 Error = """The username and password you have supplied are not
@@ -1233,7 +1232,7 @@ proposal-help@astro.uiuc.edu
             if (str(type(oldpw)) != "<class 'mod_python.util.StringField'>"):
                 oldpw = ""
 
-            (authenticate, user) = self.theBackend.verify_user(username, oldpw)
+            (authenticate, user) = cpss.db.verify_user(username, oldpw)
             
             if (authenticate == False):
                 error = """Your current password is incorrect. Please verify 
@@ -1242,7 +1241,7 @@ proposal-help@astro.uiuc.edu
                 error = """The new passwords do not match. Please make sure 
                            they match."""
             else:
-                self.theBackend.password_change(username, newpw1)
+                cpss.db.password_change(username, newpw1)
                 error = "Your password has been successfully changed."
 
         username = self.theSession['name']
@@ -1265,7 +1264,7 @@ proposal-help@astro.uiuc.edu
         if (self.fields.getfirst('sub_activate') == "Activate Account"):
             code = self.fields.getfirst('activate')
             if (code == self.theSession['activated']):
-                self.theBackend.update_code(self.theSession['username'], "0")
+                cpss.db.update_code(self.theSession['username'], "0")
                 self.theSession['activated'] = "0"
                 self.theSession.save()
                 self.do_header(refresh='proposal/')
@@ -1285,7 +1284,7 @@ proposal-help@astro.uiuc.edu
             code = self.randomcode()
             self.theSession['activated'] = code
             self.theSession.save()
-            self.theBackend.update_code(self.theSession['username'], code)
+            cpss.db.update_code(self.theSession['username'], code)
             self.activation_mail(self.theSession['name'],
                                  self.theSession['username'], code)
             self.do_header()

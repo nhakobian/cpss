@@ -5,6 +5,8 @@ import os.path
 from pyPdf import PdfFileWriter, PdfFileReader
 from string import Template as baseTemplate
 
+cpss = apache.import_module("../cpss.py")
+
 class strTemplate(baseTemplate):
     idpattern = r'[_a-z0-9][_a-z0-9]*'
 
@@ -12,14 +14,13 @@ class Template:
     def __init__(self, req, template, cyclename, backend, propid, view,
                  Fetch=True, justification=False):
 
-        self.theBackend = backend
         self.justification = justification
 
         if (Fetch == True):
-            self.is_key_project = self.theBackend.is_key_project(propid)
+            self.is_key_project = cpss.db.is_key_project(propid)
 
-            if (self.is_key_project != self.theBackend.justification_type_latex(propid)):
-                self.theBackend.justification_type_set(propid, 1)
+            if (self.is_key_project != cpss.db.justification_type_latex(propid)):
+                cpss.db.justification_type_set(propid, 1)
                 self.justification = True
  
         self.req = req
@@ -52,7 +53,7 @@ class Template:
 
 
         if (Fetch == True):
-            self.proposal = self.theBackend.proposal_get(self.tempclass.tables,
+            self.proposal = cpss.db.proposal_get(self.tempclass.tables,
                                                          cyclename, propid) 
             #Merge database data with template style
             self.data_merge()
@@ -146,11 +147,11 @@ class Template:
         else:
             do_sections = self.sections
 
-        fetch = self.theBackend.proposal_status(self.propid)
+        fetch = cpss.db.proposal_status(self.propid)
 
         ###Begin Page Header
         self.req.write("""<div class="navbar, propheader">""")
-        if (self.cyclename != self.theBackend.options['cyclename']):
+        if (self.cyclename != cpss.db.options['cyclename']):
             self.req.write("""<ul id="navlist">
             <li><a href="%s">Current Proposal</a></li>""" %
                            ("proposal/edit/" + str(self.propid)))
@@ -269,7 +270,7 @@ class Template:
                     (add)</a></p>""" % (section['section'],
                                         self.propid, 'image'))
 
-                    result = self.theBackend.images_list(self.propid)
+                    result = cpss.db.images_list(self.propid)
 
                     if (len(result) == 0):
                         self.req.write("""<table><tr><td>None
@@ -331,7 +332,7 @@ class Template:
                         method="post">""" % ('proposal/edit/' +
                                              str(self.propid)))
 
-                        data = self.theBackend.justification_get_data(
+                        data = cpss.db.justification_get_data(
                             self.propid)
 
                         if (data == None):
@@ -676,14 +677,14 @@ class Template:
             else:
                 data_field['data'] = None
 
-        self.theBackend.proposal_tagset(do_section['table'], propid,
+        cpss.db.proposal_tagset(do_section['table'], propid,
                                         final_group, id=id)
 
     def process_image(self, fields):
         if (fields['file'].filename != ''):
 
-            files_dir = (self.theBackend.config['base_directory'] +
-                         self.theBackend.config['files_directory'])
+            files_dir = (cpss.db.config['base_directory'] +
+                         cpss.db.config['files_directory'])
             prop_dir = files_dir + self.propid + '/'
             
             if (os.path.isdir(prop_dir) == False):
@@ -949,9 +950,9 @@ class Template:
 
     def latex_generate(self, propid, file_send=True,
                        carma_propno="Unsubmitted"):
-        base_dir = (self.theBackend.config['base_directory'])
-        files_dir = (self.theBackend.config['base_directory'] +
-                     self.theBackend.config['files_directory'])
+        base_dir = (cpss.config['base_directory'])
+        files_dir = (cpss.config['base_directory'] +
+                     cpss.config['files_directory'])
         prop_dir = files_dir + propid + '/'
 
         if (os.path.isdir(prop_dir) == False):
@@ -1050,7 +1051,7 @@ class Template:
         at = os.popen("""cd %s; dvips -t letter -o - %slatex.dvi | ps2pdf14 - %slatex.pdf""" % (prop_dir, prop_dir, prop_dir))
         at.close()
 
-        result = self.theBackend.images_list(self.propid)
+        result = cpss.db.images_list(self.propid)
         if (len(result) != 0):
             for image in result:
                 self.image_check(image, prop_dir)
@@ -1097,7 +1098,7 @@ class Template:
         if (self.justification == True):
             justification = open(prop_dir + 'justification/justification.tex',
                                  'wb')
-            data = self.theBackend.justification_get_data(self.propid)
+            data = cpss.db.justification_get_data(self.propid)
             if (data == None):
                 justification.write('')
                 just_skip = 1
@@ -1162,7 +1163,7 @@ class Template:
         if (os.path.isfile(propdir + 'justification/' + image['file']) == True):
             return
         else:
-            imdata = self.theBackend.images_get(image['proposalid'], image['numb'])[0]
+            imdata = cpss.db.images_get(image['proposalid'], image['numb'])[0]
             file = open(propdir + 'justification/' + imdata['file'], 'wb')
             file.write(imdata['ps_data'])
             file.close()
