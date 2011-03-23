@@ -3,7 +3,7 @@ cpss = apache.import_module("cpss")
 
 class Page:
     def __init__(self):
-        self.req = cpss.req
+	pass
 
     def header(self, login=False, refresh=None, logon=False):
         logout_bar = [["Login", "login/"], ["Help","help/"], 
@@ -12,14 +12,14 @@ class Page:
                       ["Help","help/"], ["Logout", "logout/"]]
 
         if (refresh != None):
-            self.req.headers_out['location'] = cpss.config['html_base']+refresh
-            self.req.status = apache.HTTP_MOVED_TEMPORARILY
+            cpss.req.headers_out['location'] = cpss.config['html_base']+refresh
+            cpss.req.status = apache.HTTP_MOVED_TEMPORARILY
             raise apache.SERVER_RETURN, apache.OK
 
-        self.req.headers_out['Expires'] = 'Thu, 19 Nov 1981 09:52:00 GMT'
-        self.req.headers_out['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0'
-        self.req.headers_out['Pragma'] = 'no-cache'
-        self.req.content_type = "text/html"
+        cpss.req.headers_out['Expires'] = 'Thu, 19 Nov 1981 09:52:00 GMT'
+        cpss.req.headers_out['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0'
+        cpss.req.headers_out['Pragma'] = 'no-cache'
+        cpss.req.content_type = "text/html"
 
         maintain = ""
         if (cpss.session.__contains__('maint_mode') == True):
@@ -34,7 +34,7 @@ class Page:
         else:
             onLoad = ""
             
-        self.req.write(cpss.text.page_header % (cpss.config['html_base'], onLoad, maintain, cpss.config['html_base']))
+        cpss.w(cpss.text.page_header % (cpss.config['html_base'], onLoad, maintain, cpss.config['html_base']))
 
         if (login == False):
             bar = logout_bar
@@ -42,23 +42,23 @@ class Page:
             bar = login_bar
 
         for entry in bar:
-            self.req.write("""<li><a href="%s">%s</a></li>""" % (entry[1],
+            cpss.w("""<li><a href="%s">%s</a></li>""" % (entry[1],
                                                                  entry[0]))
 
-        self.req.write("""</ul></div>
+        cpss.w("""</ul></div>
         <div class="content">
         """)
 
     def footer(self):
         #The second set of head tags assure that Internet Explorer will not
         #cache these pages. This would be bad...
-        self.req.write(cpss.text.page_footer)
+        cpss.w(cpss.text.page_footer)
         
     def do_404(self):
-        self.req.write("<center>This page cannot be found</center>")
+        cpss.w("<center>This page cannot be found</center>")
         
     def logon(self, Error='', Username=''):
-        self.req.write(cpss.text.page_logon % (Error, Username))
+        cpss.w(cpss.text.page_logon % (Error, Username))
 
     def user_create(self, Name="", Email="", Error="", random=""):
         buffer = ("""
@@ -84,10 +84,10 @@ class Page:
                        value='%s'><input type="submit" name="submit"
                        value="Submit"></td></tr>
                <center>""" % (Name, Email, random))
-        self.req.write(buffer)       
+        cpss.w(buffer)       
 
     def user_create_success(self, name, email):
-        self.req.write("""<center>
+        cpss.w("""<center>
         Welcome, %s, you have successfully registered yourself in the Carma
         Proposal Submission System. You will shortly recieve an e-mail at
         the address you registered with, %s. You must log-in and enter the
@@ -96,10 +96,10 @@ class Page:
         """ % (name, email))
 
     def main(self):
-        self.req.write(cpss.text.page_main)
+        cpss.w(cpss.text.page_main)
 
     def activate(self, Error=""):
-        self.req.write("""
+        cpss.w("""
         You have not yet confirmed your account. Please enter your activation
         code below, or, if you have lost or not recieved the e-mail, press the
         generate button to generate a new e-mail.
@@ -120,11 +120,11 @@ class Page:
 
     def userpage(self, name, email, error=""):
         if (error != ""):
-            self.req.write("<div class=browser_error>%s</div>" % error )
-        self.req.write("""<center><h1>User Information</h1>""")
-        self.req.write("""<table><tr><td>Name:</td><td>%s</td></tr>""" % name)
-        self.req.write("""<tr><td>Email:</td><td>%s</td></tr></table></center>""" % email)
-        self.req.write("""<br><center><form action="user/" method="post">
+            cpss.w("<div class=browser_error>%s</div>" % error )
+        cpss.w("""<center><h1>User Information</h1>""")
+        cpss.w("""<table><tr><td>Name:</td><td>%s</td></tr>""" % name)
+        cpss.w("""<tr><td>Email:</td><td>%s</td></tr></table></center>""" % email)
+        cpss.w("""<br><center><form action="user/" method="post">
         <table><tr><td colspan=2><h3>Change Password</h3></td></tr>
         <tr><td>Old Password:</td><td><input type=password name="oldpw"></td></tr>
         <tr><td>New Password:</td><td><input type=password name="newpw1"></td></tr>
@@ -135,13 +135,13 @@ class Page:
 
     def proposal_list(self, list, name):
         if cpss.options["create"] == True:
-            self.req.write("""<h3>%s's Proposals
+            cpss.w("""<h3>%s's Proposals
                  (<a href="proposal/add">Add New Proposal</a>)</h3>""" % name)
         else:
-            self.req.write("""<h3>%s's Proposals</h3>""" % name)
+            cpss.w("""<h3>%s's Proposals</h3>""" % name)
 
         if (len(list) == 0):
-            self.req.write("""<div id="proplist"><p><i>You have no saved
+            cpss.w("""<div id="proplist"><p><i>You have no saved
             proposals. Click the new button above to add one.</i></p></div>""")
         else:
             buf = """<div id="proplist"><table><tr>
@@ -171,10 +171,10 @@ class Page:
                     % (carmaid, entry['title'], status, entry['proposalid'],
                        pdf, password))
             buf += """</table></div>""" 
-            self.req.write(buf)
+            cpss.w(buf)
         
     def delete_verify(self, pathtext, title):
-        self.req.write("""<center>Do you wish to delete the proposal, "%s"?
+        cpss.w("""<center>Do you wish to delete the proposal, "%s"?
 
         <form action="%s" method="post">
         <input type=submit name="delete" value="Delete Proposal"></form>

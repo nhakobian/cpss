@@ -29,6 +29,11 @@ options = None # This will be filled with the SQL options.
 session = None
 req = None
 
+def w(string):
+    if req != None:
+        req.write(string)
+    return
+
 def handler(request):
     os.umask(2)
 
