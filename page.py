@@ -4,10 +4,6 @@ cpss = apache.import_module("cpss")
 class Page:
     def __init__(self):
         self.req = cpss.req
-        self.config = cpss.config
-        self.base = self.config['html_base']
-        self.theSession = cpss.session
-        self.options = cpss.options
 
     def header(self, login=False, refresh=None, logon=False):
         logout_bar = [["Login", "login/"], ["Help","help/"], 
@@ -16,7 +12,7 @@ class Page:
                       ["Help","help/"], ["Logout", "logout/"]]
 
         if (refresh != None):
-            self.req.headers_out['location'] = self.base+refresh
+            self.req.headers_out['location'] = cpss.config['html_base']+refresh
             self.req.status = apache.HTTP_MOVED_TEMPORARILY
             raise apache.SERVER_RETURN, apache.OK
 
@@ -26,11 +22,11 @@ class Page:
         self.req.content_type = "text/html"
 
         maintain = ""
-        if (self.theSession.__contains__('maint_mode') == True):
-            if (self.theSession['maint_mode'] == 1):
-                maintain = """<div class="maintenance">""" + self.options['maint_warn'] + "</div>"
-            elif ((self.theSession['maint_mode'] == 2) and
-                  (self.theSession['maint_allow'] == True)):
+        if (cpss.session.__contains__('maint_mode') == True):
+            if (cpss.session['maint_mode'] == 1):
+                maintain = """<div class="maintenance">""" + cpss.options['maint_warn'] + "</div>"
+            elif ((cpss.session['maint_mode'] == 2) and
+                  (cpss.session['maint_allow'] == True)):
                 maintain = """<div class="maintenance">A maintenance or debugging cycle is currently in effect. Beware that some features currently are not working as intended. To see the maintenance page that is shown to people who do not have access during a maintenance cycle, please click <a href='invalidate/'>here</a>. This will log out out if you are currently logged in.</div>"""
 
         if (logon==True):
@@ -38,8 +34,7 @@ class Page:
         else:
             onLoad = ""
             
-        self.req.write(cpss.text.page_header % (self.base, onLoad, maintain,
-                                self.config['html_base']))
+        self.req.write(cpss.text.page_header % (cpss.config['html_base'], onLoad, maintain, cpss.config['html_base']))
 
         if (login == False):
             bar = logout_bar
@@ -139,7 +134,7 @@ class Page:
         """)
 
     def proposal_list(self, list, name):
-        if self.options["create"] == True:
+        if cpss.options["create"] == True:
             self.req.write("""<h3>%s's Proposals
                  (<a href="proposal/add">Add New Proposal</a>)</h3>""" % name)
         else:
@@ -165,7 +160,7 @@ class Page:
                     pdf =  ("""<a href="proposal/finalpdf/%s">view final pdf</a>""" %
                             (entry['proposalid']))
                     password = str(entry['carmapw'])
-                if ((entry['cyclename'] != self.options['cyclename']) and (entry['status'] == 1)):
+                if ((entry['cyclename'] != cpss.options['cyclename']) and (entry['status'] == 1)):
                     #placeholder
                     buf += ("""<tr><td>%s</td><td id="title">%s</td><td>%s</td>
                     <td>  %s </td><td>%s</td></tr>"""
