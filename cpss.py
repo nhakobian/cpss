@@ -63,8 +63,8 @@ def handler(request):
 
     global options
     options = db.options_get()
-    thePage = Page.Page()
-    theConnector = Connector.Connector(thePage)
+
+    theConnector = Connector.Connector(page)
 
     if (config['debug'] == False):
         try:
