@@ -7,6 +7,13 @@ from string import Template as baseTemplate
 
 cpss = apache.import_module("../cpss.py")
 
+template10 = apache.import_module('template10')
+template2009b = apache.import_module('template2009b')
+template2010a = apache.import_module('template2010a')
+template2010b = apache.import_module('template2010b')
+template2011a = apache.import_module('template2011a')
+template2011b = apache.import_module('template2011b')
+
 class strTemplate(baseTemplate):
     idpattern = r'[_a-z0-9][_a-z0-9]*'
 
@@ -35,17 +42,18 @@ class Template:
             self.edit = False
         
         if (template == 'template10'):
-            self.template = apache.import_module('template10')
+            self.template = template10
         if (template == 'template2009b'):
-            self.template = apache.import_module('template2009b')
+            self.template = template2009b
         if (template == 'template2010a'):
-            self.template = apache.import_module('template2010a')
+            self.template = template2010a
         if (template == 'template2010b'):
-            self.template = apache.import_module('template2010b')
+            self.template = template2010b
         if (template == 'template2011a'):
-            self.template = apache.import_module('template2011a')
+            self.template = template2011a
         if (template == 'template2011b'):
-            self.template = apache.import_module('template2011b')
+            self.template = template2011b
+
         self.template_name = template
         self.tempclass = self.template.template()
         self.sections = self.tempclass.sections
@@ -55,13 +63,13 @@ class Template:
         if (Fetch == True):
             self.proposal = cpss.db.proposal_get(self.tempclass.tables,
                                                          cyclename, propid) 
-            #Merge database data with template style
+            # Merge database data with template style
             self.data_merge()
 
     def calc_hours(self):
         for section in self.sections:
             if section['name'] == 'Source Information':
-                sources=section
+                sources = section
         sources = sources['data']
         time = 0
         for source in (sources):
@@ -294,32 +302,10 @@ class Template:
                         else:
                             web = ''
                             pdf = 'selected'
-                        self.req.write("""
-                    <div id="editlist">
-                    <p>Justification Type</p>
-                    <table><tr><td style="width:50%%;text-align:left;">
-                    Using this proposal submission tool, you have a choice of
-                    using the web-based tool to submit your Scientific and
-                    Technical Justification sections or to upload a LaTeX file
-                    containing this information using the template located
-                    <a href='images/justification.tar.gz'>here</a>.</td>
-                    <td>
-                    <form action='proposal/typechange/%s' method='post'
-                    name="form">
-                    I want to use: <select name="type">
-                    <option value="Website Justification" %s>Website
-                    Justification
-                    <option value="LaTeX Template" %s>LaTeX Template
-                    </select>
-                    <input type="submit" value="Select Choice" name="submit">
-                    </input>
-                    </form>""" % (self.propid, web, pdf))
+                        self.req.write(cpss.text.html_just_normal % 
+                                       (self.propid, web, pdf))
                     else:
-                        self.req.write("""<div id="editlist"><p>Justification Type</p>
-                    <table><tr><td style="width:50%%;text-align:left;">Key Projects are
-                    required to upload a <b>LaTeX</b> file for their justification. A LaTeX
-                    template specifically for Key Projects is available <a href="images/justification_key.tar.gz">here</a>. This 
-                    template conforms to all the necessary requirements. Use the following link for more details about <a href="http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html" target="_blank">Key Projects</a>.""")
+                        self.req.write(cpss.text.html_just_key)
 
                     if (self.justification == True):
                         self.req.write("""<br>
@@ -599,6 +585,7 @@ class Template:
                 <a href="%s?action=delete&section=image&id=%s">Delete</a>
                 </td></tr>""" % (editfile, sample_code, 
                                  'proposal/edit/' + str(propid),image['numb']))
+
     def collapse_lines(self, group):
         new_group = []
         keys = group.keys()
@@ -729,9 +716,10 @@ class Template:
                         checked='checked'
                     else:
                         checked=''
-                    element['html'] += ("""&nbsp;&nbsp;%s<input id="check" type="checkbox"
-                                            name="%s" value="%s" %s>""" % (key,
-                                             element['fieldname'], key, checked))
+                    element['html'] += ("""&nbsp;&nbsp;%s<input id="check" 
+                                           type="checkbox" name="%s" 
+                                           value="%s" %s>""" % (key,
+                                           element['fieldname'], key, checked))
             if (view == True):
                 element['html'] = element['data']
         #######################################################################
@@ -1053,42 +1041,14 @@ class Template:
                 self.image_check(image, prop_dir)
 
         if self.justification == False:
-            just = (r"""\documentclass[preprint, letterpaper, 12pt]{aastex}
-\usepackage[table,rgb]{xcolor}
-\usepackage[letterpaper]{geometry}
-\usepackage{helvet}
-\usepackage{tabularx}
-\pagestyle{empty}
-\geometry{left=0.75in, right=0.75in, top=0.75in, bottom=0.75in}
-\begin{document}
-\newlength{\carmaindent}
-\setlength{\carmaindent}{\parindent}
-\setlength{\parskip}{0in}
-\newlength{\sectitlelength}
-\newcommand{\sectitlel}[1]{
-  \setlength{\sectitlelength}{\parindent}
-  \setlength{\parindent}{0in}
-  \vskip 0.15in
-  \begin{tabularx}{\textwidth}{@{}l@{}}
-    \hiderowcolors
-    {\sffamily \Large \textbf{#1} \normalfont} \\
-    \hline
-    \showrowcolors
-  \end{tabularx}
-  \setlength{\parindent}{\sectitlelength}
-  \vskip -0.3cm
-}
-""")      
             for section in self.sections:
                 if (section['section'] == 'technical_justification'):
-                    just += "\sectitlel{Techical Justification}\n"
-                    just += str(self.data_strip(section['data'][0])['technical_justification'])
+                    tjust = str(self.data_strip(section['data'][0])['technical_justification'])
                 elif (section['section'] == 'scientific_justification'):
-                    just += "\sectitlel{Scientific Justification}\n"
-                    just += str(self.data_strip(section['data'][0])['scientific_justification'])
-            just += ("""\end{document}\n""")
+                    sjust = str(self.data_strip(section['data'][0])['scientific_justification'])
+
             tfile = open(prop_dir + 'justification/justification.tex', 'w')
-            tfile.write(just)
+            tfile.write(cpss.text.tmpl_just % (tjust, sjust))
             tfile.close()
         
         if (self.justification == True):

@@ -331,8 +331,8 @@ class Connector:
                     cpss.db.justification_type_set(pathstr[2], 0)
                     cpss.db.justification_delete_data(pathstr[2])
 
-                    files_dir = (cpss.db.config['base_directory'] + 
-                                 cpss.db.config['files_directory'])
+                    files_dir = (cpss.config['base_directory'] + 
+                                 cpss.config['files_directory'])
                     prop_dir = files_dir + pathstr[2] + '/justification/'
 
                     if (os.path.isfile(prop_dir + 'justification.pdf') == True):

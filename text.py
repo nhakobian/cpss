@@ -409,6 +409,45 @@ help_tothours=r"""
 </div>
 """
 
+html_just_key=r"""<div id="editlist">
+  <p>Justification Type</p>
+
+  <table>
+    <tr>
+      <td style="width : 50%%; text-align : left;">
+        Key Projects are required to upload a <b>LaTeX</b> file for
+        their justification. A LaTeX template specifically for Key
+        Projects is available <a
+        href="images/justification_key.tar.gz">here</a>. This template
+        conforms to all the necessary requirements. Use the following
+        link for more details about <a href=
+        "http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html"
+        target="_blank">Key Projects</a>.
+"""
+
+html_just_normal=r"""<div id="editlist">
+  <p>Justification Type</p>
+
+  <table>
+    <tr>
+      <td style="width : 50%%; text-align : left;">
+        Using this proposal submission tool, you have a choice of
+        using the web-based tool to submit your Scientific and
+        Technical Justification sections or to upload a LaTeX file
+        containing this information using the template located <a
+        href='images/justification.tar.gz'>here</a>.
+      </td>
+      <td>
+        <form action='proposal/typechange/%s' method='post' name="form">
+          I want to use: 
+          <select name="type">
+            <option value="Website Justification" %s>Website Justification
+            <option value="LaTeX Template" %s>LaTeX Template
+          </select>
+          <input type="submit" value="Select Choice" name="submit"></input>
+        </form>
+"""
+
 page_footer=r"""</div>
 </div>
 </body>
@@ -774,5 +813,42 @@ submit_verify=r"""<div class="maintenance" style="text-align : left; padding : 1
   </form>
 
 </div>
+"""
+
+tmpl_just=r"""\documentclass[preprint, letterpaper, 12pt]{aastex}
+\usepackage[table,rgb]{xcolor}
+\usepackage[letterpaper]{geometry}
+\usepackage{helvet}
+\usepackage{tabularx}
+\pagestyle{empty}
+\geometry{left=0.75in, right=0.75in, top=0.75in, bottom=0.75in}
+\begin{document}
+\newlength{\carmaindent}
+\setlength{\carmaindent}{\parindent}
+\setlength{\parskip}{0in}
+\newlength{\sectitlelength}
+\newcommand{\sectitlel}[1]{
+  \setlength{\sectitlelength}{\parindent}
+  \setlength{\parindent}{0in}
+  \vskip 0.15in
+  \begin{tabularx}{\textwidth}{@{}l@{}}
+    \hiderowcolors
+    {\sffamily \Large \textbf{#1} \normalfont} \\
+    \hline
+    \showrowcolors
+  \end{tabularx}
+  \setlength{\parindent}{\sectitlelength}
+  \vskip -0.3cm
+}
+
+\sectitlel{Techical Justification}
+
+%s
+
+\sectitlel{Scientific Justification}
+
+%s
+
+\end{document}
 """
 
