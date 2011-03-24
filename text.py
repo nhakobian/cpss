@@ -1,3 +1,75 @@
+email_activation=r"""To: "%s" <%s>
+From: "CARMA Proposal System" <no_not_reply@carma-prop.astro.illinois.edu>
+Subject: CARMA Proposal System Activation Code
+Content-Type: text/plain;
+
+Dear %s,
+
+This automatically generated message is to inform you that you have
+successfully registered for the CARMA Proposal system website. If
+you believe you have recieved this message in error, please disregard
+or forward it to the e-mail address below.
+
+To activate your account:
+
+1. Point your browser to http://carma-prop.astro.illinois.edu/proposals
+2. Log into your account with the username (email address) and
+   password that you created when signing up for the account. For
+   security purposes, the password will not be displayed here. If
+   you have forgotten your password, please contact the person below
+   and request that it be reset. The password can never be seen or
+   retrieved by the Proposal system staff, only reset.
+3. Since this is your first time logging in, it will display a page
+   requesting an activation code. Your activation code is:
+   %s
+   This is a one time procedure and you will never see or need this
+   code again. It is used to verify that the e-mail address you
+   have provided is accurate in case we need to contact you.
+4. Press the activate button and you are ready to use the system!
+
+If you have any questions or comments, please direct them to the
+e-mail address below. This address is not checked and any message
+directed to it will be returned with an error.
+
+Thank You,
+CARMA Proposal Staff
+proposal-help@astro.uiuc.edu
+
+"""
+
+email_pwreset=r"""To: %s
+From: "CARMA Proposal System" <no_not_reply@carma-prop.astro.illinois.edu>
+Subject: CARMA Proposal System Password Reset
+Content-Type: text/plain;
+
+You have requested a password reset for the account:
+%s
+
+Your new password is:
+%s
+
+You can change the password if you log in, click on the user option
+and enter the information in the "Change Password" section. 
+
+If you have any questions or problems feel free to contact us at the
+address listed below.
+
+Thank You,
+CARMA Proposal Staff
+proposal-help@astro.uiuc.edu
+
+"""
+
+error_latex_large=r"""The LaTeX file you are trying to upload is greater than the allowed
+size of 10MB. Please check to make sure you are uploading the correct
+file.
+"""
+
+error_ps_large=r"""The postscript image you are trying to upload is greater than the
+allowed size of 14MB. If you must upload an image greater than this
+size please send a message to proposal-help@astro.uiuc.edu for help.
+"""
+
 help_abstract=r"""
 <div class="helptext">
   Please keep the abstract to 1/4 of a page maximum. You may use LaTeX
@@ -7,22 +79,203 @@ help_abstract=r"""
 </div>
 """
 
-submit_success=r"""
-<div class=submitted>
-  Congratulations! You have submitted your proposal sucessfully!<br>
+help_author=r"""
+<div class="helptext">
+  The <b>Authors List</b> section is intended for observers to give
+  information regarding who is working on this proposed project, what
+  institutions they are from, and whether or not the individuals are
+  graduate students.
+</div>
 
-  To view your final proposal, click on the Proposals button above to
-  return to the screen which lists your proposals, and click on the
-  "view final pdf" link available there.<br><br>
+<a name="name" />
+<div class="helptitle">Name</div>
+<div class="helptext">
+  Please insert your/your co-author(s) name(s) here.
+</div>
 
-  If you find a mistake in your proposal after you submit it, you may
-  correct the errors by editing your proposal and re-submitting
-  it.<br><br>
+<a name="email" />
+<div class="helptitle">E-mail</div>
+<div class="helptext">
+  Please enter the e-mail addresses of you and your colleagues
+  here.
+</div>
 
-  Reminder: If you make corrections to your proposal and do not
-  re-submit it, the changes will NOT be reflected in the final
-  PDF. You can always view the final PDF by opening your proposals
-  page and clicking on the "view final pdf" link.
+<a name="phone" />
+<div class="helptitle">Phone Number</div>
+<div class="helptext">
+  Please enter the contact phone number here.
+</div>
+
+<a name="institution" />
+<div class="helptitle">Institution</div>
+<div class="helptext">
+  Please select your institution name here from the drop down box.  If
+  you are not at one of the CARMA member institutions, select 'Other'
+  and enter your institution name in the box that appears below.
+</div>
+
+<a name="grad" />
+<div class="helptitle">Graduate Student</div>
+<div class="helptext">
+  Is this person a graduate student?
+</div>
+
+<a name="thesis" />
+<div class="helptitle">Thesis</div>
+<div class="helptext">
+  Is this proposal part of an approved graduate student thesis
+  project? If this box is checked, a supporting e-mail from the
+  advisor must be sent to Nikolaus Volgenau
+  (volgenau@mmarray.org). The e-mail should describe the role of the
+  observations in the thesis.
+</div>
+"""
+
+help_image=r"""
+<div class="helptext">
+  Use the images section to attach any images to your proposal. The
+  images must be in postscript (PS or EPS) format. If you upload any
+  other type of image, you will get an error when you attempt to view
+  the PDF of your proposal.  If you need to make any adjustments to
+  the attached image (i.e.  rotation, scale, cropping) please refer to
+  the documentation for the LaTeX package graphicx. The maximum file
+  size for an image is ~14MB.
+</div>
+"""
+
+help_index=r"""<span style="font-weight:bold;font-size:14pt">
+  Choose a help topic below:
+</span>
+
+<ul style="help">
+  <li>
+    <a href="%shelp/propinfo">
+      General Proposal Information
+    </a>
+  </li>
+  <li>
+    <a href="%shelp/author">
+      Authors List
+    </a>
+  </li>
+  <li>
+    <a href="%shelp/abstract">Abstract</a>
+  </li>
+  <li>
+    <a href="%shelp/source">Source Information</a>
+  </li>
+  <li>
+    <a href="%shelp/special_requirements">
+      Special Requirements
+    </a>
+  </li>
+  <li>
+    <a href="%shelp/scientific_justification">
+      Scientific Justification
+    </a>
+  </li>
+  <li>
+    <a href="%shelp/technical_justification">
+      Technical Justification
+    </a>
+  </li>
+  <li>
+    <a href="%shelp/image">Image Attachments</a>
+  </li>
+</ul>
+<br>
+If you have an issue or question (whether it is a technical problem
+with the proposal site or a clarification on what type of information
+is expected) please send an e-mail to proposal-help@astro.uiuc.edu
+. If it is a technical issue, please make sure to give exact
+information as to what you were trying to do, and what the error
+message (if any) said.
+"""
+
+help_priorobs=r"""
+<div class="helptext">
+  The Status of Prior CARMA Observations section allows the proposer
+  to report on the status of the PI's prior CARMA observations. For
+  example, whether they are reduced, in press, published, etc. Include
+  previous project codes.
+</div>
+"""
+
+help_propinfo=r"""<div class="helptext"> 
+  The <b>General Proposal Information</b> section is intended for the
+  proposer to give some general information about their proposed
+  project. Below is a description of what information is requested in
+  this section.
+</div>
+
+<a name="title" />
+<div class="helptitle">Title</div>
+<div class="helptext">
+  The title of your proposal (no LaTeX characters are allowed).<br>
+</div>
+
+<a name="date" />
+<div class="helptitle">Date</div>
+<div class="helptext">
+  This date is set automatically to when you last edited the
+  information on your proposal.
+</div>
+
+<a name="toe" />
+<div class="helptitle">Time Critical</div>
+<div class="helptext">
+  Check this box if the object(s) you wish to observe need to be
+  scheduled only at specific times (whether known in advance or not)
+  (e.g. cometary observations, solar flares, transient source
+  follow-up, coordinated observations).
+</div>
+
+<a name="priority" />
+<div class="helptitle">Priority</div>
+<div class="helptext">
+  If you are submitting several proposals, you may assign a priority
+  number to each proposal if you wish to designate one project as
+  being more important than another. No error checking is performed on
+  this field.
+</div>
+
+<a name="scientific_category" />
+<div class="helptitle">Scientific Category</div>
+<div class="helptext">
+  What general category best describes your project?
+</div>
+
+<a name="type_of_observation" />
+<div class="helptitle">Type of Observation</div>
+<div class="helptext">
+  Is this a spectral line observation, continuum observation, or
+  both?
+</div>
+
+<a name="frequency_band" />
+<div class="helptitle">Frequency / Receiver Band</div>
+<div class="helptext">
+  What receiver band are you requesting for your obervations?
+</div>
+
+<a name="help_required" />
+<div class="helptitle">Level of Help Required</div>
+<div class="helptext">
+  Choose "Consultation" for help preparing for your observations. A
+  collaborator is currently recommended if you are not already
+  familiar with millimeter interferometer data reduction
+  techniques.
+</div>
+"""
+
+help_scientificjust=r"""
+<div class="helptext">
+  In the <b>Scientific Justification</b> section describe the
+  scientific motivation for the project. The Scientific and Technical
+  Justification sections combined may be no longer than three pages: 2
+  pages of text, and 1 for tables, figures, and references. LaTeX text
+  may be used in this section. If you need to make a reference to an
+  article or paper, please use inline references.
 </div>
 """
 
@@ -122,6 +375,85 @@ help_source=r"""
 </div>
 """
 
+help_specialreq=r"""
+<div class="helptext">
+  The special requirements section is designed for the proposer to
+  describe any unusual observing constraints that are not defined
+  anywhere else in the proposal.  This includes a summary of special
+  equipment, special observing conditions, required dates, or any
+  other information even if it is described in another section.
+</div>
+"""
+
+help_technicaljust=r"""
+<div class="helptext">
+  In the <b>Technical Justification</b> section justify the proposed
+  observations on technical grounds. Include any information that will
+  allow the TAC to assess the technical viability of the project. The
+  Scientific and Technical Justification sections combined may be no
+  longer than three pages: 2 pages of text, and 1 for tables, figures,
+  and references. LaTeX text may be used in this section. If you need
+  to make a reference to an article or paper, please use inline
+  references.
+</div>
+"""
+
+help_tothours=r"""
+<div class="helptext">
+  The total number of hours is calculated by adding up how many hours
+  per source you have requested, by multiplying Hours Requested by the
+  number of array configurations you requested the source to be
+  observed in. For example, if you requested a single source to be
+  observed in the A, B, C, and D arrays for 8 hours, the Total Hours
+  will be 32.
+</div>
+"""
+
+page_footer=r"""</div>
+</div>
+</body>
+</html>
+"""
+
+page_header=r"""<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html>
+<head>
+   <title>CARMA Proposal Submission System</title>
+   <base href="%s" />
+   <script type="text/javascript" src="static/cpss.js"></script>
+   <link rel="stylesheet" href="static/cpss.css" type="text/css">
+</head>
+
+<body onLoad="%s">
+%s
+
+<noscript>
+   <div class="browser_error">
+      You do not have javascript enabled. Javascript is 
+      required for this site to work properly. Please 
+      enable javascript and refresh the page to continue.
+   </div>
+</noscript>
+                       
+<div class="container">
+   <div class="top">
+      <table>
+        <tr>
+          <td>
+            <a href="%s"><img src="static/carmasmall.jpg"></img></a>
+          </td>
+          <td>
+            CARMA Proposal Submission System
+          </td>
+        </tr>
+      </table>
+   </div>
+   <div class="navbar">
+      <ul id="navlist">
+
+"""
+
 page_logon=r"""<div class="login" id="login" style="visibility:hidden;width:500px;margin:0 auto 0 auto">
 <center>
   Please enter your information to login. If you do not have a
@@ -166,212 +498,6 @@ page_logon=r"""<div class="login" id="login" style="visibility:hidden;width:500p
 </center>
 </div>
 
-"""
-
-email_activation=r"""To: "%s" <%s>
-From: "CARMA Proposal System" <no_not_reply@carma-prop.astro.illinois.edu>
-Subject: CARMA Proposal System Activation Code
-Content-Type: text/plain;
-
-Dear %s,
-
-This automatically generated message is to inform you that you have
-successfully registered for the CARMA Proposal system website. If
-you believe you have recieved this message in error, please disregard
-or forward it to the e-mail address below.
-
-To activate your account:
-
-1. Point your browser to http://carma-prop.astro.illinois.edu/proposals
-2. Log into your account with the username (email address) and
-   password that you created when signing up for the account. For
-   security purposes, the password will not be displayed here. If
-   you have forgotten your password, please contact the person below
-   and request that it be reset. The password can never be seen or
-   retrieved by the Proposal system staff, only reset.
-3. Since this is your first time logging in, it will display a page
-   requesting an activation code. Your activation code is:
-   %s
-   This is a one time procedure and you will never see or need this
-   code again. It is used to verify that the e-mail address you
-   have provided is accurate in case we need to contact you.
-4. Press the activate button and you are ready to use the system!
-
-If you have any questions or comments, please direct them to the
-e-mail address below. This address is not checked and any message
-directed to it will be returned with an error.
-
-Thank You,
-CARMA Proposal Staff
-proposal-help@astro.uiuc.edu
-
-"""
-
-help_author=r"""
-<div class="helptext">
-  The <b>Authors List</b> section is intended for observers to give
-  information regarding who is working on this proposed project, what
-  institutions they are from, and whether or not the individuals are
-  graduate students.
-</div>
-
-<a name="name" />
-<div class="helptitle">Name</div>
-<div class="helptext">
-  Please insert your/your co-author(s) name(s) here.
-</div>
-
-<a name="email" />
-<div class="helptitle">E-mail</div>
-<div class="helptext">
-  Please enter the e-mail addresses of you and your colleagues
-  here.
-</div>
-
-<a name="phone" />
-<div class="helptitle">Phone Number</div>
-<div class="helptext">
-  Please enter the contact phone number here.
-</div>
-
-<a name="institution" />
-<div class="helptitle">Institution</div>
-<div class="helptext">
-  Please select your institution name here from the drop down box.  If
-  you are not at one of the CARMA member institutions, select 'Other'
-  and enter your institution name in the box that appears below.
-</div>
-
-<a name="grad" />
-<div class="helptitle">Graduate Student</div>
-<div class="helptext">
-  Is this person a graduate student?
-</div>
-
-<a name="thesis" />
-<div class="helptitle">Thesis</div>
-<div class="helptext">
-  Is this proposal part of an approved graduate student thesis
-  project? If this box is checked, a supporting e-mail from the
-  advisor must be sent to Nikolaus Volgenau
-  (volgenau@mmarray.org). The e-mail should describe the role of the
-  observations in the thesis.
-</div>
-"""
-
-page_footer=r"""</div>
-</div>
-</body>
-</html>
-"""
-
-help_priorobs=r"""
-<div class="helptext">
-  The Status of Prior CARMA Observations section allows the proposer
-  to report on the status of the PI's prior CARMA observations. For
-  example, whether they are reduced, in press, published, etc. Include
-  previous project codes.
-</div>
-"""
-
-submit_failed_error=r"""
-<div class="browser_error">
-  Submission failed!<br>
-  Please go back and check your document for LaTeX errors. Your
-  proposal has NOT been submitted. You may use the "View as PDF"
-  option to view your proposal and any errors that were generated. You
-  must complete the submit process again.<br>Click
-  <a href="proposal/edit/%s">here</a>to continue.
-</div>
-"""
-
-help_technicaljust=r"""
-<div class="helptext">
-  In the <b>Technical Justification</b> section justify the proposed
-  observations on technical grounds. Include any information that will
-  allow the TAC to assess the technical viability of the project. The
-  Scientific and Technical Justification sections combined may be no
-  longer than three pages: 2 pages of text, and 1 for tables, figures,
-  and references. LaTeX text may be used in this section. If you need
-  to make a reference to an article or paper, please use inline
-  references.
-</div>
-"""
-
-page_user=r"""<div class=browser_error style="%(errorsty)s">%(error)s</div>
-
-<center>
-   <h1>User Information</h1>
-
-   <table>
-      <tr>
-        <td>
-          Name:
-        </td>
-        <td>
-          %(name)s
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Email:
-        </td>
-        <td>
-          %(email)s
-        </td>
-      </tr>
-   </table>
-</center>
-
-<br>
-
-<center>
-   <form action="user/" method="post">
-   <table>
-      <tr>
-        <td colspan=2>
-          <h3>Change Password</h3>
-        </td>
-      </tr>
-      
-      <tr>
-        <td>
-          Old Password:
-        </td>
-        <td>
-          <input type=password name="oldpw">
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          New Password:
-        </td>
-        <td>
-          <input type=password name="newpw1">
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Repeat New Password:
-        </td>
-        <td>
-          <input type=password name="newpw2">
-        </td>
-      </tr>
-
-      <tr>
-        <td colspan=2>
-          <center>
-            <input type=submit name="changepw" value="Change Password">
-          </center>
-        </td>
-      </tr>
-   </table>
-   </form>
-</center>
 """
 
 page_main=r"""<center>
@@ -501,96 +627,90 @@ also advise Mary Daniel (mary @ mmarray.org) of any publications that
 use CARMA data.
 """
 
-help_scientificjust=r"""
-<div class="helptext">
-  In the <b>Scientific Justification</b> section describe the
-  scientific motivation for the project. The Scientific and Technical
-  Justification sections combined may be no longer than three pages: 2
-  pages of text, and 1 for tables, figures, and references. LaTeX text
-  may be used in this section. If you need to make a reference to an
-  article or paper, please use inline references.
-</div>
-"""
+page_user=r"""<div class=browser_error style="%(errorsty)s">%(error)s</div>
 
-help_index=r"""<span style="font-weight:bold;font-size:14pt">
-  Choose a help topic below:
-</span>
+<center>
+   <h1>User Information</h1>
 
-<ul style="help">
-  <li>
-    <a href="%shelp/propinfo">
-      General Proposal Information
-    </a>
-  </li>
-  <li>
-    <a href="%shelp/author">
-      Authors List
-    </a>
-  </li>
-  <li>
-    <a href="%shelp/abstract">Abstract</a>
-  </li>
-  <li>
-    <a href="%shelp/source">Source Information</a>
-  </li>
-  <li>
-    <a href="%shelp/special_requirements">
-      Special Requirements
-    </a>
-  </li>
-  <li>
-    <a href="%shelp/scientific_justification">
-      Scientific Justification
-    </a>
-  </li>
-  <li>
-    <a href="%shelp/technical_justification">
-      Technical Justification
-    </a>
-  </li>
-  <li>
-    <a href="%shelp/image">Image Attachments</a>
-  </li>
-</ul>
+   <table>
+      <tr>
+        <td>
+          Name:
+        </td>
+        <td>
+          %(name)s
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          Email:
+        </td>
+        <td>
+          %(email)s
+        </td>
+      </tr>
+   </table>
+</center>
+
 <br>
-If you have an issue or question (whether it is a technical problem
-with the proposal site or a clarification on what type of information
-is expected) please send an e-mail to proposal-help@astro.uiuc.edu
-. If it is a technical issue, please make sure to give exact
-information as to what you were trying to do, and what the error
-message (if any) said.
+
+<center>
+   <form action="user/" method="post">
+   <table>
+      <tr>
+        <td colspan=2>
+          <h3>Change Password</h3>
+        </td>
+      </tr>
+      
+      <tr>
+        <td>
+          Old Password:
+        </td>
+        <td>
+          <input type=password name="oldpw">
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          New Password:
+        </td>
+        <td>
+          <input type=password name="newpw1">
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          Repeat New Password:
+        </td>
+        <td>
+          <input type=password name="newpw2">
+        </td>
+      </tr>
+
+      <tr>
+        <td colspan=2>
+          <center>
+            <input type=submit name="changepw" value="Change Password">
+          </center>
+        </td>
+      </tr>
+   </table>
+   </form>
+</center>
 """
 
-help_specialreq=r"""
-<div class="helptext">
-  The special requirements section is designed for the proposer to
-  describe any unusual observing constraints that are not defined
-  anywhere else in the proposal.  This includes a summary of special
-  equipment, special observing conditions, required dates, or any
-  other information even if it is described in another section.
-</div>
-"""
-
-help_image=r"""
-<div class="helptext">
-  Use the images section to attach any images to your proposal. The
-  images must be in postscript (PS or EPS) format. If you upload any
-  other type of image, you will get an error when you attempt to view
-  the PDF of your proposal.  If you need to make any adjustments to
-  the attached image (i.e.  rotation, scale, cropping) please refer to
-  the documentation for the LaTeX package graphicx. The maximum file
-  size for an image is ~14MB.
-</div>
-"""
-
-help_tothours=r"""
-<div class="helptext">
-  The total number of hours is calculated by adding up how many hours
-  per source you have requested, by multiplying Hours Requested by the
-  number of array configurations you requested the source to be
-  observed in. For example, if you requested a single source to be
-  observed in the A, B, C, and D arrays for 8 hours, the Total Hours
-  will be 32.
+submit_failed_error=r"""
+<div class="browser_error">
+  Submission failed!<br>
+  Please go back and check your document for LaTeX errors. Your
+  proposal has NOT been submitted. You may use the "View as PDF"
+  option to view your proposal and any errors that were generated. You
+  must complete the submit process again.<br>Click
+  <a href="proposal/edit/%s">here</a>to continue.
 </div>
 """
 
@@ -606,132 +726,53 @@ submit_failed_size=r"""
 </div>
 """
 
-page_header=r"""<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+submit_success=r"""
+<div class=submitted>
+  Congratulations! You have submitted your proposal sucessfully!<br>
 
-<html>
-<head>
-   <title>CARMA Proposal Submission System</title>
-   <base href="%s" />
-   <script type="text/javascript" src="static/cpss.js"></script>
-   <link rel="stylesheet" href="static/cpss.css" type="text/css">
-</head>
+  To view your final proposal, click on the Proposals button above to
+  return to the screen which lists your proposals, and click on the
+  "view final pdf" link available there.<br><br>
 
-<body onLoad="%s">
-%s
+  If you find a mistake in your proposal after you submit it, you may
+  correct the errors by editing your proposal and re-submitting
+  it.<br><br>
 
-<noscript>
-   <div class="browser_error">
-      You do not have javascript enabled. Javascript is 
-      required for this site to work properly. Please 
-      enable javascript and refresh the page to continue.
-   </div>
-</noscript>
-                       
-<div class="container">
-   <div class="top">
-      <table>
-        <tr>
-          <td>
-            <a href="%s"><img src="static/carmasmall.jpg"></img></a>
-          </td>
-          <td>
-            CARMA Proposal Submission System
-          </td>
-        </tr>
-      </table>
-   </div>
-   <div class="navbar">
-      <ul id="navlist">
-
-"""
-
-help_propinfo=r"""<div class="helptext"> 
-  The <b>General Proposal Information</b> section is intended for the
-  proposer to give some general information about their proposed
-  project. Below is a description of what information is requested in
-  this section.
-</div>
-
-<a name="title" />
-<div class="helptitle">Title</div>
-<div class="helptext">
-  The title of your proposal (no LaTeX characters are allowed).<br>
-</div>
-
-<a name="date" />
-<div class="helptitle">Date</div>
-<div class="helptext">
-  This date is set automatically to when you last edited the
-  information on your proposal.
-</div>
-
-<a name="toe" />
-<div class="helptitle">Time Critical</div>
-<div class="helptext">
-  Check this box if the object(s) you wish to observe need to be
-  scheduled only at specific times (whether known in advance or not)
-  (e.g. cometary observations, solar flares, transient source
-  follow-up, coordinated observations).
-</div>
-
-<a name="priority" />
-<div class="helptitle">Priority</div>
-<div class="helptext">
-  If you are submitting several proposals, you may assign a priority
-  number to each proposal if you wish to designate one project as
-  being more important than another. No error checking is performed on
-  this field.
-</div>
-
-<a name="scientific_category" />
-<div class="helptitle">Scientific Category</div>
-<div class="helptext">
-  What general category best describes your project?
-</div>
-
-<a name="type_of_observation" />
-<div class="helptitle">Type of Observation</div>
-<div class="helptext">
-  Is this a spectral line observation, continuum observation, or
-  both?
-</div>
-
-<a name="frequency_band" />
-<div class="helptitle">Frequency / Receiver Band</div>
-<div class="helptext">
-  What receiver band are you requesting for your obervations?
-</div>
-
-<a name="help_required" />
-<div class="helptitle">Level of Help Required</div>
-<div class="helptext">
-  Choose "Consultation" for help preparing for your observations. A
-  collaborator is currently recommended if you are not already
-  familiar with millimeter interferometer data reduction
-  techniques.
+  Reminder: If you make corrections to your proposal and do not
+  re-submit it, the changes will NOT be reflected in the final
+  PDF. You can always view the final PDF by opening your proposals
+  page and clicking on the "view final pdf" link.
 </div>
 """
 
-email_pwreset=r"""To: %s
-From: "CARMA Proposal System" <no_not_reply@carma-prop.astro.illinois.edu>
-Subject: CARMA Proposal System Password Reset
-Content-Type: text/plain;
+submit_verify=r"""<div class="maintenance" style="text-align : left; padding : 1em;">
 
-You have requested a password reset for the account:
-%s
+  Follow these instructions to submit.<br><br>
+    <li>
+      Make sure you have proofread your proposal as directed above.
+    </li>
+    <li>
+      By clicking the submit button below, your proposal will be
+      assigned a proposal number and you will be given a final PDF
+      with this number embedded in it.
+    </li> 
+    <li>
+      Click the submit button once. Preparation of your proposal can
+      take some time. Clicking it more than once may cause your
+      proposal to be incorrectly processed.
+    </li>
+    <li>
+      You can also access your submitted PDF from your main proposals
+      page by clicking on "View Submitted Proposal."
+    </li>
+  </br>
+                                                                               
+  <form action="proposal/submit/%s" method=post>
+    <center>
+      <input type=submit name="sub_prop" value="Submit Proposal"/>
+    </center>
+  </form>
 
-Your new password is:
-%s
-
-You can change the password if you log in, click on the user option
-and enter the information in the "Change Password" section. 
-
-If you have any questions or problems feel free to contact us at the
-address listed below.
-
-Thank You,
-CARMA Proposal Staff
-proposal-help@astro.uiuc.edu
-
+</div>
 """
 

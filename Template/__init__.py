@@ -197,10 +197,8 @@ class Template:
                     <a href="help_small/%s"
                     onClick="return popup(this, 'help')">[?]</a>
                     <a href="proposal/edit/%s?action=edit&section=%s">
-                    (edit)</a></p>""" % (section['name'],
-                                         section['section'],
-                                         self.propid,
-                                         section['section']))
+                    (edit)</a></p>""" % (section['name'], section['section'],
+                                         self.propid, section['section']))
                     self.html_entry_view(groups, keys)                
                 elif (section['type'] == 'repeat'):
                     groups = section['data']
@@ -221,10 +219,8 @@ class Template:
                     <a href="help_small/%s"
                     onClick="return popup(this, 'help')">[?]</a>
                     <a href="proposal/edit/%s?action=add&section=%s">
-                    %s</a></p>""" % (section['name'],
-                                     section['section'],
-                                        self.propid,
-                                        section['section'], addtext))
+                    %s</a></p>""" % (section['name'], section['section'],
+                                     self.propid, section['section'], addtext))
                     for lines in groups:
                         pathtext = "proposal/edit/%s" % self.propid
                         lines = {keys[0] : lines[keys[0]]}
@@ -683,8 +679,8 @@ class Template:
     def process_image(self, fields):
         if (fields['file'].filename != ''):
 
-            files_dir = (cpss.db.config['base_directory'] +
-                         cpss.db.config['files_directory'])
+            files_dir = (cpss.config['base_directory'] +
+                         cpss.config['files_directory'])
             prop_dir = files_dir + self.propid + '/'
             
             if (os.path.isdir(prop_dir) == False):

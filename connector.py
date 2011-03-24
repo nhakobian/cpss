@@ -149,556 +149,430 @@ class Connector:
             self.Login()
             return
 
-        if (self.fields.__contains__('action') == True):
-            if (self.fields['action'] == 'edit'):
-                result = cpss.db.proposal_fetch(
-                    cpss.session['username'], pathstr[2])
-                if (result == False):
-                    self.do_header(refresh="proposal/")
-                    self.req.write("""You do not have access to this
-                    proposal, please go back to the proposal list and
-                    try again.""")
-                    self.do_footer()
-                else:
-                    if (self.fields.__contains__('section') == True):
-                        section = self.fields['section']
-                    else:
-                        self.do_header(refresh="proposal/")
-                        self.do_footer()
-                    if (self.fields.__contains__('id') == True):
-                        id = self.fields['id']
-                    else:
-                        id = False
-
-                    template = cpss.Template.Template(result['template'],
-                      result['cyclename'], pathstr[2], False)
-                    self.do_header()
-                    template.make_html(section_choose=section, id=id)
-                    self.do_footer()
-            elif (self.fields['action'] == 'add'):
-                result = cpss.db.proposal_fetch(
-                    cpss.session['username'], pathstr[2])
-                if (result == False):
-                    self.do_header(refresh="proposal/")
-                    self.req.write("""You do not have access to this
-                    proposal, please go back to the proposal list and
-                    try again.""")
-                    self.do_footer()
-                else:
-                    if (self.fields.__contains__('section') == True):
-                        section = self.fields['section']
-                    else:
-                        self.do_header(refresh="proposal/")
-                        self.do_footer()
-
-                    pathtext = ""
-                    for a in pathstr:
-                        pathtext += a + '/'
-
-                    template = cpss.Template.Template(result['template'],
-                      result['cyclename'], pathstr[2], True, Fetch=False)
-
-                    for tempsection in template.sections:
-                        if (tempsection['section'] == section):
-                            tablename = tempsection['table']
-                        else:
-                            #put error here
-                            pass
-
-                    if (section == 'image'):
-                        id = cpss.db.images_add(pathstr[2])
-                        self.do_header(refresh='proposal/edit/' +
-                                       pathstr[2])
-                    else:
-                        id = cpss.db.proposal_table_addrow(
-                            tablename, pathstr[2], numb=True)
-                        self.do_header(refresh='proposal/edit/%s/?action=edit&section=%s&id=%s' % (pathstr[2], section, id))
-
-            elif (self.fields['action'] == 'delete'):
-                result = cpss.db.proposal_fetch(
-                    cpss.session['username'], pathstr[2])
-                if (result == False):
-                    self.do_header(refresh="proposal/")
-                    self.req.write("""You do not have access to this
-                    proposal, please go back to the proposal list and
-                    try again.""")
-                    self.do_footer()
-                else:
-                    if (self.fields.__contains__('section') == True):
-                        section = self.fields['section']
-                    else:
-                        self.do_header(refresh="proposal/")
-                        self.do_footer()
-                    if (self.fields.__contains__('id') == True):
-                        id = self.fields['id']
-                    else:
-                        if (section != 'justification'):
-                            self.do_header(refresh="proposal/")
-                            self.do_footer()
-
-                    pathtext = ""
-                    for a in pathstr:
-                        pathtext += a + '/'
-
-                    template = cpss.Template.Template(result['template'],
-                      result['cyclename'], pathstr[2], True)
-
-                    for tempsection in template.tempclass.sections:
-                        if (tempsection['section'] == section):
-                            tablename = tempsection['table']
-                            section_name = tempsection['name']
-                        else:
-                            #put error here
-                            pass
-
-                    if (section == 'image'):
-                        done = True
-                        image = cpss.db.images_get(pathstr[2], id)
-                        cpss.db.images_delete(pathstr[2], id)
-                        
-                        files_dir = (cpss.db.config['base_directory'] +
-                                     cpss.db.config['files_directory'])
-                        prop_dir = files_dir + pathstr[2] + '/justification/'
-                                        
-                        if (os.path.isfile(prop_dir + image[0]['file'])
-                            == True):
-                            os.unlink(prop_dir + image[0]['file'])
-                    elif (section == 'justification'):
-                        done = True
-                        cpss.db.justification_delete_data(
-                            pathstr[2])
-
-                        files_dir = (cpss.db.config['base_directory'] +
-                                     cpss.db.config['files_directory'])
-                        prop_dir = files_dir + pathstr[2] + '/justification/'
-
-                        if (os.path.isfile(prop_dir + 'justification.pdf')
-                            == True):
-                            os.unlink(prop_dir + 'justification.pdf')
-                        if (os.path.isfile(prop_dir + 'justification-up.pdf')
-                            == True):
-                            os.unlink(prop_dir + 'justification-up.pdf')
-
-                        
-                    else:
-                        done = cpss.db.proposal_table_delrow(
-                            tablename, pathstr[2], numb=id)
-                        
-                    if (done == True):
-                        self.do_header(refresh=pathtext)
-                        self.do_footer()
-                    if (done == False):
-                        self.do_header()
-                        self.req.write("""You must have at least one value
-                        in the %s section. You may not delete this last
-                        value.""" % section_name)
-            elif (self.fields['action'] == 'submit'):
-                result = cpss.db.proposal_fetch(
-                    cpss.session['username'], pathstr[2])
-                if (result == False):
-                    self.do_header(refresh="proposal/")
-                    self.req.write("""You do not have access to this
-                    proposal, please go back to the proposal list and
-                    try again.""")
-                    self.do_footer()
-                else:
-                    pathtext = ""
-                    for a in pathstr:
-                        pathtext += a + '/'
-                    if (self.fields.__contains__('section') == False):
-                        self.do_header(refresh=pathtext)
-                        self.do_footer()
-                    else:
-                        template = cpss.Template.Template(
-                          result['template'], result['cyclename'],
-                          pathstr[2], False)
-
-                        fields = dict(self.fields)
-                        fields.pop('action')
-                        section = fields.pop('section')
-
-                        if (section == 'image'):
-                            if (self.fields.__contains__('id') == True):
-                                fname = template.process_image(fields)
-                                image_data = fields['file'].file.read()
-                                if (len(image_data) > (1024*1024*14)):
-                                    self.do_header()
-                                    self.req.write("""The postscript image
-                                    you are
-                                    trying to upload is greater than the
-                                    allowed size of 14MB. If you must
-                                    upload an image greater than this size
-                                    please send a message to
-                                    proposal-help@astro.uiuc.edu for help.
-                                    """)
-                                    self.do_footer()
-                                else:
-                                    cpss.db.images_update(
-                                        pathstr[2],
-                                        fname, fields['id'],
-                                        image_data)
-                                    self.do_header(refresh=pathtext)
-                            else:
-                                self.do_header(refresh="proposal/")
-                        elif (section == 'justification'):
-                            pdf_data = fields['file'].file.read()
-                            if (len(pdf_data) > (1024*1024*10)):
-                                self.do_header()
-                                self.req.write("""The LaTeX file
-                                you are
-                                trying to upload is greater than the
-                                allowed size of 10MB. Please check to 
-                                make sure you are uploading the correct
-                                file.
-                                """)
-                                self.do_footer()
-                            else:
-                                cpss.db.justification_add_update(
-                                    pathstr[2], pdf_data)
-                                self.do_header(refresh=pathtext)
-                        else:
-                            fields = template.process_fields(section,
-                                                             fields,
-                                                             pathstr[2])
-                            if (self.fields.__contains__('id') == True):
-                                idtext = "&id=%s" % self.fields['id']
-                            else:
-                                idtext = ''
-                            self.do_header(refresh=pathtext)
-                            self.do_footer()
-
+        # If this access a specific proposal, verify that it can be accessed
+        # by the user.
+        if len(pathstr) > 2 :
+            result = cpss.db.proposal_fetch(cpss.session['username'], 
+                                            pathstr[2])
         else:
-            items = len(pathstr)
-            if (items == 3):
-                if (pathstr[1] == "typechange"):
-                    result = cpss.db.proposal_fetch(
-                        cpss.session['username'], pathstr[2])
-                    if (result == False):
-                        self.do_header(refresh="proposal/")
-                        self.req.write("""You do not have access to this
-                        proposal, please go back to the proposal list and
-                        try again.""")
-                        self.do_footer()
-                    else:
-                        if (self.fields.__contains__('type') == True):
-                            if (self.fields['type'] ==
-                                "Website Justification"):
-                                cpss.db.justification_type_set(
-                                    pathstr[2], 0)
-                                cpss.db.justification_delete_data(
-                                    pathstr[2])
+            result = None
+        if (result == False):
+            self.do_header(refresh="proposal/")
+            self.req.write("""You do not have access to this proposal.""")
+            self.do_footer()
+            return
 
-                                files_dir = (cpss.db.config['base_directory'] + cpss.db.config['files_directory'])
-                                prop_dir = files_dir + pathstr[2] + '/justification/'
+        action = self.fields.__contains__('action')
+        items = len(pathstr)
 
-                                if (os.path.isfile(prop_dir +
-                                                   'justification.pdf')
-                                    == True):
-                                    os.unlink(prop_dir +
-                                              'justification.pdf')
-                                if (os.path.isfile(prop_dir +
-                                                   'justification-up.pdf')
-                                    == True):
-                                    os.unlink(prop_dir +
-                                              'justification-up.pdf')
-                            if (self.fields['type'] ==
-                                "LaTeX Template"):
-                                cpss.db.justification_type_set(
-                                    pathstr[2], 1)
-                            self.do_header(refresh=("""proposal/edit/%s"""
-                                                    % pathstr[2]))
-                        else:
-                            self.do_header(refresh='proposal/')
-                        
+        ### ACTION -- edit
+        if (action and (self.fields['action'] == 'edit')):
+            if (self.fields.__contains__('section') == True):
+                section = self.fields['section']
+            else:
+                self.do_header(refresh="proposal/")
+                self.do_footer()
+            if (self.fields.__contains__('id') == True):
+                id = self.fields['id']
+            else:
+                id = False
 
-                elif (pathstr[1] == "edit"):
-                    result = cpss.db.proposal_fetch(
-                        cpss.session['username'], pathstr[2])
-                    if (result == False):
-                        self.do_header(refresh="proposal/")
-                        self.req.write("""You do not have access to this
-                        proposal, please go back to the proposal list and
-                        try again.""")
-                        self.do_footer()
-                    else:
-                        self.do_header()
+            template = cpss.Template.Template(result['template'], 
+                          result['cyclename'], pathstr[2], False)
+            self.do_header()
+            template.make_html(section_choose=section, id=id)
+            self.do_footer()
+        ### ACTION -- add
+        elif (action and (self.fields['action'] == 'add')):
+            if (self.fields.__contains__('section') == True):
+                section = self.fields['section']
+            else:
+                self.do_header(refresh="proposal/")
+                self.do_footer()
 
-                        if (result['pdf_justification'] == 1):
-                            justification = True
-                        else:
-                            justification = False
-                            
-                        template = cpss.Template.Template(
-                          result['template'], result['cyclename'],
-                          pathstr[2], True, justification=justification)
+            pathtext = ""
+            for a in pathstr:
+                pathtext += a + '/'
 
-                        template.make_html()
-                        self.do_footer()
-                elif (pathstr[1] == "delete"):
-                    result = cpss.db.proposal_fetch(
-                        cpss.session['username'], pathstr[2])
-                    if (result == False):
-                        self.do_header(refresh="proposal/")
-                        self.req.write("""You do not have access to this
-                        proposal, please go back to the proposal list and
-                        try again.""")
-                        self.do_footer()
-                    elif (result['carmaid'] != None):
-                        self.do_header()
-                        self.req.write("""You may not delete a proposal
-                        that has already been submitted.""")
-                        self.do_footer()
-                    elif (self.fields.__contains__('delete') == True):
-                        template = cpss.Template.Template(
-                          result['template'], result['cyclename'],
-                          pathstr[2], True)
+            template = cpss.Template.Template(result['template'],
+               result['cyclename'], pathstr[2], True, Fetch=False)
 
-                        cpss.db.proposal_delete(
-                            cpss.session['username'],
-                            result['proposalid'],
-                            template.tables, result['cyclename'])
-                        self.do_header(refresh="proposal/")
-                        self.do_footer()
-                    else:
-                        pathtext = ""
-                        for a in pathstr:
-                            pathtext += a + '/'
-                        template = cpss.Template.Template(
-                          result['template'], result['cyclename'],
-                          pathstr[2], True)
-
-                        title = None
-                        for asection in template.sections:
-                            if (asection['section'] == 'propinfo'):
-                                section = asection
-
-                        for field in section['data'][0][1]:
-                            if (field['fieldname'] == 'title'):
-                                title = field['data']
-                                break
-                        self.do_header()
-                        self.thePage.delete_verify(pathtext, str(title))
-                        self.do_footer()
-                elif (pathstr[1] == "finalpdf"):
-                    result = cpss.db.proposal_fetch(
-                        cpss.session['username'], pathstr[2])
-                    if (result == False):
-                        self.do_header(refresh="proposal/")
-                        self.req.write("""You do not have access to this
-                        proposal, please go back to the proposal list and
-                        try again.""")
-                        self.do_footer()
-                    else:
-                        pdf = cpss.db.pdf_get_data(pathstr[2])
-                        if (len(pdf) == 0):
-                            self.do_header()
-                            self.req.write("""You have not submitted this
-                            proposal. Please submit a proposal before
-                            attempting to view a submitted proposal.""")
-                            self.do_footer()
-                        else:
-                            self.req.headers_out.add('Content-Disposition',
-                       'attachment; filename=%s.pdf' % (result['carmaid']))
-                            self.req.content_type='application/force-download'
-                            self.req.write(pdf)
-                        
-                elif (pathstr[1] == "pdf"):
-                    result = cpss.db.proposal_fetch(
-                        cpss.session['username'], pathstr[2])
-                    if (result == False):
-                        self.do_header(refresh="proposal/")
-                        self.req.write("""You do not have access to this
-                        proposal, please go back to the proposal list and
-                        try again.""")
-                        self.do_footer()
-                    else:
-                        if (result['pdf_justification'] == 0):
-                            justification = False
-                        else:
-                            justification = True
-                        template = cpss.Template.Template(
-                          result['template'], result['cyclename'],
-                          pathstr[2], True, justification=justification)
-                        retval = template.latex_generate(pathstr[2])
-
-                        if (retval != 0):
-                            self.do_header()
-                            self.req.write("""<b>A LaTeX error occured. The
-                            output is displayed below:</b><br><br>%s""" %
-                                          (self.lines2text(retval[7:])))
-                            self.do_footer()
-                elif (pathstr[1] == 'submit'):
-                    result = cpss.db.proposal_fetch(
-                        cpss.session['username'], pathstr[2])
-                    if (result == False):
-                        self.do_header(refresh="proposal/")
-                        self.req.write("""You do not have access to this
-                        proposal, please go back to the proposal list and
-                        try again.""")
-                        self.do_footer()
-                    elif (self.fields.__contains__('sub_prop') == True):
-                        if (self.fields['sub_prop'] == 'Submit Proposal'):
-                            idstr = ""
-                            if (result['carmaid'] == None):
-                                idstr = str(cpss.options['next_propno'])
-                                length = len(idstr)
-                                if (length < 4):
-                                    for i in xrange(0, 4 - length):
-                                        idstr = "0" + idstr
-                                idstr = "c" + idstr
-                                cpss.db.set_next_propno(cpss.options['next_propno'] + 1, result['cyclename'])
-                                cpss.db.pw_generate(pathstr[2])
-                                cpss.db.proposal_setcarmaid(pathstr[2], idstr)
-                            else:
-                                idstr = result['carmaid']
-
-
-                            if (result['pdf_justification'] == 0):
-                                justification = False
-                            else:
-                                justification = True
-
-                            template = cpss.Template.Template(
-                              result['template'], result['cyclename'],
-                              pathstr[2], True,justification=justification)
-                            
-                            ret = template.latex_generate(template.propid,
-                                                      file_send = False,
-                                                      carma_propno = idstr)
-
-                            self.do_header()
-
-                            if (ret != 0):
-                                self.req.write(cpss.text.submit_failed_error % pathstr[2])
-                            else:
-                                pdf = open(cpss.config['base_directory']
-                                           + cpss.config['files_directory'] +
-                                           '/' + pathstr[2] +
-                                           '/latex-final.pdf', 'r')
-                                pdf_data = pdf.read()
-                                pdf.close()
-
-                                if (len(pdf_data) > (1024*1024*14)):
-                                    self.req.write(cpss.text.submit_failed_size % pathstr[2])
-                                else:
-                                    cpss.db.pdf_add_update(
-                                        pathstr[2], pdf_data)
-                                    cpss.db.proposal_submit(
-                                        pathstr[2])
-                                    self.req.write(cpss.text.submit_success)
-                            self.do_footer()
-                        else:
-                            self.do_header(refresh=('proposal/submit/%s' %
-                                                    pathstr[2]))
-                            
-
-                    else:
-                        if (result['pdf_justification'] == 0):
-                            justification = False
-                        else:
-                            justification = True
-                            
-                        template = cpss.Template.Template(
-                          result['template'], result['cyclename'],
-                          pathstr[2], True, justification=justification)
-                        self.do_header()
-                    
-                        self.req.write("""<div class="navbar,
-                                                      propheader">""")
-                        self.req.write("""<ul id="navlist">
-                        <li><a href="%s">Current Proposal</a></li>""" %
-                                       ("proposal/edit/" +
-                                        str(template.propid)))
-                        self.req.write("""</ul></div>""")
-                                                
-                        self.req.write("""<ul><li>Checking to make sure
-                        all the equired proposal fields have been
-                        filled out...""")
-                        error = template.data_verify()
-
-                        #Check to make sure no fields have errors.
-                        if (error == True):
-                            self.req.write("""<br><span style="color:red; font-weight:bold;">You must fix the errors above before you can submit the proposal.</span>""")
-                        else:
-                            self.req.write("""<span style="color:green; font-weight:bold;">All fields have been verified.</span>""")
-                        self.req.write("</li>")
-                        #Do additional checks such as obsblock and time
-                        #alloc.
-                        if (error == False):
-                            self.req.write("<li>Performing other error checks...")
-                            #checking to see if all obsblock names are
-                            #unique.
-                            error_obsblock = template.obsblock_verify()
-                            #add other checks in here...
-
-                            if (error_obsblock == False):
-                                error2 = False
-                                self.req.write("""<span style="color:green; font-weight:bold;">done</span></li>""")
-                            else:
-                                error2 = True
-                                self.req.write("""</li>""")
-                        else:
-                            error2 = False
-
-                        if (error2 == True):
-                            self.req.write("""<br><span style="color:red; font-weight:bold;">You must fix the errors above before you can submit the proposal.</span>""")
-                        #display final check
-                        if ((error == False) and (error2 == False)):
-                            self.req.write("""<li>Please click
-                            <a href="proposal/pdf/%s">here</a> to
-                            proofread your proposal before you perform the
-                            final submit.</li>""" % str(template.propid))
-                        self.req.write("""</ul>""")
-
-                        if ((error == False) and (error2 == False)):
-                            self.req.write("""<div class="maintenance"
-                            style="text-align:left;padding:1em;">
-                            Follow these instructions to submit.<br>
-                            <br><li>Make sure you have proofread your
-                            proposal as directed above.</li>
-                            <li>By clicking the submit button below,
-                            your proposal will be given a proposal number
-                            and you will be given a final PDF with this
-                            number embedded in it.</li>
-                            <li>Only click the submit button once. It can
-                            take a long time to prepare your final
-                            PDF.</li>
-                            <li>You can access your submitted PDF from your
-                            main proposals page ONLY by clicking on "View
-                            Submitted Proposal."</li></br>
-
-                            <form action="proposal/submit/%s" method=post>
-                            <center><input type=submit name="sub_prop"
-                             value="Submit Proposal"/></center>
-
-                            </form>
-                            </div>""" % str(template.propid))
-
-                        self.do_footer()
+            for tempsection in template.sections:
+                if (tempsection['section'] == section):
+                    tablename = tempsection['table']
+                else:
+                    #put error here
                     pass
-                else:
-                    self.do_404()
-            elif (items == 2):
-                if (pathstr[1] == "add"):
-                    options = cpss.db.options_get()
-                    template = cpss.Template.Template(options['template'],
-                      options['cyclename'], None, True, Fetch=False)
-                    propno = cpss.db.proposal_add(
-                        cpss.session['username'],
-                        template.tempclass.tables,
-                        options['cyclename'])
-                    self.do_header(refresh=("proposal/edit/%s" % (propno)))
+
+            if (section == 'image'):
+                id = cpss.db.images_add(pathstr[2])
+                self.do_header(refresh='proposal/edit/' +
+                               pathstr[2])
+            else:
+                id = cpss.db.proposal_table_addrow(
+                    tablename, pathstr[2], numb=True)
+                self.do_header(refresh='proposal/edit/%s/?action=edit&section=%s&id=%s' % (pathstr[2], section, id))
+        ### ACTION -- delete -- delete entry from section (images, author, 
+        ###                     sources, justification)
+        elif (action and (self.fields['action'] == 'delete')):
+            if (self.fields.__contains__('section') == True):
+                section = self.fields['section']
+            else:
+                self.do_header(refresh="proposal/")
+                self.do_footer()
+            if (self.fields.__contains__('id') == True):
+                id = self.fields['id']
+            else:
+                if (section != 'justification'):
+                    self.do_header(refresh="proposal/")
                     self.do_footer()
+
+            pathtext = ""
+            for a in pathstr:
+                pathtext += a + '/'
+
+            template = cpss.Template.Template(result['template'],
+              result['cyclename'], pathstr[2], True)
+
+            for tempsection in template.tempclass.sections:
+                if (tempsection['section'] == section):
+                    tablename = tempsection['table']
+                    section_name = tempsection['name']
                 else:
-                    self.do_404()
-            elif (items == 1):
+                    #put error here
+                    pass
+
+            if (section == 'image'):
+                done = True
+                image = cpss.db.images_get(pathstr[2], id)
+                cpss.db.images_delete(pathstr[2], id)
+                
+                files_dir = (cpss.config['base_directory'] +
+                             cpss.config['files_directory'])
+                prop_dir = files_dir + pathstr[2] + '/justification/'
+                                
+                if (os.path.isfile(prop_dir + image[0]['file']) == True):
+                    os.unlink(prop_dir + image[0]['file'])
+            elif (section == 'justification'):
+                done = True
+                cpss.db.justification_delete_data(pathstr[2])
+
+                files_dir = (cpss.config['base_directory'] +
+                             cpss.config['files_directory'])
+                prop_dir = files_dir + pathstr[2] + '/justification/'
+
+                if (os.path.isfile(prop_dir + 'justification.pdf') == True):
+                    os.unlink(prop_dir + 'justification.pdf')
+            else:
+                done = cpss.db.proposal_table_delrow(tablename, pathstr[2], 
+                                                     numb=id)
+                
+            if (done == True):
+                self.do_header(refresh=pathtext)
+                self.do_footer()
+            if (done == False):
                 self.do_header()
-                result = cpss.db.proposal_list(
-                    cpss.session['username'])
-                self.thePage.proposal_list(result, cpss.session['name'])
+                self.req.write("""You must have at least one value
+                in the %s section. You may not delete this last
+                value.""" % section_name)
+        ### ACTION -- submit -- submit data into the db. Replace with API func.
+        elif (action and (self.fields['action'] == 'submit')):
+            pathtext = ""
+            for a in pathstr:
+                pathtext += a + '/'
+            if (self.fields.__contains__('section') == False):
+                self.do_header(refresh=pathtext)
                 self.do_footer()
             else:
-                self.do_404()
+                template = cpss.Template.Template(result['template'],
+                              result['cyclename'], pathstr[2], False)
+
+                fields = dict(self.fields)
+                fields.pop('action')
+                section = fields.pop('section')
+
+                if (section == 'image'):
+                    if (self.fields.__contains__('id') == True):
+                        fname = template.process_image(fields)
+                        image_data = fields['file'].file.read()
+                        if (len(image_data) > (1024*1024*14)):
+                            self.do_header()
+                            self.req.write(cpss.text.error_ps_large)
+                            self.do_footer()
+                        else:
+                            cpss.db.images_update(pathstr[2], fname, 
+                               fields['id'], image_data)
+                            self.do_header(refresh=pathtext)
+                    else:
+                        self.do_header(refresh="proposal/")
+                elif (section == 'justification'):
+                    pdf_data = fields['file'].file.read()
+                    if (len(pdf_data) > (1024*1024*10)):
+                        self.do_header()
+                        self.req.write(cpss.text.error_latex_large)
+                        self.do_footer()
+                    else:
+                        cpss.db.justification_add_update(pathstr[2], pdf_data)
+                        self.do_header(refresh=pathtext)
+                else:
+                    fields = template.process_fields(section, fields,
+                                                     pathstr[2])
+                    if (self.fields.__contains__('id') == True):
+                        idtext = "&id=%s" % self.fields['id']
+                    else:
+                        idtext = ''
+                    self.do_header(refresh=pathtext)
+                    self.do_footer()
+        ###########    
+        ### API -- typechange -- change the justification type
+        elif (items == 3 and pathstr[1] == "typechange"):
+            if (self.fields.__contains__('type') == True):
+                if (self.fields['type'] == "Website Justification"):
+                    cpss.db.justification_type_set(pathstr[2], 0)
+                    cpss.db.justification_delete_data(pathstr[2])
+
+                    files_dir = (cpss.db.config['base_directory'] + 
+                                 cpss.db.config['files_directory'])
+                    prop_dir = files_dir + pathstr[2] + '/justification/'
+
+                    if (os.path.isfile(prop_dir + 'justification.pdf') == True):
+                        os.unlink(prop_dir + 'justification.pdf')
+                if (self.fields['type'] == "LaTeX Template"):
+                    cpss.db.justification_type_set(pathstr[2], 1)
+                self.do_header(refresh=("""proposal/edit/%s""" % pathstr[2]))
+                self.do_footer()
+            else:
+                self.do_header(refresh='proposal/')
+                self.do_footer()
+        ### API -- edit -- displays editable proposal    
+        elif (items == 3 and pathstr[1] == "edit"):
+            self.do_header()
+
+            if (result['pdf_justification'] == 1):
+                justification = True
+            else:
+                justification = False
+                
+            template = cpss.Template.Template(result['template'], 
+                          result['cyclename'], pathstr[2], True, 
+                          justification=justification)
+
+            template.make_html()
+            self.do_footer()
+        ### API -- delete -- delete the whole proposal or section data. Replace
+        ###                  with individual API calls.
+        elif (items == 3 and pathstr[1] == "delete"):
+            if (result['carmaid'] != None):
+                self.do_header()
+                self.req.write("""You may not delete a proposal that has 
+                                  already been submitted.""")
+                self.do_footer()
+            elif (self.fields.__contains__('delete') == True):
+                template = cpss.Template.Template(result['template'], 
+                              result['cyclename'], pathstr[2], True)
+
+                cpss.db.proposal_delete(cpss.session['username'],
+                   result['proposalid'], template.tables, result['cyclename'])
+                self.do_header(refresh="proposal/")
+                self.do_footer()
+            else:
+                pathtext = ""
+                for a in pathstr:
+                    pathtext += a + '/'
+                template = cpss.Template.Template(result['template'],
+                              result['cyclename'], pathstr[2], True)
+
+                title = None
+                for asection in template.sections:
+                    if (asection['section'] == 'propinfo'):
+                        section = asection
+
+                for field in section['data'][0][1]:
+                    if (field['fieldname'] == 'title'):
+                        title = field['data']
+                        break
+                self.do_header()
+                self.thePage.delete_verify(pathtext, str(title))
+                self.do_footer()
+        ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
+        ###                    directly to user.
+        elif (items == 3 and pathstr[1] == "finalpdf"):
+            pdf = cpss.db.pdf_get_data(pathstr[2])
+            if (len(pdf) == 0):
+                self.do_header()
+                self.req.write("""You have not submitted this proposal. Please
+                                  submit a proposal before attempting to view
+                                  a submitted proposal.""")
+                self.do_footer()
+            else:
+                self.req.headers_out.add('Content-Disposition',
+                   'attachment; filename=%s.pdf' % (result['carmaid']))
+                self.req.content_type='application/force-download'
+                self.req.write(pdf)
+        ### API -- pdf -- return sample pdf file
+        elif (items == 3 and pathstr[1] == "pdf"):
+            if (result['pdf_justification'] == 0):
+                justification = False
+            else:
+                justification = True
+            template = cpss.Template.Template(result['template'], 
+                          result['cyclename'], pathstr[2], True, 
+                          justification=justification)
+            retval = template.latex_generate(pathstr[2])
+
+            if (retval != 0):
+                self.do_header()
+                self.req.write("""<b>A LaTeX error occured. The output is 
+                                  displayed below:</b><br><br>%s""" %
+                              (self.lines2text(retval[7:])))
+                self.do_footer()
+        ### API -- submit -- submit the proposal and perform checks.
+        elif (items == 3 and pathstr[1] == 'submit'):
+            if (self.fields.__contains__('sub_prop') == True):
+                if (self.fields['sub_prop'] == 'Submit Proposal'):
+                    idstr = ""
+                    if (result['carmaid'] == None):
+                        idstr = str(cpss.options['next_propno'])
+                        length = len(idstr)
+                        if (length < 4):
+                            for i in xrange(0, 4 - length):
+                                idstr = "0" + idstr
+                        idstr = "c" + idstr
+                        cpss.db.set_next_propno(
+                            cpss.options['next_propno'] + 1, 
+                            result['cyclename'])
+                        cpss.db.pw_generate(pathstr[2])
+                        cpss.db.proposal_setcarmaid(pathstr[2], idstr)
+                    else:
+                        idstr = result['carmaid']
+
+                    if (result['pdf_justification'] == 0):
+                        justification = False
+                    else:
+                        justification = True
+
+                    template = cpss.Template.Template(result['template'], 
+                                  result['cyclename'], pathstr[2], True, 
+                                  justification=justification)
+                    
+                    ret = template.latex_generate(template.propid,
+                             file_send = False, carma_propno = idstr)
+
+                    self.do_header()
+
+                    if (ret != 0):
+                        self.req.write(cpss.text.submit_failed_error %
+                                       pathstr[2])
+                    else:
+                        pdf = open(cpss.config['base_directory']
+                                   + cpss.config['files_directory'] + '/' +
+                                   pathstr[2] + '/latex-final.pdf', 'r')
+                        pdf_data = pdf.read()
+                        pdf.close()
+
+                        if (len(pdf_data) > (1024*1024*14)):
+                            self.req.write(cpss.text.submit_failed_size % 
+                                           pathstr[2])
+                        else:
+                            cpss.db.pdf_add_update(pathstr[2], pdf_data)
+                            cpss.db.proposal_submit(pathstr[2])
+                            self.req.write(cpss.text.submit_success)
+                    self.do_footer()
+                else:
+                    self.do_header(refresh=('proposal/submit/%s' % pathstr[2]))
+                    self.do_footer()
+            else:
+                if (result['pdf_justification'] == 0):
+                    justification = False
+                else:
+                    justification = True
+                    
+                template = cpss.Template.Template(result['template'],
+                              result['cyclename'], pathstr[2], True,
+                              justification=justification)
+                self.do_header()
+            
+                self.req.write("""<div class="navbar, propheader">
+                                  <ul id="navlist">
+                                    <li>
+                                      <a href="%s">Current Proposal</a>
+                                    </li>
+                                  </ul>
+                                  </div>""" % ("proposal/edit/" +
+                                               str(template.propid)))
+                                        
+                self.req.write("""<ul>
+                                    <li>
+                                      Checking to make sure all required 
+                                      fields have been completed...""")
+
+                error = template.data_verify()
+
+                #Check to make sure no fields have errors.
+                if (error == True):
+                    self.req.write("""<br><span style="color:red; 
+                        font-weight:bold;">You must fix the errors 
+                        above before you can submit the proposal.
+                        </span>""")
+                else:
+                    self.req.write("""<span style="color:green; 
+                        font-weight:bold;">All fields have been 
+                        verified.</span>""")
+
+                self.req.write("</li>")
+
+                #Do additional checks such as obsblock and time alloc.
+                if (error == False):
+                    self.req.write("<li>Performing other error checks...")
+                    ##### IS THIS REQUIRED ANYMORE? ######################
+                    #checking to see if all obsblock names are unique.
+                    error_obsblock = template.obsblock_verify()
+                    #add other checks in here...
+
+                    if (error_obsblock == False):
+                        error2 = False
+                        self.req.write("""<span style="color:green; 
+                               font-weight:bold;">done</span></li>""")
+                    else:
+                        error2 = True
+                        self.req.write("""</li>""")
+                else:
+                    error2 = False
+
+                if (error2 == True):
+                    self.req.write("""<br><span style="color:red; 
+                       font-weight:bold;">You must fix the errors above before
+                       you can submit the proposal.</span>""")
+                #display final check
+                if ((error == False) and (error2 == False)):
+                    self.req.write("""<li>Please click <a 
+                       href="proposal/pdf/%s">here</a> to proofread your 
+                       proposal before you perform the final submit.</li>""" %
+                       str(template.propid))
+                self.req.write("""</ul>""")
+
+                if ((error == False) and (error2 == False)):
+                    self.req.write(cpss.text.submit_verify % 
+                                   str(template.propid))
+                self.do_footer()
+        ### API -- add -- add proposal        
+        elif (items == 2 and pathstr[1] == "add"):
+            options = cpss.db.options_get()
+            template = cpss.Template.Template(options['template'],
+              options['cyclename'], None, True, Fetch=False)
+            propno = cpss.db.proposal_add(cpss.session['username'],
+               template.tempclass.tables, options['cyclename'])
+            self.do_header(refresh=("proposal/edit/%s" % (propno)))
+            self.do_footer()
+        ### API -- proposal list
+        elif (items == 1):
+            self.do_header()
+            result = cpss.db.proposal_list(cpss.session['username'])
+            self.thePage.proposal_list(result, cpss.session['name'])
+            self.do_footer()
+        ### 404
+        else:
+            self.do_404()
 
     def HelpSmall(self, pathstr):
         self.Help(pathstr, small=True)
