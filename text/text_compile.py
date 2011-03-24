@@ -9,6 +9,7 @@ def compile():
 
     text_file = open('../text.py', 'w')
 
+    files.sort()
     for fname in files:
         if fname[-4:] == ".tpl":
             print fname[:-4]
