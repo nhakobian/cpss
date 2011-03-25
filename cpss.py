@@ -7,8 +7,11 @@ _backend = apache.import_module("backend")
 db = None
 text = apache.import_module("text")
 
-Page = apache.import_module("page")
-Connector = apache.import_module("connector")
+page = apache.import_module("page")
+
+_connector = apache.import_module("connector")
+connector = None
+
 Template = apache.import_module("Template/__init__")
 
 config = { 'html_base' : "http://localhost/proposals/",
@@ -64,21 +67,22 @@ def handler(request):
     global options
     options = db.options_get()
 
-    theConnector = Connector.Connector(page)
+    global connector
+    connector = _connector.Connector()
 
     if (config['debug'] == False):
         try:
-            result = theConnector.Dispatch(pathstr)
+            result = connector.Dispatch(pathstr)
         except:
-            theConnector.do_header()
-            req.write("""<center>An internal error has occured. If it persists
+            connector.do_header()
+            w("""<center>An internal error has occured. If it persists
             please contact the person in charge of this site.
             </center>""")
             result = apache.OK
             db.close()
     else:
         try:
-            result = theConnector.Dispatch(pathstr)
+            result = connector.Dispatch(pathstr)
         finally:
             db.close()
     return result

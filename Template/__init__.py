@@ -59,7 +59,6 @@ class Template:
         self.sections = self.tempclass.sections
         self.tables = self.tempclass.tables
 
-
         if (Fetch == True):
             self.proposal = cpss.db.proposal_get(self.tempclass.tables,
                                                          cyclename, propid) 

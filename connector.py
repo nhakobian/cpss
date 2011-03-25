@@ -10,20 +10,18 @@ from random import choice
 cpss = apache.import_module("cpss")
 
 class Connector:
-    def __init__(self, Page):
-        self.req = cpss.req
-        self.thePage = Page
+    def __init__(self):
         #Parse the GET/POST fields
-        self.fields = util.FieldStorage(self.req)
+        self.fields = util.FieldStorage(cpss.req)
         
     def do_header(self, login=False, **keywords):
         if (cpss.session['authenticated'] == False):
-            self.thePage.header(login=False, **keywords)
+            cpss.page.header(login=False, **keywords)
         else:
-            self.thePage.header(login=True, **keywords)
+            cpss.page.header(login=True, **keywords)
 
     def do_footer(self):
-        self.thePage.footer()
+        cpss.page.footer()
 
     def Dispatch(self, pathstr):
         cpss.session["random"] = self.randomcode()
@@ -43,7 +41,7 @@ class Connector:
                     self.do_header(refresh='')
                 else:
                     self.do_header()
-                    self.req.write(cpss.options['maint_message'])
+                    cpss.w(cpss.options['maint_message'])
                     self.do_footer()
                     cpss.session.delete()
                     return apache.OK
@@ -93,7 +91,7 @@ class Connector:
         
     def Root(self):
         self.do_header()
-        self.thePage.main()
+        cpss.page.main()
         self.do_footer()
 
     def Create(self):
@@ -112,27 +110,26 @@ class Connector:
             if (error == ""):
                 if (cpss.db.user_exists(email) == True):
                     error = """There already is a user with this e-mail address
-                               registered in the system. If you believe this
-                               is in error, please contact the website
+                               registered in the system. If you believe this is
+                               in error, please contact the website
                                administrator."""
                     self.do_header()
-                    self.thePage.user_create(Name=name, Email=email,
-                                             Error=error)
+                    cpss.page.user_create(Name=name, Email=email, Error=error)
                     self.do_footer()
                 else:
                     code = self.randomcode()
                     self.activation_mail(name, email, code)
                     cpss.db.add_user(name, email, pass1, code)
                     self.do_header()
-                    self.thePage.user_create_success(name, email)
+                    cpss.page.user_create_success(name, email)
                     self.do_footer()
             else:
                 self.do_header()
-                self.thePage.user_create(Name=name, Email=email, Error=error)
+                cpss.page.user_create(Name=name, Email=email, Error=error)
                 self.do_footer()
         else:
             self.do_header()
-            self.thePage.user_create(random=cpss.session["random"])
+            cpss.page.user_create(random=cpss.session["random"])
             self.do_footer()
 
     def activation_mail(self, name, email, code):
@@ -158,7 +155,7 @@ class Connector:
             result = None
         if (result == False):
             self.do_header(refresh="proposal/")
-            self.req.write("""You do not have access to this proposal.""")
+            cpss.w("""You do not have access to this proposal.""")
             self.do_footer()
             return
 
@@ -206,12 +203,13 @@ class Connector:
 
             if (section == 'image'):
                 id = cpss.db.images_add(pathstr[2])
-                self.do_header(refresh='proposal/edit/' +
-                               pathstr[2])
+                self.do_header(refresh='proposal/edit/' + pathstr[2])
             else:
-                id = cpss.db.proposal_table_addrow(
-                    tablename, pathstr[2], numb=True)
-                self.do_header(refresh='proposal/edit/%s/?action=edit&section=%s&id=%s' % (pathstr[2], section, id))
+                id = cpss.db.proposal_table_addrow(tablename, pathstr[2],
+                                                   numb=True)
+                self.do_header(refresh =
+                   'proposal/edit/%s/?action=edit&section=%s&id=%s' % 
+                               (pathstr[2], section, id))
         ### ACTION -- delete -- delete entry from section (images, author, 
         ###                     sources, justification)
         elif (action and (self.fields['action'] == 'delete')):
@@ -272,9 +270,9 @@ class Connector:
                 self.do_footer()
             if (done == False):
                 self.do_header()
-                self.req.write("""You must have at least one value
-                in the %s section. You may not delete this last
-                value.""" % section_name)
+                cpss.w("""You must have at least one value in the %s section.
+                          You may not delete this last value.""" % 
+                       section_name)
         ### ACTION -- submit -- submit data into the db. Replace with API func.
         elif (action and (self.fields['action'] == 'submit')):
             pathtext = ""
@@ -297,7 +295,7 @@ class Connector:
                         image_data = fields['file'].file.read()
                         if (len(image_data) > (1024*1024*14)):
                             self.do_header()
-                            self.req.write(cpss.text.error_ps_large)
+                            cpss.w(cpss.text.error_ps_large)
                             self.do_footer()
                         else:
                             cpss.db.images_update(pathstr[2], fname, 
@@ -309,7 +307,7 @@ class Connector:
                     pdf_data = fields['file'].file.read()
                     if (len(pdf_data) > (1024*1024*10)):
                         self.do_header()
-                        self.req.write(cpss.text.error_latex_large)
+                        cpss.w(cpss.text.error_latex_large)
                         self.do_footer()
                     else:
                         cpss.db.justification_add_update(pathstr[2], pdf_data)
@@ -335,7 +333,7 @@ class Connector:
                                  cpss.config['files_directory'])
                     prop_dir = files_dir + pathstr[2] + '/justification/'
 
-                    if (os.path.isfile(prop_dir + 'justification.pdf') == True):
+                    if (os.path.isfile(prop_dir+'justification.pdf') == True):
                         os.unlink(prop_dir + 'justification.pdf')
                 if (self.fields['type'] == "LaTeX Template"):
                     cpss.db.justification_type_set(pathstr[2], 1)
@@ -364,8 +362,8 @@ class Connector:
         elif (items == 3 and pathstr[1] == "delete"):
             if (result['carmaid'] != None):
                 self.do_header()
-                self.req.write("""You may not delete a proposal that has 
-                                  already been submitted.""")
+                cpss.w("""You may not delete a proposal that has already been
+                          submitted.""")
                 self.do_footer()
             elif (self.fields.__contains__('delete') == True):
                 template = cpss.Template.Template(result['template'], 
@@ -392,7 +390,7 @@ class Connector:
                         title = field['data']
                         break
                 self.do_header()
-                self.thePage.delete_verify(pathtext, str(title))
+                cpss.page.delete_verify(pathtext, str(title))
                 self.do_footer()
         ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
         ###                    directly to user.
@@ -400,15 +398,15 @@ class Connector:
             pdf = cpss.db.pdf_get_data(pathstr[2])
             if (len(pdf) == 0):
                 self.do_header()
-                self.req.write("""You have not submitted this proposal. Please
-                                  submit a proposal before attempting to view
-                                  a submitted proposal.""")
+                cpss.w("""You have not submitted this proposal. Please submit
+                          a proposal before attempting to view a submitted 
+                          proposal.""")
                 self.do_footer()
             else:
-                self.req.headers_out.add('Content-Disposition',
+                cpss.req.headers_out.add('Content-Disposition',
                    'attachment; filename=%s.pdf' % (result['carmaid']))
-                self.req.content_type='application/force-download'
-                self.req.write(pdf)
+                cpss.req.content_type='application/force-download'
+                cpss.w(pdf)
         ### API -- pdf -- return sample pdf file
         elif (items == 3 and pathstr[1] == "pdf"):
             if (result['pdf_justification'] == 0):
@@ -422,9 +420,8 @@ class Connector:
 
             if (retval != 0):
                 self.do_header()
-                self.req.write("""<b>A LaTeX error occured. The output is 
-                                  displayed below:</b><br><br>%s""" %
-                              (self.lines2text(retval[7:])))
+                cpss.w("""<b>A LaTeX error occured. The output is displayed 
+                       below:</b><br><br>%s""" % (self.lines2text(retval[7:])))
                 self.do_footer()
         ### API -- submit -- submit the proposal and perform checks.
         elif (items == 3 and pathstr[1] == 'submit'):
@@ -438,9 +435,8 @@ class Connector:
                             for i in xrange(0, 4 - length):
                                 idstr = "0" + idstr
                         idstr = "c" + idstr
-                        cpss.db.set_next_propno(
-                            cpss.options['next_propno'] + 1, 
-                            result['cyclename'])
+                        cpss.db.set_next_propno(cpss.options['next_propno']+1, 
+                                                result['cyclename'])
                         cpss.db.pw_generate(pathstr[2])
                         cpss.db.proposal_setcarmaid(pathstr[2], idstr)
                     else:
@@ -461,7 +457,7 @@ class Connector:
                     self.do_header()
 
                     if (ret != 0):
-                        self.req.write(cpss.text.submit_failed_error %
+                        cpss.w(cpss.text.submit_failed_error %
                                        pathstr[2])
                     else:
                         pdf = open(cpss.config['base_directory']
@@ -471,12 +467,11 @@ class Connector:
                         pdf.close()
 
                         if (len(pdf_data) > (1024*1024*14)):
-                            self.req.write(cpss.text.submit_failed_size % 
-                                           pathstr[2])
+                            cpss.w(cpss.text.submit_failed_size % pathstr[2])
                         else:
                             cpss.db.pdf_add_update(pathstr[2], pdf_data)
                             cpss.db.proposal_submit(pathstr[2])
-                            self.req.write(cpss.text.submit_success)
+                            cpss.w(cpss.text.submit_success)
                     self.do_footer()
                 else:
                     self.do_header(refresh=('proposal/submit/%s' % pathstr[2]))
@@ -492,38 +487,33 @@ class Connector:
                               justification=justification)
                 self.do_header()
             
-                self.req.write("""<div class="navbar, propheader">
-                                  <ul id="navlist">
-                                    <li>
-                                      <a href="%s">Current Proposal</a>
-                                    </li>
-                                  </ul>
-                                  </div>""" % ("proposal/edit/" +
-                                               str(template.propid)))
+                cpss.w("""<div class="navbar, propheader">
+                            <ul id="navlist">
+                              <li>
+                                <a href="%s">Current Proposal</a>
+                              </li>
+                            </ul>
+                          </div>""" % ("proposal/edit/" +str(template.propid)))
                                         
-                self.req.write("""<ul>
-                                    <li>
-                                      Checking to make sure all required 
-                                      fields have been completed...""")
+                cpss.w("""<ul><li>Checking to make sure all required fields 
+                          have been completed...""")
 
                 error = template.data_verify()
 
                 #Check to make sure no fields have errors.
                 if (error == True):
-                    self.req.write("""<br><span style="color:red; 
-                        font-weight:bold;">You must fix the errors 
-                        above before you can submit the proposal.
-                        </span>""")
+                    cpss.w("""<br><span style="color:red;font-weight:bold;">
+                       You must fix the errors above before you can submit the
+                       proposal.</span>""")
                 else:
-                    self.req.write("""<span style="color:green; 
-                        font-weight:bold;">All fields have been 
-                        verified.</span>""")
+                    cpss.w("""<span style="color:green;font-weight:bold;">
+                       All fields have been verified.</span>""")
 
-                self.req.write("</li>")
+                cpss.w("</li>")
 
                 #Do additional checks such as obsblock and time alloc.
                 if (error == False):
-                    self.req.write("<li>Performing other error checks...")
+                    cpss.w("<li>Performing other error checks...")
                     ##### IS THIS REQUIRED ANYMORE? ######################
                     #checking to see if all obsblock names are unique.
                     error_obsblock = template.obsblock_verify()
@@ -531,29 +521,27 @@ class Connector:
 
                     if (error_obsblock == False):
                         error2 = False
-                        self.req.write("""<span style="color:green; 
-                               font-weight:bold;">done</span></li>""")
+                        cpss.w("""<span style="color:green;font-weight:bold;">
+                                  done</span></li>""")
                     else:
                         error2 = True
-                        self.req.write("""</li>""")
+                        cpss.w("""</li>""")
                 else:
                     error2 = False
 
                 if (error2 == True):
-                    self.req.write("""<br><span style="color:red; 
-                       font-weight:bold;">You must fix the errors above before
-                       you can submit the proposal.</span>""")
+                    cpss.w("""<br><span style="color:red;font-weight:bold;">
+                       You must fix the errors above before you can submit the
+                       proposal.</span>""")
                 #display final check
                 if ((error == False) and (error2 == False)):
-                    self.req.write("""<li>Please click <a 
-                       href="proposal/pdf/%s">here</a> to proofread your 
-                       proposal before you perform the final submit.</li>""" %
-                       str(template.propid))
-                self.req.write("""</ul>""")
+                    cpss.w("""<li>Please click <a href="proposal/pdf/%s">here
+                       </a> to proofread your proposal before you perform the 
+                       final submit.</li>""" % str(template.propid))
+                cpss.w("""</ul>""")
 
                 if ((error == False) and (error2 == False)):
-                    self.req.write(cpss.text.submit_verify % 
-                                   str(template.propid))
+                    cpss.w(cpss.text.submit_verify % str(template.propid))
                 self.do_footer()
         ### API -- add -- add proposal        
         elif (items == 2 and pathstr[1] == "add"):
@@ -568,7 +556,7 @@ class Connector:
         elif (items == 1):
             self.do_header()
             result = cpss.db.proposal_list(cpss.session['username'])
-            self.thePage.proposal_list(result, cpss.session['name'])
+            cpss.page.proposal_list(result, cpss.session['name'])
             self.do_footer()
         ### 404
         else:
@@ -579,8 +567,8 @@ class Connector:
 
     def Help(self, pathstr, small=False):
         if (small == True):
-            self.req.content_type="text/html"
-            self.req.write("""<html><head>
+            cpss.req.content_type="text/html"
+            cpss.w("""<html><head>
             <base href="%s" />
             <title>Help</title>
             <link rel="stylesheet" href="cpss.css" type="text/css">
@@ -594,44 +582,44 @@ class Connector:
             pathstr.append('')
             
         if (pathstr[1] == 'propinfo'):
-            self.req.write(cpss.text.help_propinfo)
+            cpss.w(cpss.text.help_propinfo)
 
         elif (pathstr[1] == 'abstract'):
-            self.req.write(cpss.text.help_abstract)
+            cpss.w(cpss.text.help_abstract)
 
         elif (pathstr[1] == 'author'):
-            self.req.write(cpss.text.help_author)
+            cpss.w(cpss.text.help_author)
 
         elif (pathstr[1] == 'source'):
-            self.req.write(cpss.text.help_source)
+            cpss.w(cpss.text.help_source)
 
         elif (pathstr[1] == 'special_requirements'):
-            self.req.write(cpss.text.help_specialreq)
+            cpss.w(cpss.text.help_specialreq)
 
         elif (pathstr[1] == 'prior_obs'):
-            self.req.write(cpss.text.help_priorobs)
+            cpss.w(cpss.text.help_priorobs)
 
         elif (pathstr[1] == 'scientific_justification'):
-            self.req.write(cpss.text.help_scientificjust)
+            cpss.w(cpss.text.help_scientificjust)
 
         elif (pathstr[1] == 'technical_justification'):
-            self.req.write(cpss.text.help_technicaljust)
+            cpss.w(cpss.text.help_technicaljust)
 
         elif (pathstr[1] == 'image'):
-            self.req.write(cpss.text.help_image)
+            cpss.w(cpss.text.help_image)
 
         elif (pathstr[1] == 'tot_hours'):
-            self.req.write(cpss.text.help_tothours)
+            cpss.w(cpss.text.help_tothours)
             
         elif (pathstr[1] ==  'index'):
-            self.req.write(cpss.text.help_index % (
-                       cpss.config['html_base'], cpss.config['html_base'],
-                       cpss.config['html_base'], cpss.config['html_base'],
-                       cpss.config['html_base'], cpss.config['html_base'],
-                       cpss.config['html_base'], cpss.config['html_base']))
+            cpss.w(cpss.text.help_index % (cpss.config['html_base'], 
+               cpss.config['html_base'], cpss.config['html_base'], 
+               cpss.config['html_base'], cpss.config['html_base'], 
+               cpss.config['html_base'], cpss.config['html_base'], 
+               cpss.config['html_base']))
 
         if (small == True):
-            self.req.write("""<br><br><br><br><br><br><br></body></html>""")
+            cpss.w("""<br><br><br><br><br><br><br></body></html>""")
         else:
             self.do_footer()
 
@@ -649,7 +637,8 @@ class Connector:
                 mail = smtplib.SMTP()
                 mail.connect()                
                 msg = (cpss.text.email_pwreset % (email, email, newpw))
-                mail.sendmail("do_not_reply@carma-prop.astro.illinois.edu", email, msg)
+                mail.sendmail("do_not_reply@carma-prop.astro.illinois.edu", 
+                              email, msg)
                 mail.quit()
 
         if (self.fields.getfirst('submit') == 'Submit'):
@@ -670,7 +659,7 @@ class Connector:
                     Error = """The username and password you have supplied are
                                not valid. Please try again."""
                     self.do_header(logon=True)
-                    self.thePage.logon(Error=Error, Username=username)
+                    cpss.page.logon(Error=Error, Username=username)
                     self.do_footer()
                 return
 
@@ -679,13 +668,12 @@ class Connector:
                 Error = "You must enter both a username and a password."
                 authenticate = False
             else:
-                (authenticate, user) = cpss.db.verify_user(username,
-                                                                   password)
+                (authenticate, user) = cpss.db.verify_user(username, password)
             if (authenticate == False):
                 Error = """The username and password you have supplied are not
                          valid. Please try again."""
                 self.do_header(logon=True)
-                self.thePage.logon(Error=Error, Username=username)
+                cpss.page.logon(Error=Error, Username=username)
                 self.do_footer()
             if (authenticate == True):
                 cpss.session['authenticated'] = True
@@ -696,14 +684,14 @@ class Connector:
                 self.do_header(refresh="proposal/")
         else:
             self.do_header(logon=True)
-            self.thePage.logon(Error=Error)
+            cpss.page.logon(Error=Error)
             self.do_footer()
 
     def Logout(self):
         cpss.session.delete()
         cpss.session['authenticated'] = False
         self.do_header()
-        self.req.write('''<center>The session has been closed. You will need
+        cpss.w('''<center>The session has been closed. You will need
         to login again to view your proposals.</center>''')
         self.do_footer()
 
@@ -733,17 +721,18 @@ class Connector:
         username = cpss.session['name']
         email = cpss.session['username']
         self.do_header()
-        self.thePage.userpage(username, email, error=error)
+        cpss.page.userpage(username, email, error=error)
         self.do_footer()
 
     def randomcode(self):
         size=8
-        password = ''.join([choice(string.letters + string.digits + "!" + "@" + "_") for i in range(size)])
+        password = ''.join([choice(string.letters + string.digits +
+                                   "!" + "@" + "_") for i in range(size)])
         return password
 
     def do_404(self):
         self.do_header()
-        self.thePage.do_404()
+        cpss.page.do_404()
         self.do_footer()
 
     def Activate(self):
@@ -754,13 +743,13 @@ class Connector:
                 cpss.session['activated'] = "0"
                 cpss.session.save()
                 self.do_header(refresh='proposal/')
-                self.thePage.activate(Error="""You have successfully activated
+                cpss.page.activate(Error="""You have successfully activated
                 your account. Click on the proposals tab above in order to
                 start using the system.""")
                 self.do_footer()
             else:
                 self.do_header()
-                self.thePage.activate(Error="""The code you entered is invalid.
+                cpss.page.activate(Error="""The code you entered is invalid.
                 Either verify that you typed in the correct code or click the
                 button at the bottom to send a new one to your e-mail
                 account.""")
@@ -771,16 +760,16 @@ class Connector:
             cpss.session['activated'] = code
             cpss.session.save()
             cpss.db.update_code(cpss.session['username'], code)
-            self.activation_mail(cpss.session['name'],
+            self.activation_mail(cpss.session['name'], 
                                  cpss.session['username'], code)
             self.do_header()
-            self.thePage.activate(Error="""A new activation code has been sent
+            cpss.page.activate(Error="""A new activation code has been sent
             to the address that you specified when you registered the account.
             If you never recieve it, please inform the webmaster.""")
             self.do_footer()
         else:
             self.do_header()
-            self.thePage.activate()
+            cpss.page.activate()
             self.do_footer()
 
     def lines2text(self, lines):
@@ -788,4 +777,3 @@ class Connector:
         for line in lines:
             buffer += line + "<br>" 
         return buffer
-
