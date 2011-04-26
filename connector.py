@@ -16,6 +16,22 @@ class Connector:
         self.Template = Template
         #Parse the GET/POST fields
         self.fields = util.FieldStorage(self.req)
+        # Strip all blank strings except for submitted field 'file'
+        #ftemp = open('/srv/www/htdocs/proposals/files/tmp.txt', 'a')
+        #ftemp.write("=============ST\n")
+        #ftemp.write("  PR:" +str(self.fields.keys())+"\n")
+
+        #for key in self.fields.keys() :
+        #    ftemp.write("   KEY: " + key + "\n")
+        #    if self.fields.__contains__(key):
+        #        if self.fields[key] == "":
+        #            ftemp.write("    DEL: " + key + "\n")
+        #            self.fields.pop(key)
+        #    else:
+        #        ftemp.write("    Find Fail: " + key + "\n")
+
+        #ftemp.write("  PO:" +str(self.fields.keys())+"\n")
+        #ftemp.close()
         self.config = config
         self.options = options
         

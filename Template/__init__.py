@@ -531,7 +531,7 @@ class Template:
             idtext = ''
         else:
             idtext = ('&id=%s' % id)
-        self.req.write("""<table><form
+        self.req.write("""<table><form enctype="multipart/form-data"
         action='%s?action=submit&section=%s%s' method='post' name="form">""" %
                        (pathtext, groups[0][keys[0]][0]['section'], idtext))
         for line in keys:
@@ -615,6 +615,14 @@ class Template:
         #Pop out any field whose name begins with an underscore and do other
         #cruddy processing
         for field in fields.keys():
+            # Due to change in the usage of FieldStorage, this is put in here
+            # to filter out "empty" items. This will correctly set their 
+            # data fields to NULL below, and activate the missing field
+            # tracking.
+            if (fields[field] == ""):
+                fields.pop(field)
+                continue
+
             if (field[0] == "_"):
                 if (fields.keys().__contains__(field[1:]) == True):
                     fields.pop(field)
@@ -1265,14 +1273,17 @@ class ErrorCheck:
         negative = 0
         for i in DEC:
             digit.append(i)
+        if(len(digit) == 0):
+            self.AddError("Invalid format: must be (+/-)DD:MM")
+            return
+        if(digit[0] == '-'):
+            negative = 1
+        if(digit[0] == '-' or digit[0] == '+'):
+            digit = digit[1:]
+        if(len(digit) != 5) or (digit.count(":") > 1):
+            self.AddError("Invalid format: must be (+/-)DD:MM")
         else:
-            if(digit[0] == '-'):
-                negative = 1
-            if(digit[0] == '-' or digit[0] == '+'):
-                digit = digit[1:]
-            if(len(digit) != 5) or (digit.count(":") > 1):
-                self.AddError("Invalid format: must be (+/-)DD:MM")
-            elif(digit[0].isdigit() and digit[1].isdigit() and
+            if(digit[0].isdigit() and digit[1].isdigit() and
                  (digit[2] == ":") and
                  digit[3].isdigit() and digit[4].isdigit()):
                 degrees = 10*int(digit[0]) + int(digit[1])
