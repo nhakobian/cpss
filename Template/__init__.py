@@ -955,6 +955,36 @@ class Template:
             
         return element
 
+    def escape_underscore(self, data):
+        # This function is for conditional escaping of underscores on
+        # cover sheet data.
+        if type(data) == type(dict()):
+            for key in data.keys():
+                data[key] = escape_backslash(data[key])
+            return data
+        elif type(data) != type(""):
+            return data
+
+        start_index = 0
+        while (1):
+            index = data.find("_", start_index)
+            if index == -1 :
+                break
+
+            if index == 0:
+                data = "\\" + data
+                # one space for inserted char one for _ itself
+                start_index = 2
+            elif data[index-1] == "\\":
+                # this value is escaped, just skip over
+                start_index = index + 1
+            else:
+                data = data[0:index] + "\\" + data[index:]
+                # one space for char, one for the _ itself
+                start_index = index + 2
+
+        return data
+
     def latex_generate(self, propid, file_send=True,
                        carma_propno="Unsubmitted"):
         base_dir = (self.theBackend.config['base_directory'])
@@ -1037,6 +1067,10 @@ class Template:
         cover_template = c.read()
         c.close()
         
+        #propinfo = self.escape_underscore(propinfo)
+        author_lines = self.escape_underscore(author_lines)
+        source_data = self.escape_underscore(source_data)
+
         cover = strTemplate(cover_template)
         out = cover.safe_substitute(propinfo, author_lines=author_lines, 
                                     source_data=source_data, 
