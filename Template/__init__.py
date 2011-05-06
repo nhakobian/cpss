@@ -864,6 +864,9 @@ class Template:
                     element['text'] = "{\cellcolor{red!45}$\Box$}"
                 else:
                     element['html'] = front + element['data'].replace('&', '&#38;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&#34;') + back
+                    if element['fieldname'] == "email":
+                        element['text'] = "\\url{" + element['data'] + "}"
+
         #######################################################################
         elif (element['fieldtype'] == 'date'):
             element['sqltype'] = 'date'
