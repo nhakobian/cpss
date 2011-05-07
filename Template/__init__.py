@@ -1056,7 +1056,10 @@ class Template:
                 else:
                     data = str(author[self.tempclass.author_order[i]])
 
-                author_lines  = (author_lines + data + " & ")
+                if self.tempclass.author_order[i] == 'email':
+                    author_lines  = (author_lines + data + " & ")
+                else:
+                    author_lines  = (author_lines + self.escape_underscore(data) + " & ")
             author_lines = author_lines[:-2] + " \\\\\n"
 
         for source in sources:
@@ -1071,7 +1074,8 @@ class Template:
         c.close()
         
         #propinfo = self.escape_underscore(propinfo)
-        author_lines = self.escape_underscore(author_lines)
+        #This is done above in author block to remove escaping email addresses.
+        #author_lines = self.escape_underscore(author_lines)
         source_data = self.escape_underscore(source_data)
 
         cover = strTemplate(cover_template)
@@ -1297,13 +1301,15 @@ class ErrorCheck:
                     (digit[2] == ":") and
                     digit[3].isdigit() and digit[4].isdigit())):
                 self.AddError("Invalid format: must be HH:MM")
+                return
             hours = 10*int(digit[0]) + int(digit[1])
             if (hours < 0 or hours > 23):
                 self.AddError("Invalid hours value.")
-
+                return
             minutes = 10*int(digit[3]) + int(digit[4])
             if(minutes < 0 or minutes > 59):
                 self.AddError("Invalid minutes value.")
+                return
 
     def decCheck(self, DEC):
         digit = []
