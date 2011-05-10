@@ -785,18 +785,23 @@ link.
                 elif (items == 2):
                     if (pathstr[1] == "add"):
                         options = self.theBackend.options_get()
-                        template = self.Template.Template(self.req,
-                                                          options['template'],
-                                                          options['cyclename'],
-                                                          self.theBackend,
-                                                          None,
-                                                          True, Fetch=False)
-                        propno = self.theBackend.proposal_add(
-                            self.theSession['username'],
-                            template.tempclass.tables,
-                            options['cyclename'])
-                        self.do_header(refresh=("proposal/edit/%s" % (propno)))
-                        self.do_footer()
+                        if self.options['create'] == True:
+                            template = self.Template.Template(self.req,
+                                          options['template'],
+                                          options['cyclename'],
+                                          self.theBackend,
+                                          None,
+                                          True, Fetch=False)
+                            propno = self.theBackend.proposal_add(
+                                self.theSession['username'],
+                                template.tempclass.tables,
+                                options['cyclename'])
+                            self.do_header(refresh=("proposal/edit/%s" % 
+                                                    (propno)))
+                            self.do_footer()
+                        else:
+                            self.do_header(refresh="proposal/")
+                            self.do_footer()
                     else:
                         self.do_404()
                 elif (items == 1):
