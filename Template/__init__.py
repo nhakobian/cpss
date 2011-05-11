@@ -1133,7 +1133,7 @@ class Template:
 """)      
             for section in self.sections:
                 if (section['section'] == 'technical_justification'):
-                    just += "\sectitlel{Techical Justification}\n"
+                    just += "\sectitlel{Technical Justification}\n"
                     just += str(self.data_strip(section['data'][0])['technical_justification'])
                 elif (section['section'] == 'scientific_justification'):
                     just += "\sectitlel{Scientific Justification}\n"
