@@ -523,10 +523,11 @@ class Backend:
         result = cursor.fetchone()
         proptable = result['proposal']
 
-        cursor.execute("""SELECT * FROM %(proptable)s WHERE
+        cursor.execute("""SELECT * FROM %(prefix)s%(proptable)s WHERE
                           proposalid=%(propid)s LIMIT 1""" %
                        {'proptable' : proptable,
-                        'propid' : self.literal(proposalid)})
+                        'propid' : self.literal(proposalid),
+                        'prefix' : self.prefix})
 
         result = cursor.fetchone()
         cursor.close()
