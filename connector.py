@@ -578,6 +578,10 @@ proposal-help@astro.uiuc.edu
                             try again.""")
                             self.do_footer()
                         else:
+                            # Update the date field to the current date:
+                            self.theBackend.proposal_tagset('proposal', pathstr[2], 
+                                 [{'fieldname':'date', 'fieldtype':'date'}])
+
                             if (result['pdf_justification'] == 0):
                                 justification = False
                             else:
@@ -607,6 +611,9 @@ proposal-help@astro.uiuc.edu
                             self.do_footer()
                         elif (self.fields.__contains__('sub_prop') == True):
                             if (self.fields['sub_prop'] == 'Submit Proposal'):
+                                # Update the date field to the current date:
+                                self.theBackend.proposal_tagset('proposal', 
+                                     pathstr[2], [{'fieldname':'date', 'fieldtype':'date'}])
                                 idstr = ""
                                 if (result['carmaid'] == None):
                                     idstr = str(self.options['next_propno'])
@@ -694,6 +701,9 @@ link.
                                 
 
                         else:
+                            # Update the date field to the current date:
+                            self.theBackend.proposal_tagset('proposal', pathstr[2], 
+                                 [{'fieldname':'date', 'fieldtype':'date'}])
                             if (result['pdf_justification'] == 0):
                                 justification = False
                             else:
