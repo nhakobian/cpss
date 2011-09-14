@@ -323,16 +323,10 @@ div#editdata {
 }
 
 #editdata input#submit {
-	background : white;
-	border : 0;
-	color : black;
 	font-weight : bold;
-	font-style : italic;
-	text-decoration : underline;
 }
 
 #editdata input#submit:hover {
-	color : blue;
 	cursor : pointer;
 	text-decoration : underline;
 }
