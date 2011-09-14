@@ -45,6 +45,8 @@ class Template:
             self.template = apache.import_module('template2011a')
         if (template == 'template2011b'):
             self.template = apache.import_module('template2011b')
+        if (template == 'template2012a'):
+            self.template = apache.import_module('template2012a')
         self.template_name = template
         self.tempclass = self.template.template()
         self.sections = self.tempclass.sections
@@ -1056,6 +1058,12 @@ class Template:
                 else:
                     data = str(author[self.tempclass.author_order[i]])
 
+                if self.tempclass.author_order[i] == 'name':
+                    data = r"\raggedright\nohyphens{" + data + r"}"
+
+                if self.tempclass.author_order[i] == 'institution':
+                    data = r"\raggedright\nohyphens{" + data + r"}"
+
                 if self.tempclass.author_order[i] == 'email':
                     author_lines  = (author_lines + data + " & ")
                 else:
@@ -1081,7 +1089,8 @@ class Template:
         cover = strTemplate(cover_template)
         out = cover.safe_substitute(propinfo, author_lines=author_lines, 
                                     source_data=source_data, 
-                                    propno=carma_propno)
+                                    propno=carma_propno, 
+                                    semester=self.cyclename)
 
         tfile = open(prop_dir + 'latex.tex', 'w')
         tfile.write(out)
