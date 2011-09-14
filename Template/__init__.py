@@ -26,6 +26,7 @@ class Template:
         self.cyclename = cyclename
         self.error = False;
         self.propid = propid
+        self.tmpLinescan = {} # For enhanced error checking routine.
         if (view == False):
             self.view = False
             self.edit = True
@@ -105,6 +106,35 @@ class Template:
             for dataline in self.proposal[section['table']]:
                 section['data'].append({})
                 data = section['data'][-1]
+
+                # Pre-scan line for the C23 marker (if exists) and store
+                # temporary value for the current line. This will allow
+                # other fields to perform error checking on the presence of
+                # the C23 field. This can be easily extended to other fields
+                # if need be. This is kind of a rough "hack" since the error
+                # checking system was never designed to need data from other
+                # fields to calculate the error status of the current field.
+
+                self.tmpLinescan = {} # Initialize it to be a persistant value
+                                      # on this line ONLY, but must be available
+                                      # from other functions (hence the class
+                                      # scope. The error checking functions are
+                                      # called during the self.element() call
+                                      # below, so this variable should only
+                                      # exist during its lifetime.
+                for entry in self.tables[section['table']]['value']:
+                    # This is the pre-scan for loop. It will only grab values
+                    # that need to be checked from error checking functions on
+                    # fields that are not its own (currently is the C23 status
+                    # field).
+                    if (entry['section'] != section['section']):
+                        continue
+                    
+                    if entry['fieldname'] == 'carma_23':
+                        self.tmpLinescan['carma_23'] = dataline['carma_23']
+                    # If more pre-scan values are needed add them here...
+                # End pre-scan for loop, below continues normal processing.
+
                 for entry in self.tables[section['table']]['value']:
                     if (entry['section'] != section['section']):
                         continue
@@ -119,6 +149,10 @@ class Template:
                         data[entry['line']] = [entry]
                     else:
                         data[entry['line']] += [entry]
+
+                self.tmpLinescan = {} # Clear any values that might have been
+                                      # temporarily stored here. This is a 
+                                      # safety measure.
 
     def data_strip(self, data):
         #This function strips all misc info from the array, creating a
@@ -937,10 +971,11 @@ class Template:
             if (element['check'] == []):
                 element['error'] = None
             else:
-                a = ErrorCheck(element['data'], element['check'])
+                a = ErrorCheck(element['data'], element['check'], 
+                               self.tmpLinescan)
                 element['error'] = a.GetError()
         else:
-            a = ErrorCheck(element['data'], ['NoNull'])
+            a = ErrorCheck(element['data'], ['NoNull'], self.tmpLinescan)
             element['error'] = a.GetError()
 
         if (element['error'] != None):
@@ -1227,13 +1262,19 @@ class Template:
 
 
 class ErrorCheck:
-    def __init__(self, value, error_list):
+    def __init__(self, value, error_list, tmpLinescan):
+        self.tmpLinescan = tmpLinescan # Used in enchanced error checking; can be
+                                       # optional.
         self.error = ''
         self.order = ['NoNull',
                       'NoSpaces',
                       'AlphaNumeric',
                       'Alpha',
+                      'NoC23',
                       'Numeric',
+                      'Only3mmInC23', # Placing this here in the chain guarantees
+                                      # that the value is already a number.
+                      'Only1cm3mmInC23',
                       'Integer',
                       'NoZero',
                       'raCheck',
@@ -1290,6 +1331,32 @@ class ErrorCheck:
                 error = True
         if (error == True):
             self.AddError("This field must only contain numbers.")
+
+    def Only3mmInC23(self, value):
+        if self.tmpLinescan.__contains__('carma_23') == False:
+            return # Simple errorcheck to make sure following lines dont fail.
+
+        if self.tmpLinescan['carma_23'] == 1:
+            if float(value) > 115.0 or float(value) < 80.0:
+                self.AddError("CARMA23 mode is only available at 3mm.")
+
+    def Only1cm3mmInC23(self, value):
+        if self.tmpLinescan.__contains__('carma_23') == False:
+            return # Simple errorcheck to make sure following lines dont fail.
+
+        if self.tmpLinescan['carma_23'] == 1:
+            if (float(value) < 115.0) and (float(value) > 80.0):
+                return
+            elif (float(value) < 36.0) and (float(value) > 26.0):
+                return
+            else:
+                self.AddError("CARMA23 mode is only available at 1cm and 3mm.")
+
+    def NoC23(self, value):
+        if self.tmpLinescan.__contains__('carma_23') == False:
+            return # Simple errorcheck to make sure following line doesnt fail.
+        if (value != '0') and (self.tmpLinescan['carma_23'] == 1):
+            self.AddError("CARMA23 mode is not allowed in this configuration.")
 
     def Integer(self, value):
         if (value.isdigit() == False):
