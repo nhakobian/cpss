@@ -205,7 +205,7 @@ class Page:
 
     def main(self):
         self.req.write("""
-        <center><h2>Semester 2011b: Deadline 02 May 2011 5PM CDT (2200 UT)</h2></center>
+        <center><h2>Semester 2012a: Deadline 05 December 2011 5PM CST</h2></center>
 
         Welcome to the CARMA Proposal System. This system is used to 
         proposose for time on the CARMA array during TAC-approved proposal
