@@ -68,9 +68,6 @@
     \end{center}
     \vfill}
   \hfill
-  %\newlength{\carmafboxold}
-  %\setlength{\carmafboxold}{\fboxsep}
-  %\setlength{\fboxsep}{0in}
   \fbox{\parbox[b][\carmaheight]{1.5in}{
       {\centering \ \textbf{Proposal Number} \\}
       \vfill
@@ -79,7 +76,6 @@
       {\centering \ \textbf{${semester}} \\}
     }
   }
-  %\setlength{\fboxsep}{\carmafboxold}
 \setlength{\parindent}{\carmaindent}
 \setlength\arrayrulewidth{1pt}
 \setlength\minrowclearance{0pt}
@@ -104,7 +100,8 @@
   \multicolumn{3}{c}{\cellcolor{gray!20} ${scientific_category}}\\
   \rowcolor{gray!45}
   \textbf{Date} & \textbf{Key Project} & \textbf{TOO/Time Critical} & \textbf{Level of Help Required} & \textbf{1cm Project} & \textbf{3mm Project}& \textbf{1mm Project}\\
-  ${date} & ${key_project} & ${toe} & ${help_required} & ${1cm} & ${1mm} & ${3mm}
+  ${date} & ${key_project} & ${toe} & ${help_required} & ${1cm} & ${1mm} & ${3mm}\\
+  \hhline{-------}
 \end{tabularx}
 
 \sectitle{Authors}
@@ -122,6 +119,7 @@
   \textbf{\#} & \textbf{Name} & \textbf{E-mail} & \textbf{Phone} & \textbf{Institution} & \textbf{Thesis} & \textbf{Grad} \\
 ${author_lines}
 \multicolumn{7}{c}{\cellcolor{gray!37}\textbf{Advisor must send a supporting letter if Thesis is checked. See Instructions.}} \\
+  \hhline{-------}
 \end{tabularx}
 
 \sectitlel{Abstract}
