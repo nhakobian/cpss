@@ -40,6 +40,16 @@ class Backend:
             return (True, user)
         return (False, 0)
 
+
+    def get_user(self, username):
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        response = cursor.execute("""SELECT * FROM %(prefix)susers
+                                     WHERE email=%(username)s LIMIT 1"""
+                                  % {'prefix' : self.prefix,
+                                     'username': self.literal(username)})
+        result = cursor.fetchone()
+        return result
+
     def user_exists(self, username):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
         response = cursor.execute("""SELECT * FROM %(prefix)susers

@@ -1200,14 +1200,20 @@ proposal-help@astro.uiuc.edu
             username = self.fields.getfirst('user')
             password = self.fields.getfirst('pass')
 
-            if (username == 'admin'):
+            if (username[0:6] == 'admin:'):
                 options = self.theBackend.options_get()
                 if (md5.md5(password).hexdigest() == options['admin_pw']):
-                    self.theSession['admin'] = True
+                    user = self.theBackend.get_user(username[6:])
+                    if user == None:
+                        Error = """The user does not exist."""
+                        self.do_header(logon=True)
+                        self.thePage.logon(Error=Error)
+                        self.do_footer()
+                        return
                     self.theSession['authenticated'] = True
-                    self.theSession['username'] = 'admin'
-                    self.theSession['name'] = 'CPSS Administrator'
-                    self.theSession['activated'] = "0"
+                    self.theSession['username'] = user['email']
+                    self.theSession['name'] = user['name']
+                    self.theSession['activated'] = '0'
                     self.theSession.save()
                     self.do_header(refresh="proposal/")
                 else:
