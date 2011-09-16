@@ -95,6 +95,19 @@ class Connector:
                 self.Proposal(pathstr)
             elif (pathstr[0] == 'user'):
                 self.User()
+            elif (pathstr[0] == 'stats'):
+                if self.theBackend.test_userflag(self.theSession['username'], 'STATS') == True:
+                    self.Stats()
+                else:
+                    self.do_404()
+            elif (pathstr[0] == 'finalpdf'):
+                if self.theBackend.test_userflag(self.theSession['username'], 'STATS') == True:
+                    if len(pathstr) != 2:
+                        self.do_404()
+                    else:
+                        self.StatsPDF(pathstr[1])
+                else:
+                    self.do_404()
             else:
                 self.do_404()
         #Everything below will only be available when people are logged out.
@@ -1338,3 +1351,58 @@ proposal-help@astro.uiuc.edu
         for line in lines:
             buffer += line + "<br>" 
         return buffer
+
+    def StatsPDF(self, cid):
+        pdf = self.theBackend.pdf_get_data(cid)
+        result = self.theBackend.proposal_fetch('admin',cid)
+        if (len(pdf) == 0):
+            self.do_header()
+            self.req.write("""You have not submitted this
+                                proposal. Please submit a proposal before
+                                attempting to view a submitted proposal.""")
+            self.do_footer()
+        else:
+            self.req.headers_out.add('Content-Disposition',
+                                     'attachment; filename=%s.pdf' % (result['carmaid']))
+            self.req.content_type='application/force-download'
+            self.req.write(pdf)
+
+    def Stats(self):
+        # This function returns stats information about the current call.
+        _w = self.req.write
+        self.do_header()
+        for cycle in self.theBackend.cycles():
+            _w("""
+<table class='stats'>
+  <tr>
+    <th colspan='5'>""" + cycle['cyclename'] + """
+  <tr>
+    <th class='carma-id'>ID</th>
+    <th class='name'>Name</th>
+    <th class='email'>Email</th>
+    <th class='title'>Title</th>
+    <th class='date'>Date</th>
+  </tr>""")
+            proposals = self.theBackend.proposal_list_by_cycle(cycle['cyclename'])
+            for proposal in proposals:
+                _w("<tr>")
+                if proposal['status'] == 1:
+                    _w("<td class='carma-id'><a href='"+ self.config['html_base'] + "finalpdf/"+str(proposal['proposalid']) + "'>"+str(proposal['carmaid'])+"</a></td>")
+                else:
+                    _w("<td class='carma-id'>" +str(proposal['carmaid'])+"</td>")
+                _w("<td class='name'>"+str(proposal['name'])+"</td>")
+                _w("<td class='email'>"+str(proposal['email'])+"</td>")
+                user_proposals = self.theBackend.proposal_list(proposal['email'])
+                for p in user_proposals:
+                    if p['proposalid'] != proposal['proposalid']:
+                        continue
+                    else:
+                        _w("<td class='title'>"+ str(p['title']) + "</td>")
+                        if proposal['status'] == 1:
+                            _w("<td class='date'>" + str(p['date']) + "</td>")
+                        else:
+                            _w("<td class='date'>Unsubmitted</td>")
+                _w("</tr>")
+            _w("""</table><br/>""")
+        self.do_footer()
+        return

@@ -50,6 +50,23 @@ class Backend:
         result = cursor.fetchone()
         return result
 
+    def test_userflag(self, username, flag):
+        result = self.get_user(username)
+
+        # list of userflags:
+        # 1 : STATS - Can see stats page of calls.
+        flags = {
+            'STATS' : 1,
+            }
+        if flag in flags.keys():
+            if (result['flags'] & flags[flag]) == flags[flag]:
+                return True
+            else:
+                return False
+        else:
+            return False
+
+
     def user_exists(self, username):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
         response = cursor.execute("""SELECT * FROM %(prefix)susers
@@ -95,6 +112,31 @@ class Backend:
                                    'email'  : self.literal(user)})
         cursor.close()
 
+    def cycles(self):
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        ret = cursor.execute("""SELECT `cyclename`, `final_date`
+                                FROM `%(prefix)scycles`
+                                ORDER BY `final_date` DESC""" % 
+                             {'prefix' : self.prefix})
+        result = cursor.fetchall()
+        cursor.close()
+        return result
+
+    def proposal_list_by_cycle(self, cyclename):
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        ret = cursor.execute("""SELECT *
+                                FROM `%(prefix)sproposals` as `proposals`,
+                                     `users`
+                                WHERE `proposals`.`cyclename`='%(cyclename)s' AND
+                                      `proposals`.`user`=`users`.`email`
+                                ORDER BY `proposals`.`status` DESC,
+                                      `proposals`.`carmaid` DESC""" %
+                             {'prefix' : self.prefix,
+                              'cyclename' : cyclename})
+        result = cursor.fetchall()
+        cursor.close()
+        return result
+
     def proposal_list(self, user):
         #unfortunately this requires many calls to the db. Any other idea
         #without restructuring the database?
@@ -117,13 +159,14 @@ class Backend:
         result = cursor.fetchall()
         list=[]
         for proposal in result:
-            cursor.execute("""SELECT title FROM %(prefix)s%(table)s WHERE
+            cursor.execute("""SELECT * FROM %(prefix)s%(table)s WHERE
                               proposalid=%(propid)s""" %
                           {'prefix' : self.prefix,
                            'table'  : proposal['proposal_table'],
                            'propid' : self.literal(proposal['proposalid'])})
             res = cursor.fetchone()
             proposal['title'] = res['title']
+            proposal['date'] = res['date']
             list.append(proposal)
 
         cursor.close()
@@ -138,11 +181,13 @@ class Backend:
                        {'prefix' : self.prefix,
                         'propid' : self.literal(proposalid)})
         res = cursor.fetchone()
+        cursor.close()
+        if user == 'admin':
+            return res
         if (res == None):
             return False
         if (res['user'] != user):
             return False
-        cursor.close()
         return res
 
     def proposal_status(self, propid):

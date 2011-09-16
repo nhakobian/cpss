@@ -381,3 +381,52 @@ div.helptext {
     text-align: center;
     padding-bottom: 1em;
 }
+
+table.stats {
+    border : 1px solid black;
+    width : 100%;
+    font-size : 8pt;
+    border-collapse : collapse;
+}
+
+table.stats th {
+    font-size : 8pt;
+    background : lightgray;
+    border-bottom : 1px solid black;
+}
+
+table.stats tr:nth-child(odd) {
+    background : lightblue;
+}
+
+table.stats tr:nth-child(even) {
+    background : lightgray;
+}
+
+table.stats tr:hover {
+    background : burlywood;
+}
+
+
+.stats .carma-id {
+    width : 4%;
+    text-align : center;
+}
+
+.stats .name {
+    width : 15%;
+    text-align : center;
+}
+
+.stats .email {
+    width : 20%;
+}
+
+.stats .title {
+    width : 53%;
+}
+
+.stats .date {
+    width : 8%;
+    text-align : center;
+}
