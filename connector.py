@@ -1387,21 +1387,20 @@ proposal-help@astro.uiuc.edu
             for proposal in proposals:
                 _w("<tr>")
                 if proposal['status'] == 1:
-                    _w("<td class='carma-id'><a href='"+ self.config['html_base'] + "finalpdf/"+str(proposal['proposalid']) + "'>"+str(proposal['carmaid'])+"</a></td>")
+                    _w("<td class='carma-id'><a href='" + self.config['html_base'] + 
+                       "finalpdf/"+str(proposal['proposalid']) + "'>" + 
+                       str(proposal['carmaid'])+"</a></td>")
                 else:
                     _w("<td class='carma-id'>" +str(proposal['carmaid'])+"</td>")
                 _w("<td class='name'>"+str(proposal['name'])+"</td>")
                 _w("<td class='email'>"+str(proposal['email'])+"</td>")
-                user_proposals = self.theBackend.proposal_list(proposal['email'])
-                for p in user_proposals:
-                    if p['proposalid'] != proposal['proposalid']:
-                        continue
-                    else:
-                        _w("<td class='title'>"+ str(p['title']) + "</td>")
-                        if proposal['status'] == 1:
-                            _w("<td class='date'>" + str(p['date']) + "</td>")
-                        else:
-                            _w("<td class='date'>Unsubmitted</td>")
+                res = self.theBackend.proposal_get_propinfo(proposal['proposalid'], 
+                                                            cycle['proposal'])
+                _w("<td class='title'>"+ str(res['title']) + "</td>")
+                if proposal['status'] == 1:
+                    _w("<td class='date'>" + str(res['date']) + "</td>")
+                else:
+                    _w("<td class='date'>Unsubmitted</td>")
                 _w("</tr>")
             _w("""</table><br/>""")
         self.do_footer()

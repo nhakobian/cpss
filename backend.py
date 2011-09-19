@@ -114,7 +114,7 @@ class Backend:
 
     def cycles(self):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        ret = cursor.execute("""SELECT `cyclename`, `final_date`
+        ret = cursor.execute("""SELECT `cyclename`, `final_date`, `proposal`
                                 FROM `%(prefix)scycles`
                                 ORDER BY `final_date` DESC""" % 
                              {'prefix' : self.prefix})
@@ -134,6 +134,18 @@ class Backend:
                              {'prefix' : self.prefix,
                               'cyclename' : cyclename})
         result = cursor.fetchall()
+        cursor.close()
+        return result
+
+    def proposal_get_propinfo(self, proposalid, tablename):
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        response = cursor.execute("""SELECT *
+                                     FROM `%(prefix)s%(tablename)s` as propinfo
+                                     WHERE `propinfo`.`proposalid`='%(proposalid)s'
+                                     LIMIT 1""" % {'prefix' : self.prefix,
+                                                   'tablename' : tablename,
+                                                   'proposalid' : proposalid})
+        result = cursor.fetchone()
         cursor.close()
         return result
 
