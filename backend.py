@@ -1,5 +1,5 @@
 import MySQLdb
-import md5
+import hashlib
 import string
 import os.path
 import os
@@ -34,7 +34,7 @@ class Backend:
         if (len(result) == 0):
             return (False, 0)
         user = result[0]
-        md5_pass = md5.md5(password).hexdigest()
+        md5_pass = hashlib.md5(password).hexdigest()
         cursor.close()
         if((user['email'] == username) and (user['password'] == md5_pass)):
             return (True, user)

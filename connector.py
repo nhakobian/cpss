@@ -1,6 +1,6 @@
 from mod_python import apache
 from mod_python import util
-import md5
+import hashlib
 import datetime
 import smtplib
 import os
@@ -1215,7 +1215,7 @@ proposal-help@astro.uiuc.edu
 
             if (username[0:6] == 'admin:'):
                 options = self.theBackend.options_get()
-                if (md5.md5(password).hexdigest() == options['admin_pw']):
+                if (hashlib.md5(password).hexdigest() == options['admin_pw']):
                     user = self.theBackend.get_user(username[6:])
                     if user == None:
                         Error = """The user does not exist."""
