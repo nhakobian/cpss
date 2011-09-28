@@ -75,12 +75,12 @@ class Connector:
             elif (pathstr[0] == 'user'):
                 self.User()
             elif (pathstr[0] == 'stats'):
-                if self.theBackend.test_userflag(self.theSession['username'], 'STATS') == True:
+                if cpss.db.test_userflag(cpss.session['username'], 'STATS') == True:
                     self.Stats()
                 else:
                     self.do_404()
             elif (pathstr[0] == 'finalpdf'):
-                if self.theBackend.test_userflag(self.theSession['username'], 'STATS') == True:
+                if cpss.db.test_userflag(cpss.session['username'], 'STATS') == True:
                     if len(pathstr) != 2:
                         self.do_404()
                     else:
