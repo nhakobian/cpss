@@ -34,6 +34,7 @@ class Template:
         self.cyclename = cyclename
         self.error = False;
         self.propid = propid
+        self.tmpLinescan = {} # For enhanced error checking routine.
         if (view == False):
             self.view = False
             self.edit = True
@@ -111,6 +112,35 @@ class Template:
             for dataline in self.proposal[section['table']]:
                 section['data'].append({})
                 data = section['data'][-1]
+
+                # Pre-scan line for the C23 marker (if exists) and store
+                # temporary value for the current line. This will allow
+                # other fields to perform error checking on the presence of
+                # the C23 field. This can be easily extended to other fields
+                # if need be. This is kind of a rough "hack" since the error
+                # checking system was never designed to need data from other
+                # fields to calculate the error status of the current field.
+
+                self.tmpLinescan = {} # Initialize it to be a persistant value
+                                      # on this line ONLY, but must be available
+                                      # from other functions (hence the class
+                                      # scope. The error checking functions are
+                                      # called during the self.element() call
+                                      # below, so this variable should only
+                                      # exist during its lifetime.
+                for entry in self.tables[section['table']]['value']:
+                    # This is the pre-scan for loop. It will only grab values
+                    # that need to be checked from error checking functions on
+                    # fields that are not its own (currently is the C23 status
+                    # field).
+                    if (entry['section'] != section['section']):
+                        continue
+                    
+                    if entry['fieldname'] == 'carma_23':
+                        self.tmpLinescan['carma_23'] = dataline['carma_23']
+                    # If more pre-scan values are needed add them here...
+                # End pre-scan for loop, below continues normal processing.
+
                 for entry in self.tables[section['table']]['value']:
                     if (entry['section'] != section['section']):
                         continue
@@ -125,6 +155,10 @@ class Template:
                         data[entry['line']] = [entry]
                     else:
                         data[entry['line']] += [entry]
+
+                self.tmpLinescan = {} # Clear any values that might have been
+                                      # temporarily stored here. This is a 
+                                      # safety measure.
 
     def data_strip(self, data):
         #This function strips all misc info from the array, creating a
@@ -513,7 +547,7 @@ class Template:
             idtext = ''
         else:
             idtext = ('&id=%s' % id)
-        self.req.write("""<table><form
+        self.req.write("""<table><form enctype="multipart/form-data"
         action='%s?action=submit&section=%s%s' method='post' name="form">""" %
                        (pathtext, groups[0][keys[0]][0]['section'], idtext))
         for line in keys:
@@ -598,6 +632,14 @@ class Template:
         #Pop out any field whose name begins with an underscore and do other
         #cruddy processing
         for field in fields.keys():
+            # Due to change in the usage of FieldStorage, this is put in here
+            # to filter out "empty" items. This will correctly set their 
+            # data fields to NULL below, and activate the missing field
+            # tracking.
+            if (fields[field] == ""):
+                fields.pop(field)
+                continue
+
             if (field[0] == "_"):
                 if (fields.keys().__contains__(field[1:]) == True):
                     fields.pop(field)
@@ -840,6 +882,9 @@ class Template:
                     element['text'] = "{\cellcolor{red!45}$\Box$}"
                 else:
                     element['html'] = front + element['data'].replace('&', '&#38;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&#34;') + back
+                    if element['fieldname'] == "email":
+                        element['text'] = "\\url{" + element['data'] + "}"
+
         #######################################################################
         elif (element['fieldtype'] == 'date'):
             element['sqltype'] = 'date'
@@ -908,10 +953,11 @@ class Template:
             if (element['check'] == []):
                 element['error'] = None
             else:
-                a = ErrorCheck(element['data'], element['check'])
+                a = ErrorCheck(element['data'], element['check'], 
+                               self.tmpLinescan)
                 element['error'] = a.GetError()
         else:
-            a = ErrorCheck(element['data'], ['NoNull'])
+            a = ErrorCheck(element['data'], ['NoNull'], self.tmpLinescan)
             element['error'] = a.GetError()
 
         if (element['error'] != None):
@@ -930,6 +976,36 @@ class Template:
                 
             
         return element
+
+    def escape_underscore(self, data):
+        # This function is for conditional escaping of underscores on
+        # cover sheet data.
+        if type(data) == type(dict()):
+            for key in data.keys():
+                data[key] = escape_backslash(data[key])
+            return data
+        elif type(data) != type(""):
+            return data
+
+        start_index = 0
+        while (1):
+            index = data.find("_", start_index)
+            if index == -1 :
+                break
+
+            if index == 0:
+                data = "\\" + data
+                # one space for inserted char one for _ itself
+                start_index = 2
+            elif data[index-1] == "\\":
+                # this value is escaped, just skip over
+                start_index = index + 1
+            else:
+                data = data[0:index] + "\\" + data[index:]
+                # one space for char, one for the _ itself
+                start_index = index + 2
+
+        return data
 
     def latex_generate(self, propid, file_send=True,
                        carma_propno="Unsubmitted"):
@@ -999,7 +1075,16 @@ class Template:
                 else:
                     data = str(author[self.tempclass.author_order[i]])
 
-                author_lines  = (author_lines + data + " & ")
+                if self.tempclass.author_order[i] == 'name':
+                    data = r"\raggedright\nohyphens{" + data + r"}"
+
+                if self.tempclass.author_order[i] == 'institution':
+                    data = r"\raggedright\nohyphens{" + data + r"}"
+
+                if self.tempclass.author_order[i] == 'email':
+                    author_lines  = (author_lines + data + " & ")
+                else:
+                    author_lines  = (author_lines + self.escape_underscore(data) + " & ")
             author_lines = author_lines[:-2] + " \\\\\n"
 
         for source in sources:
@@ -1013,10 +1098,16 @@ class Template:
         cover_template = c.read()
         c.close()
         
+        #propinfo = self.escape_underscore(propinfo)
+        #This is done above in author block to remove escaping email addresses.
+        #author_lines = self.escape_underscore(author_lines)
+        source_data = self.escape_underscore(source_data)
+
         cover = strTemplate(cover_template)
         out = cover.safe_substitute(propinfo, author_lines=author_lines, 
                                     source_data=source_data, 
-                                    propno=carma_propno)
+                                    propno=carma_propno, 
+                                    semester=self.cyclename)
 
         tfile = open(prop_dir + 'latex.tex', 'w')
         tfile.write(out)
@@ -1125,13 +1216,19 @@ class Template:
 
 
 class ErrorCheck:
-    def __init__(self, value, error_list):
+    def __init__(self, value, error_list, tmpLinescan):
+        self.tmpLinescan = tmpLinescan # Used in enchanced error checking; can be
+                                       # optional.
         self.error = ''
         self.order = ['NoNull',
                       'NoSpaces',
                       'AlphaNumeric',
                       'Alpha',
+                      'NoC23',
                       'Numeric',
+                      'Only3mmInC23', # Placing this here in the chain guarantees
+                                      # that the value is already a number.
+                      'Only1cm3mmInC23',
                       'Integer',
                       'NoZero',
                       'raCheck',
@@ -1189,6 +1286,32 @@ class ErrorCheck:
         if (error == True):
             self.AddError("This field must only contain numbers.")
 
+    def Only3mmInC23(self, value):
+        if self.tmpLinescan.__contains__('carma_23') == False:
+            return # Simple errorcheck to make sure following lines dont fail.
+
+        if self.tmpLinescan['carma_23'] == 1:
+            if float(value) > 115.0 or float(value) < 80.0:
+                self.AddError("CARMA23 mode is only available at 3mm.")
+
+    def Only1cm3mmInC23(self, value):
+        if self.tmpLinescan.__contains__('carma_23') == False:
+            return # Simple errorcheck to make sure following lines dont fail.
+
+        if self.tmpLinescan['carma_23'] == 1:
+            if (float(value) < 115.0) and (float(value) > 80.0):
+                return
+            elif (float(value) < 36.0) and (float(value) > 26.0):
+                return
+            else:
+                self.AddError("CARMA23 mode is only available at 1cm and 3mm.")
+
+    def NoC23(self, value):
+        if self.tmpLinescan.__contains__('carma_23') == False:
+            return # Simple errorcheck to make sure following line doesnt fail.
+        if (value != '0') and (self.tmpLinescan['carma_23'] == 1):
+            self.AddError("CARMA23 mode is not allowed in this configuration.")
+
     def Integer(self, value):
         if (value.isdigit() == False):
             self.AddError("This field must only contain integers.")
@@ -1208,27 +1331,32 @@ class ErrorCheck:
                     (digit[2] == ":") and
                     digit[3].isdigit() and digit[4].isdigit())):
                 self.AddError("Invalid format: must be HH:MM")
+                return
             hours = 10*int(digit[0]) + int(digit[1])
             if (hours < 0 or hours > 23):
                 self.AddError("Invalid hours value.")
-
+                return
             minutes = 10*int(digit[3]) + int(digit[4])
             if(minutes < 0 or minutes > 59):
                 self.AddError("Invalid minutes value.")
+                return
 
     def decCheck(self, DEC):
         digit = []
         negative = 0
         for i in DEC:
             digit.append(i)
+        if(len(digit) == 0):
+            self.AddError("Invalid format: must be (+/-)DD:MM")
+            return
+        if(digit[0] == '-'):
+            negative = 1
+        if(digit[0] == '-' or digit[0] == '+'):
+            digit = digit[1:]
+        if(len(digit) != 5) or (digit.count(":") > 1):
+            self.AddError("Invalid format: must be (+/-)DD:MM")
         else:
-            if(digit[0] == '-'):
-                negative = 1
-            if(digit[0] == '-' or digit[0] == '+'):
-                digit = digit[1:]
-            if(len(digit) != 5) or (digit.count(":") > 1):
-                self.AddError("Invalid format: must be (+/-)DD:MM")
-            elif(digit[0].isdigit() and digit[1].isdigit() and
+            if(digit[0].isdigit() and digit[1].isdigit() and
                  (digit[2] == ":") and
                  digit[3].isdigit() and digit[4].isdigit()):
                 degrees = 10*int(digit[0]) + int(digit[1])
