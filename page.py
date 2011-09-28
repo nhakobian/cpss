@@ -77,7 +77,9 @@ def user_create(Name="", Email="", Error="", random=""):
                <tr><td></td><td><input type="hidden" name="random"
                        value='%s'><input type="submit" name="submit"
                        value="Submit"></td></tr>
-               <center>""" % (Name, Email, random))
+        </table>
+        </center>
+        </form>""" % (Name, Email, random))
     cpss.w(buffer)       
 
 def user_create_success(name, email):
