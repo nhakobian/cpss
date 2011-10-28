@@ -136,8 +136,10 @@ class Template:
                     if (entry['section'] != section['section']):
                         continue
                     
-                    if entry['fieldname'] == 'carma_23':
-                        self.tmpLinescan['carma_23'] = dataline['carma_23']
+                    if entry['fieldname'] == 'observation_type':
+                        self.tmpLinescan['observation_type'] = dataline['observation_type']
+                    if entry['fieldname'] == 'corr_frequency':
+                        self.tmpLinescan['corr_frequency'] = dataline['corr_frequency']
                     # If more pre-scan values are needed add them here...
                 # End pre-scan for loop, below continues normal processing.
 
@@ -838,6 +840,34 @@ class Template:
             if (view == True):
                 element['html'] = element['data']
         #######################################################################
+        elif (element['fieldtype'] == 'observation_type'):
+            element['sqltype'] = 'text'
+            values = ['SINGLEPOL', 'DUALPOL', 'FULLPOL', 'CARMA23']
+            shortvalues = ['SP', 'DP', 'FP', '23']
+            if (edit == True):
+                element['html'] = ("""<select name=%s>""" % element['fieldname'])
+                if (element['data'] not in values):
+                    element['data'] = "Not Specified"
+                    element['html'] += "<option value='Not Specified' selected>Not Specified"
+                
+                for value in values:
+                    if ((values.__contains__(element['data']) == True) and
+                        (element['data'] == value)):
+                        element['html'] += ("""<option value="%s" selected>%s"""
+                                            % (value, value))
+                    else:
+                        element['html'] += ("""<option value="%s">%s""" % (value, value))
+
+                element['html'] += """</select>"""
+
+            if (view == True):
+                if element['data'] in values:
+                    element['html'] = shortvalues[values.index(element['data'])]
+                    element['text'] = shortvalues[values.index(element['data'])]
+                else:
+                    element['html'] = '#'
+                    element['text'] = '{\cellcolor{red!45}$\Box$}'
+        #######################################################################
         elif (element['fieldtype'] == 'integer'):
             element['sqltype'] = 'bigint(20)'
             if (edit == True):
@@ -1089,9 +1119,7 @@ class Template:
 
         for source in sources:
             for i in xrange(1, len(self.tempclass.source_order.keys())+1):
-                source_data  = (source_data + 
-                                 str(source[self.tempclass.source_order[i]]) +
-                                 " & ")
+                    source_data += str(source[self.tempclass.source_order[i]]) + " & "
             source_data = source_data[:-2] + " \\\\\n"
 
         c = open(base_dir + "/Template/" + self.template_name + ".tex", 'r')
@@ -1225,10 +1253,16 @@ class ErrorCheck:
                       'AlphaNumeric',
                       'Alpha',
                       'NoC23',
+                      'NoDualPol',
+                      'NoFullPol',
                       'Numeric',
+                      'OBType',
                       'Only3mmInC23', # Placing this here in the chain guarantees
                                       # that the value is already a number.
                       'Only1cm3mmInC23',
+                      'CARMAFreq',
+                      'SZAFreq',
+                      'PolFreq',
                       'Integer',
                       'NoZero',
                       'raCheck',
@@ -1256,6 +1290,11 @@ class ErrorCheck:
     def NoNull(self, value):
         if (value == None):
             self.AddError("This field must not be blank.")
+
+    def OBType(self, value):
+        values = ['SINGLEPOL', 'DUALPOL', 'FULLPOL', 'CARMA23']
+        if value not in values:
+            self.AddError("Observation Type must be selected from one of the values in the drop down box.")
 
     def NoSpaces(self, value):
         for i in value:
@@ -1287,30 +1326,79 @@ class ErrorCheck:
             self.AddError("This field must only contain numbers.")
 
     def Only3mmInC23(self, value):
-        if self.tmpLinescan.__contains__('carma_23') == False:
+        if self.tmpLinescan.__contains__('observation_type') == False:
             return # Simple errorcheck to make sure following lines dont fail.
 
-        if self.tmpLinescan['carma_23'] == 1:
+        if self.tmpLinescan['observation_type'] == 'CARMA23':
             if float(value) > 115.0 or float(value) < 80.0:
                 self.AddError("CARMA23 mode is only available at 3mm.")
 
     def Only1cm3mmInC23(self, value):
-        if self.tmpLinescan.__contains__('carma_23') == False:
+        if self.tmpLinescan.__contains__('observation_type') == False:
             return # Simple errorcheck to make sure following lines dont fail.
 
-        if self.tmpLinescan['carma_23'] == 1:
+        if self.tmpLinescan['observation_type'] == 'CARMA23':
             if (float(value) < 115.0) and (float(value) > 80.0):
                 return
             elif (float(value) < 36.0) and (float(value) > 26.0):
                 return
             else:
                 self.AddError("CARMA23 mode is only available at 1cm and 3mm.")
+    
+    def CARMAFreq(self, value):
+        if self.tmpLinescan.__contains__('corr_frequency') == False:
+            return
+    
+        if (value != '0') and (value != None):
+            freq = self.tmpLinescan['corr_frequency']
+            if (float(freq) <= 115.0) and (float(freq) >= 80.0):
+                return
+            elif (float(freq) <= 270.0) and (float(freq) >= 215.0):
+                return
+            else:
+                self.AddError("Frequency must lie in the 3mm or 1mm bands.")
+
+    def SZAFreq(self, value):
+        if self.tmpLinescan.__contains__('corr_frequency') == False:
+            return
+    
+        if (value != '0') and (value != None):
+            freq = self.tmpLinescan['corr_frequency']
+            if (float(freq) <= 115.0) and (float(freq) >= 80.0):
+                return
+            elif (float(freq) <= 36.0) and (float(freq) >= 26.0):
+                return
+            else:
+                self.AddError("Frequency must lie in the 1cm or 3mm bands.")
+
+    def PolFreq(self, value):
+        if self.tmpLinescan.__contains__('observation_type') == False:
+            return # Simple errorcheck to make sure following lines dont fail.
+
+        if ((self.tmpLinescan['observation_type'] == 'DUALPOL') or
+            (self.tmpLinescan['observation_type'] == 'FULLPOL')):
+            if (float(value) > 215.0) and (float(value) < 270.0):
+                return
+            else:
+                self.AddError("DUAL and FULL Polarizations are only available in the 1mm band.")
 
     def NoC23(self, value):
-        if self.tmpLinescan.__contains__('carma_23') == False:
+        if self.tmpLinescan.__contains__('observation_type') == False:
             return # Simple errorcheck to make sure following line doesnt fail.
-        if (value != '0') and (self.tmpLinescan['carma_23'] == 1):
+        if (value != '0') and (self.tmpLinescan['observation_type'] == 'CARMA23'):
             self.AddError("CARMA23 mode is not allowed in this configuration.")
+
+    def NoDualPol(self, value):
+        if self.tmpLinescan.__contains__('observation_type') == False:
+            return # Simple errorcheck to make sure following line doesnt fail.
+        if (value != '0') and (self.tmpLinescan['observation_type'] == 'DUALPOL'):
+            self.AddError("DUALPOL mode is not allowed in this array configuration.")        
+
+    def NoFullPol(self, value):
+        if self.tmpLinescan.__contains__('observation_type') == False:
+            return # Simple errorcheck to make sure following line doesnt fail.
+        if (value != '0') and (self.tmpLinescan['observation_type'] == 'FULLPOL'):
+            self.AddError("FULLPOL mode is not allowed in this array configuration.")        
 
     def Integer(self, value):
         if (value.isdigit() == False):
