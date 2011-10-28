@@ -17,5 +17,4 @@ address listed below.
 
 Thank You,
 CARMA Proposal Staff
-proposal-help@astro.uiuc.edu
-
+proposal-help@astro.illinois.edu

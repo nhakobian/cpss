@@ -33,8 +33,7 @@ directed to it will be returned with an error.
 
 Thank You,
 CARMA Proposal Staff
-proposal-help@astro.uiuc.edu
-
+proposal-help@astro.illinois.edu
 """
 
 email_pwreset=r"""To: %s
@@ -56,8 +55,7 @@ address listed below.
 
 Thank You,
 CARMA Proposal Staff
-proposal-help@astro.uiuc.edu
-
+proposal-help@astro.illinois.edu
 """
 
 error_latex_large=r"""The LaTeX file you are trying to upload is greater than the allowed

@@ -33,5 +33,4 @@ directed to it will be returned with an error.
 
 Thank You,
 CARMA Proposal Staff
-proposal-help@astro.uiuc.edu
-
+proposal-help@astro.illinois.edu
