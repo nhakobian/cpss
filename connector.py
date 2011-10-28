@@ -584,7 +584,7 @@ class Connector:
             cpss.w("""<html><head>
             <base href="%s" />
             <title>Help</title>
-            <link rel="stylesheet" href="cpss.css" type="text/css">
+            <link rel="stylesheet" href="static/cpss.css" type="text/css">
             </head><body>""" % cpss.config['html_base'])
         else:
             self.do_header()
