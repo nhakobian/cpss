@@ -55,6 +55,6 @@ CREATE TABLE IF NOT EXISTS `2012a_source` (
   `hrs_e` text COLLATE utf8_unicode_ci,
   `hrs_sh` text COLLATE utf8_unicode_ci,
   `hrs_sl` text COLLATE utf8_unicode_ci,
-  `carma_23` tinyint(1) NOT NULL DEFAULT '0'
+  `observation_type` text COLLATE utf8_unicode_ci NOT NULL,
   KEY `proposalid` (`proposalid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
