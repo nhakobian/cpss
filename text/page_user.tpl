@@ -71,4 +71,11 @@
       </tr>
    </table>
    </form>
+   <br/>
+   <h3>Change Username</h3>
+   <p style="width:50%%">
+   To change your username/email, please send a message to
+   <a href="mailto:proposal-help@astro.illinois.edu">proposal-help@astro.illinois.edu</a>.
+   Make sure to include both your old and your new username in this message.
+   </p>
 </center>
