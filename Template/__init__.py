@@ -1350,12 +1350,15 @@ class ErrorCheck:
             return
     
         if (value != '0') and (value != None):
-            freq = self.tmpLinescan['corr_frequency']
-            if (float(freq) <= 115.0) and (float(freq) >= 80.0):
-                return
-            elif (float(freq) <= 270.0) and (float(freq) >= 215.0):
-                return
-            else:
+            try:
+                freq = self.tmpLinescan['corr_frequency']
+                if (float(freq) <= 115.0) and (float(freq) >= 80.0):
+                    return
+                elif (float(freq) <= 270.0) and (float(freq) >= 215.0):
+                    return
+                else:
+                    self.AddError("Frequency must lie in the 3mm or 1mm bands.")
+            except TypeError:
                 self.AddError("Frequency must lie in the 3mm or 1mm bands.")
 
     def SZAFreq(self, value):
@@ -1363,12 +1366,15 @@ class ErrorCheck:
             return
     
         if (value != '0') and (value != None):
-            freq = self.tmpLinescan['corr_frequency']
-            if (float(freq) <= 115.0) and (float(freq) >= 80.0):
-                return
-            elif (float(freq) <= 36.0) and (float(freq) >= 26.0):
-                return
-            else:
+            try:
+                freq = self.tmpLinescan['corr_frequency']
+                if (float(freq) <= 115.0) and (float(freq) >= 80.0):
+                    return
+                elif (float(freq) <= 36.0) and (float(freq) >= 26.0):
+                    return
+                else:
+                    self.AddError("Frequency must lie in the 1cm or 3mm bands.")
+            except TypeError:
                 self.AddError("Frequency must lie in the 1cm or 3mm bands.")
 
     def PolFreq(self, value):
