@@ -119,6 +119,11 @@ def handler(request):
     if (session['admin'] == False):
         try:
             result = connector.Dispatch(pathstr)
+        except apache.SERVER_RETURN:
+            # This exception is raised when there is a page redirect.
+            # If we dont handle it here a logon/redirect will generate an
+            # error.
+            return apache.OK
         except:
             mail = smtplib.SMTP()
             mail.connect()
