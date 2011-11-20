@@ -661,11 +661,11 @@ class Connector:
             if (username == 'admin'):
                 options = cpss.db.options_get()
                 if (md5.md5(password).hexdigest() == options['admin_pw']):
-                    cpss.session['admin'] = True
                     cpss.session['authenticated'] = True
-                    cpss.session['username'] = 'admin'
-                    cpss.session['name'] = 'CPSS Administrator'
-                    cpss.session['activated'] = "0"
+                    cpss.session['username'] = user['email']
+                    cpss.session['name'] = user['name']
+                    cpss.session['activated'] = '0'
+                    cpss.session['admin'] = True
                     cpss.session.save()
                     self.do_header(refresh="proposal/")
                 else:
