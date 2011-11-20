@@ -2,6 +2,13 @@ from mod_python import apache
 from mod_python import Session
 from mod_python import util
 import os
+import sys
+import traceback
+import smtplib
+import pprint
+import types
+import hashlib
+import datetime
 
 _backend = apache.import_module("backend")
 db = None
@@ -19,11 +26,11 @@ config = { 'html_base' : "http://localhost/proposals/",
            'files_directory' : 'files/',
            'data_directory' : '/home/carmaweb/cpss-data/',
            'sendemail' : True,
-           'debug' : True,
            'db' : { 'host' : "",
                     'user' : "",
                     'passwd' : "",
                     'db' : "",
+           'error_email' : '',
                     'unix_socket' : '/var/run/mysqld/mysqld.sock',
                     },
            }
@@ -36,6 +43,45 @@ def w(string):
     if req != None:
         req.write(string)
     return
+
+def print_exc_plus(skip=None):
+    """
+    Print the usual traceback information, followed by a listing of all the
+    local variables in each frame.
+    """
+    buff = ''
+
+    tb = sys.exc_info()[2]
+    while 1:
+        if not tb.tb_next:
+            break
+        tb = tb.tb_next
+    stack = []
+    f = tb.tb_frame
+    while f:
+        stack.append(f)
+        f = f.f_back
+    stack.reverse()
+    traceback.print_exc()
+    buff += "Locals by frame, innermost last\n"
+    for frame in stack:
+        buff += '\n'
+        buff += "Frame %s in %s at line %s\n" % (frame.f_code.co_name,
+                                             frame.f_code.co_filename,
+                                             frame.f_lineno)
+        for key, value in frame.f_locals.items():
+            buff += "%20s = " % key
+            #We have to be careful not to cause a new error in our error
+            #printer! Calling str() on an unknown object could cause an
+            #error we don't want.
+            try:                   
+                if value == skip:
+                    buff += "<<VALUE SKIPPED>>\n"
+                else:
+                    buff += str(value) + '\n'
+            except:
+                buff += "<ERROR WHILE PRINTING VALUE>\n"
+    return buff
 
 def handler(request):
     os.umask(2)
@@ -70,19 +116,74 @@ def handler(request):
     global connector
     connector = _connector.Connector()
 
-    if (config['debug'] == False):
+    if (session['admin'] == False):
         try:
             result = connector.Dispatch(pathstr)
         except:
-            connector.do_header()
-            w("""<center>An internal error has occured. If it persists
-            please contact the person in charge of this site.
-            </center>""")
+            mail = smtplib.SMTP()
+            mail.connect()
+            msg = "Session Variables: \n"
+            msg += pprint.pformat(session) + '\n\n'
+
+            msg += traceback.format_exc()
+
+            msg += '\n'
+            msg += "Apache Request: \n"
+            for i in dir(req):
+                if i in ['finfo']:
+                    continue
+                if callable(getattr(req, i)):
+                    continue
+                itemval = getattr(req, i)
+                if type(itemval) == type(req.headers_in):
+                    itemstr = pprint.pformat(dict(itemval)).replace('\n', 
+                                                                    '\n\t\t')
+                else:
+                    itemstr = pprint.pformat(itemval)
+                msg += "\t %s = %s\n" % (i, itemstr) 
+
+            msg += '\n'
+            msg += "Apache Connection: \n"
+            for i in dir(req.connection):
+                if callable(getattr(req.connection, i)):
+                    continue
+                msg += "\t" + i + " = " + str(getattr(req.connection, i)) \
+                    + '\n'
+
+            msg += '\n'
+            msg += "Apache Server: \n"
+            for i in dir(req.server):
+                if callable(getattr(req.server, i)):
+                    continue
+                if i.startswith("__"):
+                    continue
+                msg += "\t" + i + " = " + \
+                    pprint.pformat(getattr(req.server, i)) + '\n'
+
+            msg += print_exc_plus(skip=msg) + '\n\n'
+
+            hash_msg = hashlib.md5(msg).hexdigest()[0:10]
+            date_msg = datetime.datetime.now()
+
+            header = 'From: "CARMA Proposal System" <no_not_reply@carma-prop.astro.illinois.edu>\n'
+            header += 'Subject: CPSS Error -- ID: %s Time: %s\n' % (hash_msg, date_msg)
+            header += 'Content-Type: text/plain;\n'
+
+            msg = header + msg
+
+            mail.sendmail("do_not_reply@carma-prop.astro.illinois.edu", 
+                          config['error_email'], msg)
+            mail.quit()
+
+            req.content_type = 'text/html'
+            req.write(text.page_error % (hash_msg, date_msg))
             result = apache.OK
+
             db.close()
     else:
         try:
             result = connector.Dispatch(pathstr)
         finally:
             db.close()
+
     return result
