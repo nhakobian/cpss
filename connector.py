@@ -87,6 +87,11 @@ class Connector:
                         self.StatsPDF(pathstr[1])
                 else:
                     self.do_404()
+            elif (pathstr[0] == 'errortest'):
+                if cpss.db.test_userflag(cpss.session['username'], 'STATS') == True:
+                    raise TypeError("CPSS virtual error - testing.")
+                else:
+                    self.do_404()
             else:
                 self.do_404()
         #Everything below will only be available when people are logged out.
