@@ -171,6 +171,7 @@ def handler(request):
             date_msg = datetime.datetime.now()
 
             header = 'From: "CARMA Proposal System" <no_not_reply@carma-prop.astro.illinois.edu>\n'
+            header += "To: %s\n" % config['error_email']
             header += 'Subject: CPSS Error -- ID: %s Time: %s\n' % (hash_msg, date_msg)
             header += 'Content-Type: text/plain;\n'
 
