@@ -184,7 +184,7 @@ def handler(request):
             req.content_type = 'text/html'
             req.write(text.page_error % (hash_msg, date_msg))
             result = apache.OK
-
+        finally:
             db.close()
     else:
         try:
