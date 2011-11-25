@@ -56,11 +56,11 @@ class Connector:
         
         if (pathstr == []):
             self.Root()
-        elif (pathstr[0] == 'logout'):
+        elif (pathstr[0] == 'logout') and not(len(pathstr) > 1):
             self.Logout()
-        elif (pathstr[0] == 'help'):
+        elif (pathstr[0] == 'help') and not(len(pathstr) > 2):
             self.Help(pathstr)
-        elif (pathstr[0] == 'help_small'):
+        elif (pathstr[0] == 'help_small') and not(len(pathstr) > 2):
             self.HelpSmall(pathstr)
         #Anything above this line will be available at any time.
         #Anything below this line will only be available when logged in and
@@ -72,14 +72,14 @@ class Connector:
             (cpss.session['activated'] == "0")):
             if (pathstr[0] == 'proposal'):
                 self.Proposal(pathstr)
-            elif (pathstr[0] == 'user'):
+            elif (pathstr[0] == 'user') and not(len(pathstr) > 1):
                 self.User()
-            elif (pathstr[0] == 'stats'):
+            elif (pathstr[0] == 'stats') and not(len(pathstr) > 1):
                 if cpss.db.test_userflag(cpss.session['username'], 'STATS') == True:
                     self.Stats()
                 else:
                     self.do_404()
-            elif (pathstr[0] == 'finalpdf'):
+            elif (pathstr[0] == 'finalpdf') and not(len(pathstr) > 2):
                 if cpss.db.test_userflag(cpss.session['username'], 'STATS') == True:
                     if len(pathstr) != 2:
                         self.do_404()
@@ -87,7 +87,7 @@ class Connector:
                         self.StatsPDF(pathstr[1])
                 else:
                     self.do_404()
-            elif (pathstr[0] == 'errortest'):
+            elif (pathstr[0] == 'errortest') and not(len(pathstr) > 1):
                 if cpss.db.test_userflag(cpss.session['username'], 'STATS') == True:
                     raise TypeError("CPSS virtual error - testing.")
                 else:
@@ -96,9 +96,9 @@ class Connector:
                 self.do_404()
         #Everything below will only be available when people are logged out.
         elif (cpss.session['authenticated'] == False):
-            if (pathstr[0] == 'create'):
+            if (pathstr[0] == 'create') and not(len(pathstr) > 1):
                 self.Create()
-            elif (pathstr[0] == 'login'):
+            elif (pathstr[0] == 'login') and not(len(pathstr) > 1):
                 self.Login()
             else:
                 self.do_404()
