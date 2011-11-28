@@ -24,11 +24,11 @@
   \vskip -0.3cm
 }
 
-\sectitlel{Techical Justification}
+\sectitlel{Scientific Justification}
 
 %s
 
-\sectitlel{Scientific Justification}
+\sectitlel{Techical Justification}
 
 %s
 

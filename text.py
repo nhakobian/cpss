@@ -881,11 +881,11 @@ tmpl_just=r"""\documentclass[preprint, letterpaper, 12pt]{aastex}
   \vskip -0.3cm
 }
 
-\sectitlel{Techical Justification}
+\sectitlel{Scientific Justification}
 
 %s
 
-\sectitlel{Scientific Justification}
+\sectitlel{Techical Justification}
 
 %s
 

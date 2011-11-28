@@ -1166,7 +1166,7 @@ class Template:
                     sjust = str(self.data_strip(section['data'][0])['scientific_justification'])
 
             tfile = open(prop_dir + 'justification/justification.tex', 'w')
-            tfile.write(cpss.text.tmpl_just % (tjust, sjust))
+            tfile.write(cpss.text.tmpl_just % (sjust, tjust))
             tfile.close()
         
         if (self.justification == True):
