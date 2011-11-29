@@ -1360,6 +1360,8 @@ class ErrorCheck:
                     self.AddError("Frequency must lie in the 3mm or 1mm bands.")
             except TypeError:
                 self.AddError("Frequency must lie in the 3mm or 1mm bands.")
+            except ValueError:
+                self.AddError("Invalid frequency specified in frequency field.")
 
     def SZAFreq(self, value):
         if self.tmpLinescan.__contains__('corr_frequency') == False:
@@ -1376,6 +1378,8 @@ class ErrorCheck:
                     self.AddError("Frequency must lie in the 1cm or 3mm bands.")
             except TypeError:
                 self.AddError("Frequency must lie in the 1cm or 3mm bands.")
+            except ValueError:
+                self.AddError("Invalid frequency specified in frequency field.")
 
     def PolFreq(self, value):
         if self.tmpLinescan.__contains__('observation_type') == False:
