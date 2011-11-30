@@ -433,7 +433,7 @@ html_just_normal=r"""<div id="editlist">
         using the web-based tool to submit your Scientific and
         Technical Justification sections or to upload a LaTeX file
         containing this information using the template located <a
-        href='images/justification.tar.gz'>here</a>.
+        href='static/justification.tar.gz'>here</a>.
       </td>
       <td>
         <form action='proposal/typechange/%s' method='post' name="form">
