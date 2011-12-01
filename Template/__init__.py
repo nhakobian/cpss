@@ -1330,7 +1330,7 @@ class ErrorCheck:
             return # Simple errorcheck to make sure following lines dont fail.
 
         if self.tmpLinescan['observation_type'] == 'CARMA23':
-            if float(value) > 115.0 or float(value) < 80.0:
+            if float(value) > 116.0 or float(value) < 80.0:
                 self.AddError("CARMA23 mode is only available at 3mm.")
 
     def Only1cm3mmInC23(self, value):
@@ -1338,7 +1338,7 @@ class ErrorCheck:
             return # Simple errorcheck to make sure following lines dont fail.
 
         if self.tmpLinescan['observation_type'] == 'CARMA23':
-            if (float(value) < 115.0) and (float(value) > 80.0):
+            if (float(value) < 116.0) and (float(value) > 80.0):
                 return
             elif (float(value) < 36.0) and (float(value) > 26.0):
                 return
@@ -1352,7 +1352,7 @@ class ErrorCheck:
         if (value != '0') and (value != None):
             try:
                 freq = self.tmpLinescan['corr_frequency']
-                if (float(freq) <= 115.0) and (float(freq) >= 80.0):
+                if (float(freq) <= 116.0) and (float(freq) >= 80.0):
                     return
                 elif (float(freq) <= 270.0) and (float(freq) >= 215.0):
                     return
@@ -1370,7 +1370,7 @@ class ErrorCheck:
         if (value != '0') and (value != None):
             try:
                 freq = self.tmpLinescan['corr_frequency']
-                if (float(freq) <= 115.0) and (float(freq) >= 80.0):
+                if (float(freq) <= 116.0) and (float(freq) >= 80.0):
                     return
                 elif (float(freq) <= 36.0) and (float(freq) >= 26.0):
                     return
