@@ -1222,11 +1222,13 @@ class Template:
 
         if ((os.path.isfile(prop_dir + 'latex-final.pdf') == True) and
             (file_send == True)):
-            self.req.headers_out.add('Content-Disposition',
-                                     'attachment; filename=%s.pdf' % (propid)) 
-            self.req.content_type='application/force-download'
             pdf = open(prop_dir + 'latex-final.pdf', 'r')
             data = pdf.read()
+            pdf.close()
+            self.req.headers_out.add('Content-Disposition',
+                                     'attachment; filename=%s.pdf' % (propid)) 
+            self.req.headers_out.add('Content-Length', str(len(data)))
+            self.req.content_type='application/pdf'
             self.req.write(data)
 
         return 0

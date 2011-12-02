@@ -423,7 +423,8 @@ class Connector:
             else:
                 cpss.req.headers_out.add('Content-Disposition',
                    'attachment; filename=%s.pdf' % (result['carmaid']))
-                cpss.req.content_type='application/force-download'
+                cpss.req.headers_out.add('Content-Length', str(len(pdf)))
+                cpss.req.content_type='application/pdf'
                 cpss.w(pdf)
         ### API -- pdf -- return sample pdf file
         elif (items == 3 and pathstr[1] == "pdf"):
@@ -808,8 +809,9 @@ class Connector:
         else:
             self.req.headers_out.add('Content-Disposition',
                                      'attachment; filename=%s.pdf' % (result['carmaid']))
-            self.req.content_type='application/force-download'
-            self.req.write(pdf)
+            cpss.req.headers_out.add('Content-Length', str(len(pdf)))
+            cpss.req.content_type='application/pdf'
+            cpss.w(pdf)
 
     def Stats(self):
         # This function returns stats information about the current call.
