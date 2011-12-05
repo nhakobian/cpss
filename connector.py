@@ -664,7 +664,11 @@ class Connector:
             username = self.fields.getfirst('user')
             password = self.fields.getfirst('pass')
 
-            if (username == 'admin'):
+            # Fix for blank field == None issue
+            if username == None:
+                username = ''
+
+            if (username[0:6] == 'admin:'):
                 options = cpss.db.options_get()
                 if (md5.md5(password).hexdigest() == options['admin_pw']):
                     cpss.session['authenticated'] = True
