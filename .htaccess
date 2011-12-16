@@ -5,11 +5,7 @@ PythonHandler cpss
 PythonDebug On
 RewriteEngine on
 
-RewriteCond %{REQUEST_URI} "./images/"
-RewriteRule (.*) $1 [L]
-RewriteCond %{REQUEST_URI} "./tac/"
-RewriteRule (.*) $1 [L]
-RewriteCond %{REQUEST_URI} "./file_clear.php"
+RewriteCond %{REQUEST_URI} "./static/"
 RewriteRule (.*) $1 [L]
 
 RewriteRule ^cpss(.*) - [L]

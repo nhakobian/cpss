@@ -1,27 +1,26 @@
 import MySQLdb
-import md5
+import hashlib
 import string
 import os.path
 import os
 import gzip
 from random import choice
+from mod_python import apache
+cpss = apache.import_module("cpss")
 
 class Backend:
-    def __init__(self, req, Template, config):
-        password = ""
-        self.req = req
+    def __init__(self):
         self.prefix = ''
-        self.Template = Template
-        self.Database = MySQLdb.connect(host="", 
-                                        user="", passwd=password, 
-                                        db="", 
-                                        unix_socket="")
-        self.config = config
+        self.Database = MySQLdb.connect(host = cpss.config['db']['host'],
+                                        user = cpss.config['db']['user'],
+                                        passwd = cpss.config['db']['passwd'],
+                                        db = cpss.config['db']['db'],
+                                        unix_socket = cpss.config['db']['unix_socket'])
         self.literal = self.Database.literal
         self.options = self.options_get()
-        self.path_justification = self.config['data_directory'] + self.prefix + 'justifications/'
-        self.path_pdf = self.config['data_directory'] + self.prefix + 'pdf/'
-        self.path_images = self.config['data_directory'] + self.prefix + 'images/'
+        self.path_justification = cpss.config['data_directory'] + self.prefix + 'justifications/'
+        self.path_pdf = cpss.config['data_directory'] + self.prefix + 'pdf/'
+        self.path_images = cpss.config['data_directory'] + self.prefix + 'images/'
 
 
     def verify_user(self, username, password):
@@ -33,11 +32,38 @@ class Backend:
         if (len(result) == 0):
             return (False, 0)
         user = result[0]
-        md5_pass = md5.md5(password).hexdigest()
+        md5_pass = hashlib.md5(password).hexdigest()
         cursor.close()
         if((user['email'] == username) and (user['password'] == md5_pass)):
             return (True, user)
         return (False, 0)
+
+
+    def get_user(self, username):
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        response = cursor.execute("""SELECT * FROM %(prefix)susers
+                                     WHERE email=%(username)s LIMIT 1"""
+                                  % {'prefix' : self.prefix,
+                                     'username': self.literal(username)})
+        result = cursor.fetchone()
+        return result
+
+    def test_userflag(self, username, flag):
+        result = self.get_user(username)
+
+        # list of userflags:
+        # 1 : STATS - Can see stats page of calls.
+        flags = {
+            'STATS' : 1,
+            }
+        if flag in flags.keys():
+            if (result['flags'] & flags[flag]) == flags[flag]:
+                return True
+            else:
+                return False
+        else:
+            return False
+
 
     def user_exists(self, username):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
@@ -80,6 +106,43 @@ class Backend:
                                    'email'  : self.literal(user)})
         cursor.close()
 
+    def cycles(self):
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        ret = cursor.execute("""SELECT `cyclename`, `final_date`, `proposal`
+                                FROM `%(prefix)scycles`
+                                ORDER BY `final_date` DESC""" % 
+                             {'prefix' : self.prefix})
+        result = cursor.fetchall()
+        cursor.close()
+        return result
+
+    def proposal_list_by_cycle(self, cyclename):
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        ret = cursor.execute("""SELECT *
+                                FROM `%(prefix)sproposals` as `proposals`,
+                                     `users`
+                                WHERE `proposals`.`cyclename`='%(cyclename)s' AND
+                                      `proposals`.`user`=`users`.`email`
+                                ORDER BY `proposals`.`status` DESC,
+                                      `proposals`.`carmaid` DESC""" %
+                             {'prefix' : self.prefix,
+                              'cyclename' : cyclename})
+        result = cursor.fetchall()
+        cursor.close()
+        return result
+
+    def proposal_get_propinfo(self, proposalid, tablename):
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        response = cursor.execute("""SELECT *
+                                     FROM `%(prefix)s%(tablename)s` as propinfo
+                                     WHERE `propinfo`.`proposalid`='%(proposalid)s'
+                                     LIMIT 1""" % {'prefix' : self.prefix,
+                                                   'tablename' : tablename,
+                                                   'proposalid' : proposalid})
+        result = cursor.fetchone()
+        cursor.close()
+        return result
+
     def proposal_list(self, user):
         #unfortunately this requires many calls to the db. Any other idea
         #without restructuring the database?
@@ -102,13 +165,102 @@ class Backend:
         result = cursor.fetchall()
         list=[]
         for proposal in result:
-            cursor.execute("""SELECT title FROM %(prefix)s%(table)s WHERE
+            cursor.execute("""SELECT * FROM %(prefix)s%(table)s WHERE
                               proposalid=%(propid)s""" %
                           {'prefix' : self.prefix,
                            'table'  : proposal['proposal_table'],
                            'propid' : self.literal(proposal['proposalid'])})
             res = cursor.fetchone()
             proposal['title'] = res['title']
+            proposal['date'] = res['date']
+            list.append(proposal)
+
+        cursor.close()
+        return list
+
+    def proposal_list_multi(self, user):
+        #unfortunately this requires many calls to the db. Any other idea
+        #without restructuring the database?
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        response = cursor.execute(
+            """SELECT %(prefix)sproposals.proposalid,
+               %(prefix)sproposals.cyclename, %(prefix)sproposals.user,
+               %(prefix)sproposals.carmaid, %(prefix)sproposals.carmapw,
+               %(prefix)scycles.template,
+               %(prefix)scycles.proposal as proposal_table,
+               %(prefix)scycles.final_date,
+               %(prefix)sproposals.status
+               FROM %(prefix)sproposals, %(prefix)scycles
+               WHERE %(prefix)sproposals.user=%(user)s AND
+                     %(prefix)scycles.cyclename=%(prefix)sproposals.cyclename
+               ORDER BY %(prefix)scycles.final_date
+               DESC, %(prefix)sproposals.proposalid DESC""" %
+            {'prefix' : '',
+             'user'   : self.literal(user)})
+        result = cursor.fetchall()
+
+        response = cursor.execute(
+            """SELECT %(prefix)sproposals.proposalid,
+               %(prefix)sproposals.cyclename, %(prefix)sproposals.user,
+               %(prefix)sproposals.carmaid, %(prefix)sproposals.carmapw,
+               %(prefix)scycles.template,
+               %(prefix)scycles.proposal as proposal_table,
+               %(prefix)scycles.final_date,
+               %(prefix)sproposals.status
+               FROM %(prefix)sproposals, %(prefix)scycles
+               WHERE %(prefix)sproposals.user=%(user)s AND
+                     %(prefix)scycles.cyclename=%(prefix)sproposals.cyclename
+               ORDER BY %(prefix)scycles.final_date
+               DESC, %(prefix)sproposals.proposalid DESC""" %
+            {'prefix' : 'ddt_',
+             'user'   : self.literal(user)})
+        result2 = cursor.fetchall()
+
+        response = cursor.execute(
+            """SELECT %(prefix)sproposals.proposalid,
+               %(prefix)sproposals.cyclename, %(prefix)sproposals.user,
+               %(prefix)sproposals.carmaid,
+               %(prefix)scycles.template,
+               %(prefix)scycles.proposal_table as proposal_table,
+               %(prefix)scycles.final_date,
+               %(prefix)sproposals.status
+               FROM %(prefix)sproposals, %(prefix)scycles
+               WHERE %(prefix)sproposals.user=%(user)s AND
+                     %(prefix)scycles.cyclename=%(prefix)sproposals.cyclename
+               ORDER BY %(prefix)scycles.final_date
+               DESC, %(prefix)sproposals.proposalid DESC""" %
+            {'prefix' : 'cs_',
+             'user'   : self.literal(user)})
+        result3 = cursor.fetchall()
+
+        list=[]
+        for proposal in result:
+            cursor.execute("""SELECT title FROM %(prefix)s%(table)s WHERE
+                              proposalid=%(propid)s""" %
+                          {'prefix' : '',
+                           'table'  : proposal['proposal_table'],
+                           'propid' : self.literal(proposal['proposalid'])})
+            res = cursor.fetchone()
+            proposal['title'] = res['title']
+            list.append(proposal)
+        for proposal in result2:
+            cursor.execute("""SELECT title FROM %(prefix)s%(table)s WHERE
+                              proposalid=%(propid)s""" %
+                          {'prefix' : 'ddt_',
+                           'table'  : proposal['proposal_table'],
+                           'propid' : self.literal(proposal['proposalid'])})
+            res = cursor.fetchone()
+            proposal['title'] = res['title']
+            list.append(proposal)
+        for proposal in result3:
+            cursor.execute("""SELECT title FROM %(prefix)s%(table)s WHERE
+                              proposalid=%(propid)s""" %
+                          {'prefix' : 'cs_',
+                           'table'  : proposal['proposal_table'],
+                           'propid' : self.literal(proposal['proposalid'])})
+            res = cursor.fetchone()
+            proposal['title'] = res['title']
+            proposal['carmapw'] = ""
             list.append(proposal)
 
         cursor.close()
@@ -123,11 +275,13 @@ class Backend:
                        {'prefix' : self.prefix,
                         'propid' : self.literal(proposalid)})
         res = cursor.fetchone()
+        cursor.close()
+        if user == 'admin':
+            return res
         if (res == None):
             return False
         if (res['user'] != user):
             return False
-        cursor.close()
         return res
 
     def proposal_status(self, propid):

@@ -574,11 +574,11 @@
  \class@typeout
 }%
 \def\revtex@pageid{%
- \xdef\@thefnmark{\null}%
- \@footnotetext{%
-  This \revtex@genre\space was prepared with the
-  \revtex@org\space \LaTeX\ macros v\revtex@ver.%
- }%
+% \xdef\@thefnmark{\null}%
+% \@footnotetext{%
+%  This \revtex@genre\space was prepared with the
+%  \revtex@org\space \LaTeX\ macros v\revtex@ver.%
+% }%
 }%
 \def\ps@plaintop{%
  \let\@mkboth\@gobbletwo

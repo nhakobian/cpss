@@ -5,27 +5,36 @@ import os.path
 from pyPdf import PdfFileWriter, PdfFileReader
 from string import Template as baseTemplate
 
+cpss = apache.import_module("../cpss.py")
+
+template10 = apache.import_module('template10')
+template2009b = apache.import_module('template2009b')
+template2010a = apache.import_module('template2010a')
+template2010b = apache.import_module('template2010b')
+template2011a = apache.import_module('template2011a')
+template2011b = apache.import_module('template2011b')
+
 class strTemplate(baseTemplate):
     idpattern = r'[_a-z0-9][_a-z0-9]*'
 
 class Template:
-    def __init__(self, req, template, cyclename, backend, propid, view,
+    def __init__(self, template, cyclename, propid, view,
                  Fetch=True, justification=False):
 
-        self.theBackend = backend
         self.justification = justification
-
+        
         if (Fetch == True):
-            self.is_key_project = self.theBackend.is_key_project(propid)
+            self.is_key_project = cpss.db.is_key_project(propid)
 
-            if (self.is_key_project != self.theBackend.justification_type_latex(propid)):
-                self.theBackend.justification_type_set(propid, 1)
+            if (self.is_key_project != cpss.db.justification_type_latex(propid)):
+                cpss.db.justification_type_set(propid, 1)
                 self.justification = True
  
-        self.req = req
+        self.req = cpss.req
         self.cyclename = cyclename
         self.error = False;
         self.propid = propid
+        self.tmpLinescan = {} # For enhanced error checking routine.
         if (view == False):
             self.view = False
             self.edit = True
@@ -34,33 +43,33 @@ class Template:
             self.edit = False
         
         if (template == 'template10'):
-            self.template = apache.import_module('template10')
+            self.template = template10
         if (template == 'template2009b'):
-            self.template = apache.import_module('template2009b')
+            self.template = template2009b
         if (template == 'template2010a'):
-            self.template = apache.import_module('template2010a')
+            self.template = template2010a
         if (template == 'template2010b'):
-            self.template = apache.import_module('template2010b')
+            self.template = template2010b
         if (template == 'template2011a'):
-            self.template = apache.import_module('template2011a')
+            self.template = template2011a
         if (template == 'template2011b'):
-            self.template = apache.import_module('template2011b')
+            self.template = template2011b
+
         self.template_name = template
         self.tempclass = self.template.template()
         self.sections = self.tempclass.sections
         self.tables = self.tempclass.tables
 
-
         if (Fetch == True):
-            self.proposal = self.theBackend.proposal_get(self.tempclass.tables,
+            self.proposal = cpss.db.proposal_get(self.tempclass.tables,
                                                          cyclename, propid) 
-            #Merge database data with template style
+            # Merge database data with template style
             self.data_merge()
 
     def calc_hours(self):
         for section in self.sections:
             if section['name'] == 'Source Information':
-                sources=section
+                sources = section
         sources = sources['data']
         time = 0
         for source in (sources):
@@ -103,6 +112,37 @@ class Template:
             for dataline in self.proposal[section['table']]:
                 section['data'].append({})
                 data = section['data'][-1]
+
+                # Pre-scan line for the C23 marker (if exists) and store
+                # temporary value for the current line. This will allow
+                # other fields to perform error checking on the presence of
+                # the C23 field. This can be easily extended to other fields
+                # if need be. This is kind of a rough "hack" since the error
+                # checking system was never designed to need data from other
+                # fields to calculate the error status of the current field.
+
+                self.tmpLinescan = {} # Initialize it to be a persistant value
+                                      # on this line ONLY, but must be available
+                                      # from other functions (hence the class
+                                      # scope. The error checking functions are
+                                      # called during the self.element() call
+                                      # below, so this variable should only
+                                      # exist during its lifetime.
+                for entry in self.tables[section['table']]['value']:
+                    # This is the pre-scan for loop. It will only grab values
+                    # that need to be checked from error checking functions on
+                    # fields that are not its own (currently is the C23 status
+                    # field).
+                    if (entry['section'] != section['section']):
+                        continue
+                    
+                    if entry['fieldname'] == 'observation_type':
+                        self.tmpLinescan['observation_type'] = dataline['observation_type']
+                    if entry['fieldname'] == 'corr_frequency':
+                        self.tmpLinescan['corr_frequency'] = dataline['corr_frequency']
+                    # If more pre-scan values are needed add them here...
+                # End pre-scan for loop, below continues normal processing.
+
                 for entry in self.tables[section['table']]['value']:
                     if (entry['section'] != section['section']):
                         continue
@@ -117,6 +157,10 @@ class Template:
                         data[entry['line']] = [entry]
                     else:
                         data[entry['line']] += [entry]
+
+                self.tmpLinescan = {} # Clear any values that might have been
+                                      # temporarily stored here. This is a 
+                                      # safety measure.
 
     def data_strip(self, data):
         #This function strips all misc info from the array, creating a
@@ -146,11 +190,11 @@ class Template:
         else:
             do_sections = self.sections
 
-        fetch = self.theBackend.proposal_status(self.propid)
+        fetch = cpss.db.proposal_status(self.propid)
 
         ###Begin Page Header
         self.req.write("""<div class="navbar, propheader">""")
-        if (self.cyclename != self.theBackend.options['cyclename']):
+        if (self.cyclename != cpss.db.options['cyclename']):
             self.req.write("""<ul id="navlist">
             <li><a href="%s">Current Proposal</a></li>""" %
                            ("proposal/edit/" + str(self.propid)))
@@ -196,10 +240,8 @@ class Template:
                     <a href="help_small/%s"
                     onClick="return popup(this, 'help')">[?]</a>
                     <a href="proposal/edit/%s?action=edit&section=%s">
-                    (edit)</a></p>""" % (section['name'],
-                                         section['section'],
-                                         self.propid,
-                                         section['section']))
+                    (edit)</a></p>""" % (section['name'], section['section'],
+                                         self.propid, section['section']))
                     self.html_entry_view(groups, keys)                
                 elif (section['type'] == 'repeat'):
                     groups = section['data']
@@ -220,10 +262,8 @@ class Template:
                     <a href="help_small/%s"
                     onClick="return popup(this, 'help')">[?]</a>
                     <a href="proposal/edit/%s?action=add&section=%s">
-                    %s</a></p>""" % (section['name'],
-                                     section['section'],
-                                        self.propid,
-                                        section['section'], addtext))
+                    %s</a></p>""" % (section['name'], section['section'],
+                                     self.propid, section['section'], addtext))
                     for lines in groups:
                         pathtext = "proposal/edit/%s" % self.propid
                         lines = {keys[0] : lines[keys[0]]}
@@ -269,7 +309,7 @@ class Template:
                     (add)</a></p>""" % (section['section'],
                                         self.propid, 'image'))
 
-                    result = self.theBackend.images_list(self.propid)
+                    result = cpss.db.images_list(self.propid)
 
                     if (len(result) == 0):
                         self.req.write("""<table><tr><td>None
@@ -297,32 +337,10 @@ class Template:
                         else:
                             web = ''
                             pdf = 'selected'
-                        self.req.write("""
-                    <div id="editlist">
-                    <p>Justification Type</p>
-                    <table><tr><td style="width:50%%;text-align:left;">
-                    Using this proposal submission tool, you have a choice of
-                    using the web-based tool to submit your Scientific and
-                    Technical Justification sections or to upload a LaTeX file
-                    containing this information using the template located
-                    <a href='images/justification.tar.gz'>here</a>.</td>
-                    <td>
-                    <form action='proposal/typechange/%s' method='post'
-                    name="form">
-                    I want to use: <select name="type">
-                    <option value="Website Justification" %s>Website
-                    Justification
-                    <option value="LaTeX Template" %s>LaTeX Template
-                    </select>
-                    <input type="submit" value="Select Choice" name="submit">
-                    </input>
-                    </form>""" % (self.propid, web, pdf))
+                        self.req.write(cpss.text.html_just_normal % 
+                                       (self.propid, web, pdf))
                     else:
-                        self.req.write("""<div id="editlist"><p>Justification Type</p>
-                    <table><tr><td style="width:50%%;text-align:left;">Key Projects are
-                    required to upload a <b>LaTeX</b> file for their justification. A LaTeX
-                    template specifically for Key Projects is available <a href="images/justification_key.tar.gz">here</a>. This 
-                    template conforms to all the necessary requirements. Use the following link for more details about <a href="http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html" target="_blank">Key Projects</a>.""")
+                        self.req.write(cpss.text.html_just_key)
 
                     if (self.justification == True):
                         self.req.write("""<br>
@@ -331,7 +349,7 @@ class Template:
                         method="post">""" % ('proposal/edit/' +
                                              str(self.propid)))
 
-                        data = self.theBackend.justification_get_data(
+                        data = cpss.db.justification_get_data(
                             self.propid)
 
                         if (data == None):
@@ -602,6 +620,7 @@ class Template:
                 <a href="%s?action=delete&section=image&id=%s">Delete</a>
                 </td></tr>""" % (editfile, sample_code, 
                                  'proposal/edit/' + str(propid),image['numb']))
+
     def collapse_lines(self, group):
         new_group = []
         keys = group.keys()
@@ -684,14 +703,14 @@ class Template:
             else:
                 data_field['data'] = None
 
-        self.theBackend.proposal_tagset(do_section['table'], propid,
+        cpss.db.proposal_tagset(do_section['table'], propid,
                                         final_group, id=id)
 
     def process_image(self, fields):
         if (fields['file'].filename != ''):
 
-            files_dir = (self.theBackend.config['base_directory'] +
-                         self.theBackend.config['files_directory'])
+            files_dir = (cpss.config['base_directory'] +
+                         cpss.config['files_directory'])
             prop_dir = files_dir + self.propid + '/'
             
             if (os.path.isdir(prop_dir) == False):
@@ -740,9 +759,10 @@ class Template:
                         checked='checked'
                     else:
                         checked=''
-                    element['html'] += ("""&nbsp;&nbsp;%s<input id="check" type="checkbox"
-                                            name="%s" value="%s" %s>""" % (key,
-                                             element['fieldname'], key, checked))
+                    element['html'] += ("""&nbsp;&nbsp;%s<input id="check" 
+                                           type="checkbox" name="%s" 
+                                           value="%s" %s>""" % (key,
+                                           element['fieldname'], key, checked))
             if (view == True):
                 element['html'] = element['data']
         #######################################################################
@@ -819,6 +839,34 @@ class Template:
                                         (element['fieldname'],element['data']))
             if (view == True):
                 element['html'] = element['data']
+        #######################################################################
+        elif (element['fieldtype'] == 'observation_type'):
+            element['sqltype'] = 'text'
+            values = ['SINGLEPOL', 'DUALPOL', 'FULLPOL', 'CARMA23']
+            shortvalues = ['SP', 'DP', 'FP', '23']
+            if (edit == True):
+                element['html'] = ("""<select name=%s>""" % element['fieldname'])
+                if (element['data'] not in values):
+                    element['data'] = "Not Specified"
+                    element['html'] += "<option value='Not Specified' selected>Not Specified"
+                
+                for value in values:
+                    if ((values.__contains__(element['data']) == True) and
+                        (element['data'] == value)):
+                        element['html'] += ("""<option value="%s" selected>%s"""
+                                            % (value, value))
+                    else:
+                        element['html'] += ("""<option value="%s">%s""" % (value, value))
+
+                element['html'] += """</select>"""
+
+            if (view == True):
+                if element['data'] in values:
+                    element['html'] = shortvalues[values.index(element['data'])]
+                    element['text'] = shortvalues[values.index(element['data'])]
+                else:
+                    element['html'] = '#'
+                    element['text'] = '{\cellcolor{red!45}$\Box$}'
         #######################################################################
         elif (element['fieldtype'] == 'integer'):
             element['sqltype'] = 'bigint(20)'
@@ -935,10 +983,11 @@ class Template:
             if (element['check'] == []):
                 element['error'] = None
             else:
-                a = ErrorCheck(element['data'], element['check'])
+                a = ErrorCheck(element['data'], element['check'], 
+                               self.tmpLinescan)
                 element['error'] = a.GetError()
         else:
-            a = ErrorCheck(element['data'], ['NoNull'])
+            a = ErrorCheck(element['data'], ['NoNull'], self.tmpLinescan)
             element['error'] = a.GetError()
 
         if (element['error'] != None):
@@ -990,9 +1039,9 @@ class Template:
 
     def latex_generate(self, propid, file_send=True,
                        carma_propno="Unsubmitted"):
-        base_dir = (self.theBackend.config['base_directory'])
-        files_dir = (self.theBackend.config['base_directory'] +
-                     self.theBackend.config['files_directory'])
+        base_dir = (cpss.config['base_directory'])
+        files_dir = (cpss.config['base_directory'] +
+                     cpss.config['files_directory'])
         prop_dir = files_dir + propid + '/'
 
         if (os.path.isdir(prop_dir) == False):
@@ -1056,6 +1105,12 @@ class Template:
                 else:
                     data = str(author[self.tempclass.author_order[i]])
 
+                if self.tempclass.author_order[i] == 'name':
+                    data = r"\raggedright\nohyphens{" + data + r"}"
+
+                if self.tempclass.author_order[i] == 'institution':
+                    data = r"\raggedright\nohyphens{" + data + r"}"
+
                 if self.tempclass.author_order[i] == 'email':
                     author_lines  = (author_lines + data + " & ")
                 else:
@@ -1064,9 +1119,7 @@ class Template:
 
         for source in sources:
             for i in xrange(1, len(self.tempclass.source_order.keys())+1):
-                source_data  = (source_data + 
-                                 str(source[self.tempclass.source_order[i]]) +
-                                 " & ")
+                    source_data += str(source[self.tempclass.source_order[i]]) + " & "
             source_data = source_data[:-2] + " \\\\\n"
 
         c = open(base_dir + "/Template/" + self.template_name + ".tex", 'r')
@@ -1081,7 +1134,8 @@ class Template:
         cover = strTemplate(cover_template)
         out = cover.safe_substitute(propinfo, author_lines=author_lines, 
                                     source_data=source_data, 
-                                    propno=carma_propno)
+                                    propno=carma_propno, 
+                                    semester=self.cyclename)
 
         tfile = open(prop_dir + 'latex.tex', 'w')
         tfile.write(out)
@@ -1099,54 +1153,26 @@ class Template:
         at = os.popen("""cd %s; dvips -t letter -o - %slatex.dvi | ps2pdf14 - %slatex.pdf""" % (prop_dir, prop_dir, prop_dir))
         at.close()
 
-        result = self.theBackend.images_list(self.propid)
+        result = cpss.db.images_list(self.propid)
         if (len(result) != 0):
             for image in result:
                 self.image_check(image, prop_dir)
 
         if self.justification == False:
-            just = (r"""\documentclass[preprint, letterpaper, 12pt]{aastex}
-\usepackage[table,rgb]{xcolor}
-\usepackage[letterpaper]{geometry}
-\usepackage{helvet}
-\usepackage{tabularx}
-\pagestyle{empty}
-\geometry{left=0.75in, right=0.75in, top=0.75in, bottom=0.75in}
-\begin{document}
-\newlength{\carmaindent}
-\setlength{\carmaindent}{\parindent}
-\setlength{\parskip}{0in}
-\newlength{\sectitlelength}
-\newcommand{\sectitlel}[1]{
-  \setlength{\sectitlelength}{\parindent}
-  \setlength{\parindent}{0in}
-  \vskip 0.15in
-  \begin{tabularx}{\textwidth}{@{}l@{}}
-    \hiderowcolors
-    {\sffamily \Large \textbf{#1} \normalfont} \\
-    \hline
-    \showrowcolors
-  \end{tabularx}
-  \setlength{\parindent}{\sectitlelength}
-  \vskip -0.3cm
-}
-""")      
             for section in self.sections:
                 if (section['section'] == 'technical_justification'):
-                    just += "\sectitlel{Technical Justification}\n"
-                    just += str(self.data_strip(section['data'][0])['technical_justification'])
+                    tjust = str(self.data_strip(section['data'][0])['technical_justification'])
                 elif (section['section'] == 'scientific_justification'):
-                    just += "\sectitlel{Scientific Justification}\n"
-                    just += str(self.data_strip(section['data'][0])['scientific_justification'])
-            just += ("""\end{document}\n""")
+                    sjust = str(self.data_strip(section['data'][0])['scientific_justification'])
+
             tfile = open(prop_dir + 'justification/justification.tex', 'w')
-            tfile.write(just)
+            tfile.write(cpss.text.tmpl_just % (sjust, tjust))
             tfile.close()
         
         if (self.justification == True):
             justification = open(prop_dir + 'justification/justification.tex',
                                  'wb')
-            data = self.theBackend.justification_get_data(self.propid)
+            data = cpss.db.justification_get_data(self.propid)
             if (data == None):
                 justification.write('')
                 just_skip = 1
@@ -1196,11 +1222,13 @@ class Template:
 
         if ((os.path.isfile(prop_dir + 'latex-final.pdf') == True) and
             (file_send == True)):
-            self.req.headers_out.add('Content-Disposition',
-                                     'attachment; filename=%s.pdf' % (propid)) 
-            self.req.content_type='application/force-download'
             pdf = open(prop_dir + 'latex-final.pdf', 'r')
             data = pdf.read()
+            pdf.close()
+            self.req.headers_out.add('Content-Disposition',
+                                     'attachment; filename=%s.pdf' % (propid)) 
+            self.req.headers_out.add('Content-Length', str(len(data)))
+            self.req.content_type='application/pdf'
             self.req.write(data)
 
         return 0
@@ -1211,20 +1239,32 @@ class Template:
         if (os.path.isfile(propdir + 'justification/' + image['file']) == True):
             return
         else:
-            imdata = self.theBackend.images_get(image['proposalid'], image['numb'])[0]
+            imdata = cpss.db.images_get(image['proposalid'], image['numb'])[0]
             file = open(propdir + 'justification/' + imdata['file'], 'wb')
             file.write(imdata['ps_data'])
             file.close()
 
 
 class ErrorCheck:
-    def __init__(self, value, error_list):
+    def __init__(self, value, error_list, tmpLinescan):
+        self.tmpLinescan = tmpLinescan # Used in enchanced error checking; can be
+                                       # optional.
         self.error = ''
         self.order = ['NoNull',
                       'NoSpaces',
                       'AlphaNumeric',
                       'Alpha',
+                      'NoC23',
+                      'NoDualPol',
+                      'NoFullPol',
                       'Numeric',
+                      'OBType',
+                      'Only3mmInC23', # Placing this here in the chain guarantees
+                                      # that the value is already a number.
+                      'Only1cm3mmInC23',
+                      'CARMAFreq',
+                      'SZAFreq',
+                      'PolFreq',
                       'Integer',
                       'NoZero',
                       'raCheck',
@@ -1252,6 +1292,11 @@ class ErrorCheck:
     def NoNull(self, value):
         if (value == None):
             self.AddError("This field must not be blank.")
+
+    def OBType(self, value):
+        values = ['SINGLEPOL', 'DUALPOL', 'FULLPOL', 'CARMA23']
+        if value not in values:
+            self.AddError("Observation Type must be selected from one of the values in the drop down box.")
 
     def NoSpaces(self, value):
         for i in value:
@@ -1281,6 +1326,91 @@ class ErrorCheck:
                 error = True
         if (error == True):
             self.AddError("This field must only contain numbers.")
+
+    def Only3mmInC23(self, value):
+        if self.tmpLinescan.__contains__('observation_type') == False:
+            return # Simple errorcheck to make sure following lines dont fail.
+
+        if self.tmpLinescan['observation_type'] == 'CARMA23':
+            if float(value) > 116.0 or float(value) < 80.0:
+                self.AddError("CARMA23 mode is only available at 3mm.")
+
+    def Only1cm3mmInC23(self, value):
+        if self.tmpLinescan.__contains__('observation_type') == False:
+            return # Simple errorcheck to make sure following lines dont fail.
+
+        if self.tmpLinescan['observation_type'] == 'CARMA23':
+            if (float(value) < 116.0) and (float(value) > 80.0):
+                return
+            elif (float(value) < 36.0) and (float(value) > 26.0):
+                return
+            else:
+                self.AddError("CARMA23 mode is only available at 1cm and 3mm.")
+    
+    def CARMAFreq(self, value):
+        if self.tmpLinescan.__contains__('corr_frequency') == False:
+            return
+    
+        if (value != '0') and (value != None):
+            try:
+                freq = self.tmpLinescan['corr_frequency']
+                if (float(freq) <= 116.0) and (float(freq) >= 80.0):
+                    return
+                elif (float(freq) <= 270.0) and (float(freq) >= 215.0):
+                    return
+                else:
+                    self.AddError("Frequency must lie in the 3mm or 1mm bands.")
+            except TypeError:
+                self.AddError("Frequency must lie in the 3mm or 1mm bands.")
+            except ValueError:
+                self.AddError("Invalid frequency specified in frequency field.")
+
+    def SZAFreq(self, value):
+        if self.tmpLinescan.__contains__('corr_frequency') == False:
+            return
+    
+        if (value != '0') and (value != None):
+            try:
+                freq = self.tmpLinescan['corr_frequency']
+                if (float(freq) <= 116.0) and (float(freq) >= 80.0):
+                    return
+                elif (float(freq) <= 36.0) and (float(freq) >= 26.0):
+                    return
+                else:
+                    self.AddError("Frequency must lie in the 1cm or 3mm bands.")
+            except TypeError:
+                self.AddError("Frequency must lie in the 1cm or 3mm bands.")
+            except ValueError:
+                self.AddError("Invalid frequency specified in frequency field.")
+
+    def PolFreq(self, value):
+        if self.tmpLinescan.__contains__('observation_type') == False:
+            return # Simple errorcheck to make sure following lines dont fail.
+
+        if ((self.tmpLinescan['observation_type'] == 'DUALPOL') or
+            (self.tmpLinescan['observation_type'] == 'FULLPOL')):
+            if (float(value) > 215.0) and (float(value) < 270.0):
+                return
+            else:
+                self.AddError("DUAL and FULL Polarizations are only available in the 1mm band.")
+
+    def NoC23(self, value):
+        if self.tmpLinescan.__contains__('observation_type') == False:
+            return # Simple errorcheck to make sure following line doesnt fail.
+        if (value != '0') and (self.tmpLinescan['observation_type'] == 'CARMA23'):
+            self.AddError("CARMA23 mode is not allowed in this configuration.")
+
+    def NoDualPol(self, value):
+        if self.tmpLinescan.__contains__('observation_type') == False:
+            return # Simple errorcheck to make sure following line doesnt fail.
+        if (value != '0') and (self.tmpLinescan['observation_type'] == 'DUALPOL'):
+            self.AddError("DUALPOL mode is not allowed in this array configuration.")        
+
+    def NoFullPol(self, value):
+        if self.tmpLinescan.__contains__('observation_type') == False:
+            return # Simple errorcheck to make sure following line doesnt fail.
+        if (value != '0') and (self.tmpLinescan['observation_type'] == 'FULLPOL'):
+            self.AddError("FULLPOL mode is not allowed in this array configuration.")        
 
     def Integer(self, value):
         if (value.isdigit() == False):
