@@ -25,10 +25,9 @@ class Backend:
 
     def verify_user(self, username, password):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        response = cursor.execute("""SELECT * FROM %(prefix)susers
+        response = cursor.execute("""SELECT * FROM users
                                      WHERE email=%(username)s LIMIT 1"""
-                                  % {'prefix' : self.prefix,
-                                     'username': self.literal(username)})
+                                  % {'username': self.literal(username)})
         result = cursor.fetchall()
         if (len(result) == 0):
             return (False, 0)
@@ -68,10 +67,9 @@ class Backend:
 
     def user_exists(self, username):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        response = cursor.execute("""SELECT * FROM %(prefix)susers
+        response = cursor.execute("""SELECT * FROM users
                                      WHERE email=%(username)s LIMIT 1""" %
-                                  {'prefix'   : self.prefix,
-                                   'username' : self.literal(username)})
+                                  {'username' : self.literal(username)})
         result = cursor.fetchall()
         cursor.close()
         if (len(result) == 1):
@@ -80,8 +78,7 @@ class Backend:
 
     def add_user(self, Name, Email, Password, Code):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        response = cursor.execute("""INSERT INTO %(prefix)susers SET""" %
-                                  {'prefix'   : self.prefix} +
+        response = cursor.execute("""INSERT INTO users SET"""  +
                                   """ name=%(name)s, email=%(email)s,
                                      password=MD5(%(password)s),
                                      activated=%(code)s""" %
@@ -93,21 +90,19 @@ class Backend:
 
     def password_change(self, Email, Newpassword):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        response = cursor.execute("""UPDATE %(prefix)susers SET
+        response = cursor.execute("""UPDATE users SET
                                      `password`=MD5(%(code)s) WHERE
                                      `email`=%(email)s""" %
-                                  {'prefix' : self.prefix,
-                                   'code'   : self.literal(Newpassword),
+                                  {'code'   : self.literal(Newpassword),
                                    'email'  : self.literal(Email)})
         cursor.close()
         
     def update_code(self, user, code):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        response = cursor.execute("""UPDATE %(prefix)susers SET
+        response = cursor.execute("""UPDATE users SET
                                      `activated`=%(code)s WHERE
                                      `email`=%(email)s""" %
-                                  {'prefix' : self.prefix,
-                                   'code'   : self.literal(code),
+                                  {'code'   : self.literal(code),
                                    'email'  : self.literal(user)})
         cursor.close()
 
