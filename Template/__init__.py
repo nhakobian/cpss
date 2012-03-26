@@ -1068,6 +1068,13 @@ class Template:
             if (section['section'] == 'propinfo'):
                 a = section['data']
                 propinfo = self.data_strip(section['data'][0])
+                # scan propinfo for certain characters
+                #charlist = ['&']
+                #replace_with = ['\&']
+                # iterate over all data lines in propinfo
+                #for line in propinfo:
+                #    for i in xrange(1):
+                #        line.find()
             elif (section['section'] == 'author'):
                 authors = []
                 for line in section['data']:

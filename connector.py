@@ -667,6 +667,9 @@ class Connector:
             # Fix for blank field == None issue
             if username == None:
                 username = ''
+            # Same for password field
+            if password == None:
+                password = ''
 
             if (username[0:6] == 'admin:'):
                 options = cpss.db.options_get()
