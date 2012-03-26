@@ -428,6 +428,16 @@ class Connector:
                 cpss.w(pdf)
         ### API -- pdf -- return sample pdf file
         elif (items == 3 and pathstr[1] == "pdf"):
+            # Hack to correctly parse for skip pagelength warning
+            if pathstr[2][-1] == "i":
+                ignore_pagelength = True
+                pathstr[2] = pathstr[2][:-1]
+            else:
+                ignore_pagelength = False
+
+            # Update the date field to the current date:
+            cpss.db.proposal_tagset('proposal', pathstr[2], 
+                                    [{'fieldname':'date', 'fieldtype':'date'}])
             if (result['pdf_justification'] == 0):
                 justification = False
             else:
@@ -435,9 +445,10 @@ class Connector:
             template = cpss.Template.Template(result['template'], 
                           result['cyclename'], pathstr[2], True, 
                           justification=justification)
-            retval = template.latex_generate(pathstr[2])
+            retval = template.latex_generate(pathstr[2], 
+                                          ignore_pagelength=ignore_pagelength)
 
-            if (retval != 0):
+            if (retval != 0) and (retval != 1):
                 self.do_header()
                 cpss.w("""<b>A LaTeX error occured. The output is displayed 
                        below:</b><br><br>%s""" % (self.lines2text(retval[7:])))

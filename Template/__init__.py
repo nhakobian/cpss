@@ -1044,7 +1044,7 @@ class Template:
         return data
 
     def latex_generate(self, propid, file_send=True,
-                       carma_propno="Unsubmitted"):
+                       carma_propno="Unsubmitted", ignore_pagelength=False):
         base_dir = (cpss.config['base_directory'])
         files_dir = (cpss.config['base_directory'] +
                      cpss.config['files_directory'])
@@ -1222,10 +1222,19 @@ class Template:
         else:
             max_pages = 3
 
-        if (justification_pdf.getNumPages() > max_pages):
+        num_just_pages = justification_pdf.getNumPages()
+
+        if (num_just_pages > max_pages):
+            if ignore_pagelength == False:
+                # warn info here
+                if file_send == False:
+                    return 1
+                cpss.page.header()
+                self.req.write("Your justification has produced %s pages of output. The proposal system will not accept justification sections that are greater than %s pages long. <a href='%s'>Click here</a> to view your PDF with truncated output." % (num_just_pages, max_pages, "proposal/pdf/" + str(self.propid) + "i"))
+                cpss.page.footer()
+                return 1
             num_just_pages = max_pages
-        else:
-            num_just_pages = justification_pdf.getNumPages()
+
         for i in xrange(0, num_just_pages):
             output_pdf.addPage(justification_pdf.getPage(i))
         
