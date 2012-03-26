@@ -13,6 +13,8 @@ template2010a = apache.import_module('template2010a')
 template2010b = apache.import_module('template2010b')
 template2011a = apache.import_module('template2011a')
 template2011b = apache.import_module('template2011b')
+template2012a = apache.import_module('template2012a')
+template2012b = apache.import_module('template2012b')
 
 class strTemplate(baseTemplate):
     idpattern = r'[_a-z0-9][_a-z0-9]*'
@@ -54,6 +56,10 @@ class Template:
             self.template = template2011a
         if (template == 'template2011b'):
             self.template = template2011b
+        if (template == 'template2012a'):
+            self.template = template2012a
+        if (template == 'template2012b'):
+            self.template = template2012b
 
         self.template_name = template
         self.tempclass = self.template.template()
