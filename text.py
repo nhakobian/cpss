@@ -574,7 +574,7 @@ page_logon=r"""<div class="login" id="login" style="visibility:hidden;width:500p
 
 page_main=r"""<center>
   <h2>
-    Semester 2011b: Deadline 02 May 2011 5PM CDT (2200 UT)
+    Semester 2012b: Deadline 14 May 2012 5PM CDT
   </h2>
 </center>
 
@@ -683,11 +683,9 @@ is slightly different that the one for standard proposals).
   <li>
       Figures, Table, and References (3 pages maximum):<br>
 
-      If the complete source list is not entered on the cover sheet,
-      then a table must be included that contains the complete source
-      list. For each source, the table should indicate the
-      coordinates, observed frequencies, velocities, and time per
-      configuration. The total time for the project per configuration
+      If the proposer needs help inputing a large number of sources into the
+      source configuration section, please contact the Proposal Help email
+      address. The total time for the project per configuration
       per semester must be clearly indicated.
   </li>
 </ul>
