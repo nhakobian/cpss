@@ -41,10 +41,9 @@ class Backend:
 
     def get_user(self, username):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        response = cursor.execute("""SELECT * FROM %(prefix)susers
+        response = cursor.execute("""SELECT * FROM users
                                      WHERE email=%(username)s LIMIT 1"""
-                                  % {'prefix' : self.prefix,
-                                     'username': self.literal(username)})
+                                  % {'username': self.literal(username)})
         result = cursor.fetchone()
         return result
 
