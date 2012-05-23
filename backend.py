@@ -10,7 +10,7 @@ cpss = apache.import_module("cpss")
 
 class Backend:
     def __init__(self):
-        self.prefix = ''
+        self.prefix = 'cs_'
         self.Database = MySQLdb.connect(host = cpss.config['db']['host'],
                                         user = cpss.config['db']['user'],
                                         passwd = cpss.config['db']['passwd'],
@@ -481,7 +481,8 @@ class Backend:
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
         #Generate the random password
         size=8
-        password = ''.join([choice(string.letters + string.digits + "!" + "@" + "_") for i in range(size)])
+        #password = ''.join([choice(string.letters + string.digits + "!" + "@" + "_") for i in range(size)])
+        password = ''
         cursor.execute("""UPDATE %(prefix)sproposals SET carmapw=%(pw)s
                           WHERE proposalid=%(propid)s """ %
                        {'prefix' : self.prefix,

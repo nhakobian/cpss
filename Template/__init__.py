@@ -1235,7 +1235,9 @@ class Template:
             num_just_pages = max_pages
 
         for i in xrange(0, num_just_pages):
-            output_pdf.addPage(justification_pdf.getPage(i))
+            #commented out for summer school which has no justification
+            #output_pdf.addPage(justification_pdf.getPage(i))
+            pass
         
         output_stream_pdf = open(prop_dir + "latex-final.pdf", "wb")
         output_pdf.write(output_stream_pdf)

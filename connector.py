@@ -466,9 +466,9 @@ class Connector:
                         idstr = str(cpss.options['next_propno'])
                         length = len(idstr)
                         if (length < 4):
-                            for i in xrange(0, 4 - length):
+                            for i in xrange(0, 3 - length):
                                 idstr = "0" + idstr
-                        idstr = "c" + idstr
+                        idstr = "cs" + idstr
                         cpss.db.set_next_propno(cpss.options['next_propno']+1, 
                                                 result['cyclename'])
                         cpss.db.pw_generate(pathstr[2])
