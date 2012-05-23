@@ -1170,82 +1170,82 @@ class Template:
             for image in result:
                 self.image_check(image, prop_dir)
 
-        if self.justification == False:
-            for section in self.sections:
-                if (section['section'] == 'technical_justification'):
-                    tjust = str(self.data_strip(section['data'][0])['technical_justification'])
-                elif (section['section'] == 'scientific_justification'):
-                    sjust = str(self.data_strip(section['data'][0])['scientific_justification'])
+        #if self.justification == False:
+        #    for section in self.sections:
+        #        if (section['section'] == 'technical_justification'):
+        #            tjust = str(self.data_strip(section['data'][0])['technical_justification'])
+        #        elif (section['section'] == 'scientific_justification'):
+        #            sjust = str(self.data_strip(section['data'][0])['scientific_justification'])
 
-            tfile = open(prop_dir + 'justification/justification.tex', 'w')
-            tfile.write(cpss.text.tmpl_just % (sjust, tjust))
-            tfile.close()
+        #    tfile = open(prop_dir + 'justification/justification.tex', 'w')
+        #    tfile.write(cpss.text.tmpl_just % (sjust, tjust))
+        #    tfile.close()
         
-        if (self.justification == True):
-            justification = open(prop_dir + 'justification/justification.tex',
-                                 'wb')
-            data = cpss.db.justification_get_data(self.propid)
-            if (data == None):
-                justification.write('')
-                just_skip = 1
-            else:
-                justification.write(data)
-            justification.close()
+        #if (self.justification == True):
+        #    justification = open(prop_dir + 'justification/justification.tex',
+        #                         'wb')
+        #    data = cpss.db.justification_get_data(self.propid)
+        #    if (data == None):
+        #        justification.write('')
+        #        just_skip = 1
+        #    else:
+        #        justification.write(data)
+        #    justification.close()
 
         # Run latex twice to get any references correct
-        for i in xrange(0,2):
-            latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (prop_dir + 'justification/', prop_dir + 'justification/justification.tex'), 'r')
-            latex_info = latex.readlines()
-            retval = latex.close()
+        #for i in xrange(0,2):
+        #    latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (prop_dir + 'justification/', prop_dir + 'justification/justification.tex'), 'r')
+        #    latex_info = latex.readlines()
+        #    retval = latex.close()
 
-            if (retval != None):
-                return latex_info
+        #    if (retval != None):
+        #        return latex_info
 
-        at = os.popen("""cd %sjustification/; dvips -t letter -o - %sjustification/justification.dvi | ps2pdf14 - %sjustification/justification.pdf""" % (prop_dir, prop_dir, prop_dir))
-        at.close()
+        #at = os.popen("""cd %sjustification/; dvips -t letter -o - %sjustification/justification.dvi | ps2pdf14 - %sjustification/justification.pdf""" % (prop_dir, prop_dir, prop_dir))
+        #at.close()
 
         # Merge the two PDF files together
 
-        output_pdf = PdfFileWriter()
+        #output_pdf = PdfFileWriter()
 
-        justification_pdf = PdfFileReader(file(prop_dir + "justification/justification.pdf", "rb"))
-        latex_pdf = PdfFileReader(file(prop_dir + "latex.pdf", "rb"))
+        #justification_pdf = PdfFileReader(file(prop_dir + "justification/justification.pdf", "rb"))
+        #latex_pdf = PdfFileReader(file(prop_dir + "latex.pdf", "rb"))
 
-        for i in xrange(latex_pdf.getNumPages()):
-            output_pdf.addPage(latex_pdf.getPage(i))
+        #for i in xrange(latex_pdf.getNumPages()):
+        #    output_pdf.addPage(latex_pdf.getPage(i))
 
         # If key project is set to true, then set the max number of pages 
         # to 8. Else set to 3
-        if is_key_project == True:
-            max_pages = 8
-        else:
-            max_pages = 3
+        #if is_key_project == True:
+        #    max_pages = 8
+        #else:
+        #    max_pages = 3
 
-        num_just_pages = justification_pdf.getNumPages()
+        #num_just_pages = justification_pdf.getNumPages()
 
-        if (num_just_pages > max_pages):
-            if ignore_pagelength == False:
-                # warn info here
-                if file_send == False:
-                    return 1
-                cpss.page.header()
-                self.req.write("Your justification has produced %s pages of output. The proposal system will not accept justification sections that are greater than %s pages long. <a href='%s'>Click here</a> to view your PDF with truncated output." % (num_just_pages, max_pages, "proposal/pdf/" + str(self.propid) + "i"))
-                cpss.page.footer()
-                return 1
-            num_just_pages = max_pages
+        #if (num_just_pages > max_pages):
+        #    if ignore_pagelength == False:
+        #        # warn info here
+        #        if file_send == False:
+        #            return 1
+        #        cpss.page.header()
+        #        self.req.write("Your justification has produced %s pages of output. The proposal system will not accept justification sections that are greater than %s pages long. <a href='%s'>Click here</a> to view your PDF with truncated output." % (num_just_pages, max_pages, "proposal/pdf/" + str(self.propid) + "i"))
+        #        cpss.page.footer()
+        #        return 1
+        #    num_just_pages = max_pages
 
-        for i in xrange(0, num_just_pages):
-            #commented out for summer school which has no justification
-            #output_pdf.addPage(justification_pdf.getPage(i))
-            pass
+        #for i in xrange(0, num_just_pages):
+        #    #commented out for summer school which has no justification
+        #    #output_pdf.addPage(justification_pdf.getPage(i))
+        #    pass
         
-        output_stream_pdf = open(prop_dir + "latex-final.pdf", "wb")
-        output_pdf.write(output_stream_pdf)
-        output_stream_pdf.close()
+        #output_stream_pdf = open(prop_dir + "latex-final.pdf", "wb")
+        #output_pdf.write(output_stream_pdf)
+        #output_stream_pdf.close()
 
-        if ((os.path.isfile(prop_dir + 'latex-final.pdf') == True) and
+        if ((os.path.isfile(prop_dir + 'latex.pdf') == True) and
             (file_send == True)):
-            pdf = open(prop_dir + 'latex-final.pdf', 'r')
+            pdf = open(prop_dir + 'latex.pdf', 'r')
             data = pdf.read()
             pdf.close()
             self.req.headers_out.add('Content-Disposition',
