@@ -496,7 +496,7 @@ class Connector:
                     else:
                         pdf = open(cpss.config['base_directory']
                                    + cpss.config['files_directory'] + '/' +
-                                   pathstr[2] + '/latex-final.pdf', 'r')
+                                   pathstr[2] + '/latex.pdf', 'r')
                         pdf_data = pdf.read()
                         pdf.close()
 
