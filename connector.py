@@ -457,6 +457,10 @@ class Connector:
         elif (items == 3 and pathstr[1] == 'submit'):
             if (self.fields.__contains__('sub_prop') == True):
                 if (self.fields['sub_prop'] == 'Submit Proposal'):
+                    # Update the date field to the current date:
+                    cpss.db.proposal_tagset('proposal', pathstr[2],
+                                            [{'fieldname':'date', 
+                                              'fieldtype':'date'}])
                     idstr = ""
                     if (result['carmaid'] == None):
                         idstr = str(cpss.options['next_propno'])
@@ -507,6 +511,11 @@ class Connector:
                     self.do_header(refresh=('proposal/submit/%s' % pathstr[2]))
                     self.do_footer()
             else:
+                # Update the date field to the current date:
+                cpss.db.proposal_tagset('proposal', pathstr[2],
+                                        [{'fieldname':'date',
+                                          'fieldtype':'date'}])
+
                 if (result['pdf_justification'] == 0):
                     justification = False
                 else:
@@ -575,13 +584,18 @@ class Connector:
                 self.do_footer()
         ### API -- add -- add proposal        
         elif (items == 2 and pathstr[1] == "add"):
+            # Add check to see if proposal creation is enabled
             options = cpss.db.options_get()
-            template = cpss.Template.Template(options['template'],
-              options['cyclename'], None, True, Fetch=False)
-            propno = cpss.db.proposal_add(cpss.session['username'],
-               template.tempclass.tables, options['cyclename'])
-            self.do_header(refresh=("proposal/edit/%s" % (propno)))
-            self.do_footer()
+            if options['create'] == True:
+                template = cpss.Template.Template(options['template'],
+                           options['cyclename'], None, True, Fetch=False)
+                propno = cpss.db.proposal_add(cpss.session['username'],
+                         template.tempclass.tables, options['cyclename'])
+                self.do_header(refresh=("proposal/edit/%s" % (propno)))
+                self.do_footer()
+            else:
+                self.do_header(refresh="proposal/")
+                self.do_footer()
         ### API -- proposal list
         elif (items == 1):
             self.do_header()
@@ -684,7 +698,14 @@ class Connector:
 
             if (username[0:6] == 'admin:'):
                 options = cpss.db.options_get()
-                if (md5.md5(password).hexdigest() == options['admin_pw']):
+                if (hashlib.md5(password).hexdigest() == options['admin_pw']):
+                    user = cpss.db.get_user(username[6:])
+                    if user == None:
+                        Error = """The user does not exist."""
+                        self.do_header(logon=True)
+                        cpss.page.logon(Error=Error)
+                        self.do_footer()
+                        return
                     cpss.session['authenticated'] = True
                     cpss.session['username'] = user['email']
                     cpss.session['name'] = user['name']
@@ -816,16 +837,16 @@ class Connector:
         return buffer
 
     def StatsPDF(self, cid):
-        pdf = self.theBackend.pdf_get_data(cid)
-        result = self.theBackend.proposal_fetch('admin',cid)
+        pdf = cpss.db.pdf_get_data(cid)
+        result = cpss.db.proposal_fetch('admin', cid)
         if (len(pdf) == 0):
             self.do_header()
-            self.req.write("""You have not submitted this
-                                proposal. Please submit a proposal before
-                                attempting to view a submitted proposal.""")
+            cpss.w("""You have not submitted this
+                      proposal. Please submit a proposal before
+                      attempting to view a submitted proposal.""")
             self.do_footer()
         else:
-            self.req.headers_out.add('Content-Disposition',
+            cpss.req.headers_out.add('Content-Disposition',
                                      'attachment; filename=%s.pdf' % (result['carmaid']))
             cpss.req.headers_out.add('Content-Length', str(len(pdf)))
             cpss.req.content_type='application/pdf'
@@ -833,9 +854,9 @@ class Connector:
 
     def Stats(self):
         # This function returns stats information about the current call.
-        _w = self.req.write
+        _w = cpss.w
         self.do_header()
-        for cycle in self.theBackend.cycles():
+        for cycle in cpss.db.cycles():
             _w("""
 <table class='stats'>
   <tr>
@@ -847,18 +868,18 @@ class Connector:
     <th class='title'>Title</th>
     <th class='date'>Date</th>
   </tr>""")
-            proposals = self.theBackend.proposal_list_by_cycle(cycle['cyclename'])
+            proposals = cpss.db.proposal_list_by_cycle(cycle['cyclename'])
             for proposal in proposals:
                 _w("<tr>")
                 if proposal['status'] == 1:
-                    _w("<td class='carma-id'><a href='" + self.config['html_base'] + 
+                    _w("<td class='carma-id'><a href='" + cpss.config['html_base'] + 
                        "finalpdf/"+str(proposal['proposalid']) + "'>" + 
                        str(proposal['carmaid'])+"</a></td>")
                 else:
                     _w("<td class='carma-id'>" +str(proposal['carmaid'])+"</td>")
                 _w("<td class='name'>"+str(proposal['name'])+"</td>")
                 _w("<td class='email'>"+str(proposal['email'])+"</td>")
-                res = self.theBackend.proposal_get_propinfo(proposal['proposalid'], 
+                res = cpss.db.proposal_get_propinfo(proposal['proposalid'], 
                                                             cycle['proposal'])
                 _w("<td class='title'>"+ str(res['title']) + "</td>")
                 if proposal['status'] == 1:

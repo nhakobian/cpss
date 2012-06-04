@@ -4,7 +4,7 @@
   </h2>
 </center>
 
-Welcome to the CARMA Proposal System. This system is used to proposose
+Welcome to the CARMA Proposal System. This system is used to propose
 for time on the CARMA array during TAC-approved proposal calls. If you
 have comments, or encounter difficulties and need help, please send
 email to: <a href="mailto:proposal-help@astro.uiuc.edu">
@@ -54,7 +54,7 @@ pages).
 
 If you wish to have more control over your justification section, you
 may upload a completed LaTeX file. You are required to use our <a
-href="images/justification.tar.gz"> template</a>. Please follow the
+href="static/justification.tar.gz"> template</a>. Please follow the
 guidelines listed below for the justification sections. Non-compliant
 proposals will not be forwarded to the TAC.  
 
@@ -81,7 +81,7 @@ about these projects, visit the <a
 href="http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html">Key
 Project</a> page. For the Key Project justification, you must upload a
 LaTeX file containing the content. We provide a <a
-href="images/justification_key.tar.gz">template</a> that you must
+href="static/justification_key.tar.gz">template</a> that you must
 adhere to in order for your proposal to be considered (this template
 is slightly different that the one for standard proposals).
 

@@ -60,7 +60,6 @@ class Template:
             self.template = template2012a
         if (template == 'template2012b'):
             self.template = template2012b
-
         self.template_name = template
         self.tempclass = self.template.template()
         self.sections = self.tempclass.sections
