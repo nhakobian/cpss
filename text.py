@@ -578,14 +578,8 @@ page_logon=r"""<div class="login" id="login" style="visibility:hidden;width:500p
 
 """
 
-page_main=r"""<center>
-  <h2>
-    Semester 2012b: Deadline 14 May 2012 5PM CDT
-  </h2>
-</center>
-
-Welcome to the CARMA Proposal System. This system is used to propose
-for time on the CARMA array during TAC-approved proposal calls. If you
+page_main=r"""Welcome to the CARMA Proposal System. This system is used to propose
+for Director's Discretionary Time (DDT) on the CARMA array. If you
 have comments, or encounter difficulties and need help, please send
 email to: <a href="mailto:proposal-help@astro.uiuc.edu">
 proposal-help@astro.uiuc.edu</a>

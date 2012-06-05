@@ -10,7 +10,7 @@ cpss = apache.import_module("cpss")
 
 class Backend:
     def __init__(self):
-        self.prefix = ''
+        self.prefix = 'ddt_'
         self.Database = MySQLdb.connect(host = cpss.config['db']['host'],
                                         user = cpss.config['db']['user'],
                                         passwd = cpss.config['db']['passwd'],

@@ -21,8 +21,8 @@ connector = None
 
 Template = apache.import_module("Template/__init__")
 
-config = { 'html_base' : "http://localhost/proposals/",
-           'base_directory' : '/var/www/proposals/',
+config = { 'html_base' : "http://carma-prop.astro.illinois.edu/ddt/",
+           'base_directory' : '/srv/www/htdocs/ddt/',
            'files_directory' : 'files/',
            'data_directory' : '/home/carmaweb/cpss-data/',
            'sendemail' : True,
