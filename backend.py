@@ -1,6 +1,7 @@
 import MySQLdb
 import hashlib
 import string
+import operator
 import os.path
 import os
 import gzip
@@ -147,18 +148,11 @@ class Backend:
         #without restructuring the database?
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
         response = cursor.execute(
-            """SELECT %(prefix)sproposals.proposalid,
-               %(prefix)sproposals.cyclename, %(prefix)sproposals.user,
-               %(prefix)sproposals.carmaid, %(prefix)sproposals.carmapw,
-               %(prefix)scycles.template,
-               %(prefix)scycles.proposal as proposal_table,
-               %(prefix)scycles.final_date,
-               %(prefix)sproposals.status
-               FROM %(prefix)sproposals, %(prefix)scycles
-               WHERE %(prefix)sproposals.user=%(user)s AND
-                     %(prefix)scycles.cyclename=%(prefix)sproposals.cyclename
-               ORDER BY %(prefix)scycles.final_date
-               DESC, %(prefix)sproposals.proposalid""" %
+            """SELECT * FROM `proposals`, `cycles`
+               WHERE `proposals`.`user`=%(user)s AND
+                     `cycles`.`cyclename`=`proposals`.`cyclename`
+               ORDER BY `final_date`
+               DESC, `proposals`.`carmaid` DESC, `proposals`.`proposalid`""" %
             {'prefix' : self.prefix,
              'user'   : self.literal(user)})
         result = cursor.fetchall()
@@ -167,7 +161,7 @@ class Backend:
             cursor.execute("""SELECT * FROM %(prefix)s%(table)s WHERE
                               proposalid=%(propid)s""" %
                           {'prefix' : self.prefix,
-                           'table'  : proposal['proposal_table'],
+                           'table'  : proposal['proposal'],
                            'propid' : self.literal(proposal['proposalid'])})
             res = cursor.fetchone()
             proposal['title'] = res['title']
@@ -175,94 +169,7 @@ class Backend:
             list.append(proposal)
 
         cursor.close()
-        return list
-
-    def proposal_list_multi(self, user):
-        #unfortunately this requires many calls to the db. Any other idea
-        #without restructuring the database?
-        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        response = cursor.execute(
-            """SELECT %(prefix)sproposals.proposalid,
-               %(prefix)sproposals.cyclename, %(prefix)sproposals.user,
-               %(prefix)sproposals.carmaid, %(prefix)sproposals.carmapw,
-               %(prefix)scycles.template,
-               %(prefix)scycles.proposal as proposal_table,
-               %(prefix)scycles.final_date,
-               %(prefix)sproposals.status
-               FROM %(prefix)sproposals, %(prefix)scycles
-               WHERE %(prefix)sproposals.user=%(user)s AND
-                     %(prefix)scycles.cyclename=%(prefix)sproposals.cyclename
-               ORDER BY %(prefix)scycles.final_date
-               DESC, %(prefix)sproposals.proposalid DESC""" %
-            {'prefix' : '',
-             'user'   : self.literal(user)})
-        result = cursor.fetchall()
-
-        response = cursor.execute(
-            """SELECT %(prefix)sproposals.proposalid,
-               %(prefix)sproposals.cyclename, %(prefix)sproposals.user,
-               %(prefix)sproposals.carmaid, %(prefix)sproposals.carmapw,
-               %(prefix)scycles.template,
-               %(prefix)scycles.proposal as proposal_table,
-               %(prefix)scycles.final_date,
-               %(prefix)sproposals.status
-               FROM %(prefix)sproposals, %(prefix)scycles
-               WHERE %(prefix)sproposals.user=%(user)s AND
-                     %(prefix)scycles.cyclename=%(prefix)sproposals.cyclename
-               ORDER BY %(prefix)scycles.final_date
-               DESC, %(prefix)sproposals.proposalid DESC""" %
-            {'prefix' : 'ddt_',
-             'user'   : self.literal(user)})
-        result2 = cursor.fetchall()
-
-        response = cursor.execute(
-            """SELECT %(prefix)sproposals.proposalid,
-               %(prefix)sproposals.cyclename, %(prefix)sproposals.user,
-               %(prefix)sproposals.carmaid,
-               %(prefix)scycles.template,
-               %(prefix)scycles.proposal_table as proposal_table,
-               %(prefix)scycles.final_date,
-               %(prefix)sproposals.status
-               FROM %(prefix)sproposals, %(prefix)scycles
-               WHERE %(prefix)sproposals.user=%(user)s AND
-                     %(prefix)scycles.cyclename=%(prefix)sproposals.cyclename
-               ORDER BY %(prefix)scycles.final_date
-               DESC, %(prefix)sproposals.proposalid DESC""" %
-            {'prefix' : 'cs_',
-             'user'   : self.literal(user)})
-        result3 = cursor.fetchall()
-
-        list=[]
-        for proposal in result:
-            cursor.execute("""SELECT title FROM %(prefix)s%(table)s WHERE
-                              proposalid=%(propid)s""" %
-                          {'prefix' : '',
-                           'table'  : proposal['proposal_table'],
-                           'propid' : self.literal(proposal['proposalid'])})
-            res = cursor.fetchone()
-            proposal['title'] = res['title']
-            list.append(proposal)
-        for proposal in result2:
-            cursor.execute("""SELECT title FROM %(prefix)s%(table)s WHERE
-                              proposalid=%(propid)s""" %
-                          {'prefix' : 'ddt_',
-                           'table'  : proposal['proposal_table'],
-                           'propid' : self.literal(proposal['proposalid'])})
-            res = cursor.fetchone()
-            proposal['title'] = res['title']
-            list.append(proposal)
-        for proposal in result3:
-            cursor.execute("""SELECT title FROM %(prefix)s%(table)s WHERE
-                              proposalid=%(propid)s""" %
-                          {'prefix' : 'cs_',
-                           'table'  : proposal['proposal_table'],
-                           'propid' : self.literal(proposal['proposalid'])})
-            res = cursor.fetchone()
-            proposal['title'] = res['title']
-            proposal['carmapw'] = ""
-            list.append(proposal)
-
-        cursor.close()
+        list.sort(key=operator.itemgetter('date'), reverse=True)
         return list
 
     def proposal_fetch(self, user, proposalid):

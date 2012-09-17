@@ -30,7 +30,7 @@ div.submitted {
 
 div.container {
 	background : white;
-	width : 850px;
+	width : 950px;
 	border: 1px solid black;
 	margin : 1em auto 1em auto;
 	-moz-border-radius : 10px 10px 10px 10px;
@@ -118,7 +118,7 @@ h3 a:hover { color : blue; }
 h3 a:visited { color : black; }
 
 div#proplist {
-	width : 720px;
+	width : 820px;
 	margin: 0 auto 0 auto;
 	padding: 0;
 	text-align:center;

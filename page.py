@@ -137,8 +137,8 @@ def proposal_list(list, name):
             proposals. Click the new button above to add one.</i></p></div>""")
     else:
         buf = """<div id="proplist"><table><tr>
-                     <th>ID</th><th>Title</th><th>Status</th>
-                     <th>Action</th><th>Data Password</th></tr>"""
+                     <th>Type</th><th>ID</th><th>Title</th><th>Status</th>
+                     <th>Date</th><th>Action</th><th>Data Password</th></tr>"""
         for entry in list:
             if (entry['status'] == 0):
                 carmaid = 'None'
@@ -152,15 +152,15 @@ def proposal_list(list, name):
                 pdf =  ("""<a href="proposal/finalpdf/%s">view final pdf</a>""" %
                         (entry['proposalid']))
                 password = str(entry['carmapw'])
-            if ((entry['cyclename'] != cpss.options['cyclename']) and (entry['status'] == 1)):
+            if ((entry['cyclename'] != cpss.options['main_cyclename']) and (entry['status'] == 1)):
                 #placeholder
-                buf += ("""<tr><td>%s</td><td id="title">%s</td><td>%s</td>
-                    <td>  %s </td><td>%s</td></tr>"""
-                        % (carmaid, entry['title'], status, pdf, password))
+                buf += ("""<tr><td>%s</td><td>%s</td><td id="title">%s</td><td>%s</td>
+                    <td>%s</td><td>  %s </td><td>%s</td></tr>"""
+                        % (entry['type'], carmaid, entry['title'], status, entry['date'], pdf, password))
             else:
-                buf += ("""<tr><td id="id">%s</td><td id="title">%s</td><td>%s</td>
-                    <td><a href="proposal/edit/%s">edit</a> | %s </td><td>%s</td></tr>"""
-                    % (carmaid, entry['title'], status, entry['proposalid'],
+                buf += ("""<tr><td>%s</td><td id="id">%s</td><td id="title">%s</td><td>%s</td>
+                    <td> %s </td><td><a href="proposal/edit/%s">edit</a> | %s </td><td>%s</td></tr>"""
+                    % (entry['type'], carmaid, entry['title'], status, date, entry['proposalid'],
                        pdf, password))
         buf += """</table></div>""" 
         cpss.w(buf)
