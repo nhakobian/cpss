@@ -430,25 +430,16 @@ class Backend:
 
     def options_get(self):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        cursor.execute("""SELECT %(prefix)soptions.cyclename,
-                          %(prefix)scycles.template,
-                          %(prefix)scycles.proposal,
-                          %(prefix)scycles.author,
-                          %(prefix)scycles.source,
-                          %(prefix)soptions.admin_pw,
-                          %(prefix)soptions.maint_mode,
-                          %(prefix)soptions.maint_key,
-                          %(prefix)soptions.maint_warn,
-                          %(prefix)soptions.maint_message,
-                          %(prefix)soptions.next_propno,
-                          %(prefix)soptions.create
-                          FROM %(prefix)soptions, %(prefix)scycles WHERE
-                          %(prefix)soptions.cyclename=
-                          %(prefix)scycles.cyclename
-                          LIMIT 1""" % {'prefix':self.prefix})
-        res = cursor.fetchone()
+        cursor.execute("""SELECT *
+                          FROM %(prefix)soptions""" % {'prefix':self.prefix})
+        res = cursor.fetchall()
         cursor.close()
-        return res
+
+        options = {}
+        for option in res:
+            options[option['key']] = option['value']
+
+        return options
 
     def set_next_propno(self, nextpropno, cyclename):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
