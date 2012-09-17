@@ -190,6 +190,8 @@ class Backend:
                        {'propid' : self.literal(proposalid)})
         res = cursor.fetchone()
         cursor.close()
+        if user == 'admin':
+            return res
         if (res == None):
             return False
         if (res['user'] != user):
