@@ -802,7 +802,8 @@ class Connector:
 
             if (username[0:6] == 'admin:'):
                 options = cpss.db.options_get()
-                if (hashlib.md5(password).hexdigest() == options['admin_pw']):
+                if (hashlib.md5(password).hexdigest() == 
+                    options['admin_pw']):
                     user = cpss.db.get_user(username[6:])
                     if user == None:
                         Error = """The user does not exist."""
@@ -816,10 +817,10 @@ class Connector:
                     cpss.session['activated'] = '0'
                     cpss.session['admin'] = True
                     cpss.session.save()
-                    self.do_header(refresh="proposal/")
+                    self.do_header(refresh="list/")
                 else:
-                    Error = """The username and password you have supplied are
-                               not valid. Please try again."""
+                    Error = """The username and password you have supplied 
+                               are not valid. Please try again."""
                     self.do_header(logon=True)
                     cpss.page.logon(Error=Error, Username=username)
                     self.do_footer()
@@ -830,10 +831,11 @@ class Connector:
                 Error = "You must enter both a username and a password."
                 authenticate = False
             else:
-                (authenticate, user) = cpss.db.verify_user(username, password)
+                (authenticate, user) = cpss.db.verify_user(username, 
+                                                           password)
             if (authenticate == False):
-                Error = """The username and password you have supplied are not
-                         valid. Please try again."""
+                Error = """The username and password you have supplied are 
+                           not valid. Please try again."""
                 self.do_header(logon=True)
                 cpss.page.logon(Error=Error, Username=username)
                 self.do_footer()
@@ -843,7 +845,7 @@ class Connector:
                 cpss.session['name'] = user['name']
                 cpss.session['activated'] = user['activated']
                 cpss.session.save()
-                self.do_header(refresh="proposal/")
+                self.do_header(refresh="list/")
         else:
             self.do_header(logon=True)
             cpss.page.logon(Error=Error)

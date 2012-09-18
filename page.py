@@ -4,7 +4,7 @@ cpss = apache.import_module("cpss")
 def header(login=False, refresh=None, logon=False):
     logout_bar = [["Login", "login/"], ["Help","help/"], 
                   ["Create Account","create/"]]
-    login_bar =  [["Proposals", "proposal/"], ["User Info","user/"],
+    login_bar =  [["Proposals", "list/"], ["User Info","user/"],
                   ["Help","help/"], ["Logout", "logout/"]]
 
     if (refresh != None):
@@ -150,7 +150,7 @@ def proposal_list(list, name):
             else:
                 carmaid = str(entry['carmaid'])
                 status = 'Submitted'
-                pdf =  ("""<a href="proposal/finalpdf/%s">view final pdf</a>""" %
+                pdf =  ("""<a href="finalpdf/%s">view final pdf</a>""" %
                         (entry['proposalid']))
                 password = str(entry['carmapw'])
             if ((entry['cyclename'] != cpss.options['main_cyclename']) and (entry['status'] == 1)):
