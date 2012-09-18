@@ -523,10 +523,13 @@ class Backend:
         pdf_file.close()
 
     def pdf_get_data(self, proposalid):
-        pdf_file = open(self.path_pdf + str(proposalid) + '.pdf', 'rb')
-        pdf = pdf_file.read()
-        pdf_file.close()
-        return pdf
+        try:
+            pdf_file = open(self.path_pdf + str(proposalid) + '.pdf', 'rb')
+            pdf = pdf_file.read()
+            pdf_file.close()
+            return pdf
+        except IOError:
+            return ''
 
     def justification_add_update(self, proposalid, pdfdata):
         just_file = open(self.path_justification + str(proposalid) + ".pdf", 

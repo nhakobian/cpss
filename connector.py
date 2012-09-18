@@ -13,13 +13,19 @@ class Connector:
     def __init__(self):
         #Parse the GET/POST fields
         self.fields = util.FieldStorage(cpss.req)
-        
+        self.header_sent = False
+
     def do_header(self, login=False, **keywords):
+        if self.header_sent == True:
+            return
+
         if (('authenticated' not in cpss.session) or 
             (cpss.session['authenticated'] == False)):
             cpss.page.header(login=False, **keywords)
         else:
             cpss.page.header(login=True, **keywords)
+
+        self.header_sent = True
 
     def do_footer(self):
         cpss.page.footer()
@@ -27,86 +33,211 @@ class Connector:
     def Dispatch(self, pathstr):
         cpss.session["random"] = self.randomcode()
 
+        # Make sure pathstr is never empty. The root page of the site
+        # is ''.
+        if (pathstr == []):
+            pathstr = ['']
+
+        # Hard code the maintainence mode key override for debugging/testing
+        # on the live site.
+        if ((cpss.options['maint_mode'] == '2') and
+            (pathstr[0] == cpss.options['maint_key'])):
+            cpss.session['maint_allow'] = True
+            cpss.session.save()
+            self.do_header(refresh='')
+            return apache.OK
+
         if (cpss.options['maint_mode'] == '2'):
             if (cpss.session['maint_allow'] == False):
-                if (pathstr == []):
-                    pathstr = ['']
-                if (pathstr[0] == cpss.options['maint_key']):
-                    cpss.session['maint_allow'] = True
-                    cpss.session.save()
+                # If user is logged in, log them out and force a refresh
+                # If the user is not logged in, print out the maintenance
+                # mode message.
+                if (cpss.session['authenticated'] == True):
+                    cpss.session.delete()
                     self.do_header(refresh='')
+                    self.do_footer()
+                    return apahe.OK
                 else:
-                    if cpss.session['authenticated'] == True:
-                        cpss.session.delete()
-                        self.do_header(refresh='')
-                        self.do_footer()
-
                     self.do_header()
                     cpss.w(cpss.options['maint_message'])
                     self.do_footer()
                     return apache.OK
+
+        # The following are the permission functions.
+        # Conditions that these functions must follow:
+        #   * Break with 404. (False)
+        #   * Break with nothing. (Stop processing more.) (None)
+        #   * Continue (True)
+        #   * Pass data to processing function. (tuple of key - value)
+
+        def login(params):
+            if cpss.session['authenticated'] != True:
+                return False
+            if cpss.session['activated'] != '0':
+                self.Activate()
+                return None
+            return True
+
+        def logout(params):
+            if cpss.session['authenticated'] != False:
+                return False
+            return True
+
+        def fl_stats(params):
+            if cpss.db.test_userflag(cpss.session['username'], 
+                                     'STATS') != True:
+                return False
+            return True
+
+        def owner(params):
+            proposal = cpss.db.proposal_fetch(cpss.session['username'],
+                                              params[0])
+            # If proposal == False, then this means that either the
+            # proposal does not exist or does not belong to this user.
+            # If its real, return proposal id as a tuple and pass along.
+            if proposal == False:
+                return False
             else:
-                if (pathstr == []):
-                    pass
-                elif (pathstr[0] == 'invalidate'):
-                    cpss.session.delete()
-                    cpss.session['authenticated'] = False
-                    self.do_header(refresh='')            
-        cpss.session.save()
-        
-        if (pathstr == []):
-            self.Root()
-        elif (pathstr[0] == 'logout') and not(len(pathstr) > 1):
-            self.Logout()
-        elif (pathstr[0] == 'help') and not(len(pathstr) > 2):
-            self.Help(pathstr)
-        elif (pathstr[0] == 'help_small') and not(len(pathstr) > 2):
-            self.HelpSmall(pathstr)
-        #Anything above this line will be available at any time.
-        #Anything below this line will only be available when logged in and
-        # user has an activated account.
-        elif ((cpss.session['authenticated'] == True) and
-            (cpss.session['activated'] != "0")):
-            self.Activate()
-        elif ((cpss.session['authenticated'] == True) and 
-            (cpss.session['activated'] == "0")):
-            if (pathstr[0] == 'proposal'):
-                self.Proposal(pathstr)
-            elif (pathstr[0] == 'user') and not(len(pathstr) > 1):
-                self.User()
-            elif (pathstr[0] == 'stats') and not(len(pathstr) > 1):
-                if cpss.db.test_userflag(cpss.session['username'], 'STATS') == True:
-                    self.Stats()
-                else:
-                    self.do_404()
-            elif (pathstr[0] == 'finalpdf') and not(len(pathstr) > 2):
-                if cpss.db.test_userflag(cpss.session['username'], 'STATS') == True:
-                    if len(pathstr) != 2:
-                        self.do_404()
-                    else:
-                        self.StatsPDF(pathstr[1])
-                else:
-                    self.do_404()
-            elif (pathstr[0] == 'errortest') and not(len(pathstr) > 1):
-                if cpss.db.test_userflag(cpss.session['username'], 'STATS') == True:
-                    raise TypeError("CPSS virtual error - testing.")
-                else:
-                    self.do_404()
-            else:
-                self.do_404()
-        #Everything below will only be available when people are logged out.
-        elif (cpss.session['authenticated'] == False):
-            if (pathstr[0] == 'create') and not(len(pathstr) > 1):
-                self.Create()
-            elif (pathstr[0] == 'login') and not(len(pathstr) > 1):
-                self.Login()
-            else:
-                self.do_404()
+                return ('proposal', proposal)
+
+        # The dispatcher works by splitting the path string in pieces by the
+        # directory dilemiter '/', testing permissions, then if permissions 
+        # pass, pass all the operands to the function to process.
+        ddict = { 
+            # The root page.
+            ''           : { 'perm' : None, 
+                             'opt'  : 0,
+                             'func' : self.Root,
+                             },
+            'create'     : { 'perm' : [logout],
+                             'opt'  : 0,
+                             'func' : self.Create,
+                             },
+            'login'      : { 'perm' : [logout],
+                             'opt'  : 0,
+                             'func' : self.Login,
+                             },
+            'logout'     : { 'perm' : None,
+                             'opt'  : 0,
+                             'func' : self.Logout,
+                             },
+            'help'       : { 'perm' : None,
+                             'opt'  : lambda x: x <= 1,
+                             'func' : self.Help,
+                             },
+            'help_small' : { 'perm' : None,
+                             'opt'  : lambda x: x <= 1,
+                             'func' : self.HelpSmall,
+                             },
+            'user'       : { 'perm' : [login],
+                             'opt'  : 0,
+                             'func' : self.User,
+                             },
+            'stats'      : { 'perm' : [login, fl_stats],
+                             'opt'  : 0,
+                             'func' : self.Stats,
+                             },
+            'statspdf'   : { 'perm' : [login, fl_stats],
+                             'opt'  : 1,
+                             'func' : self.StatsPDF,
+                             },
+            ### Below is old API commands.
+            'finalpdf'   : { 'perm' : [login, owner],
+                             'opt'  : 1,
+                             'func' : self.finalpdf,
+                             },
+            'list'       : { 'perm' : [login],
+                             'opt'  : 0,
+                             'func' : self.proposal_list,
+                             },
+            } 
+
+        # Logged in permission must also check that user is activated. 
+        # cpss.session['activated'] != '0'. If true run self.Activate().
+
+        # 'fl_stats' permission means 
+        # cpss.db.test_userflag(cpss.session['username'], 'STATS') == True
+
+        # 'owner' permission means that 2nd option MUST be proposal id
+        # and the id is a proposal that belongs to the owner.
+
+        #    if (pathstr[0] == 'proposal'):
+        #        self.Proposal(pathstr)
+
+        # 404 function executes if there is no match to anything.
+
+        #        self.do_404()
         #The below lines execute when everything else doesnt match anything.
-        else:
+
+
+        # pathstr[0] is the function to run, while pathstr[1:] is all of its
+        # options.
+        if pathstr[0] not in ddict:
             self.do_404()
+            return apache.OK
+
+        item = ddict[pathstr[0]]
+        params = pathstr[1:]
+        kwparams = {}
+
+        # If number of params is incorrect, return 404, else, run function
+        # with its params.
+        if isinstance(item['opt'], int):
+            if item['opt'] != len(params):
+                self.do_404()
+                return apache.OK
+        else:
+            if item['opt'](len(params)) == False:
+                self.do_404()
+                return apache.OK
+
+        # Check permissions. None means that it is always viewable.
+        if item['perm'] == None:
+            item['perm'] = [None]
+        for perm in item['perm']:
+            if perm == None:
+                break
+            elif hasattr(perm, '__call__'):
+                result = perm(params)
+                if result == True:
+                    continue
+                elif result == False:
+                    self.do_404()
+                    return apache.OK
+                elif result == None:
+                    return apache.OK
+                elif isinstance(result, tuple):
+                    kwparams[result[0]] = result[1]
+                    pass
+
+        item['func'](*params, **kwparams)
+
         return apache.OK
-        
+
+    def proposal_list(self):
+        self.do_header()
+        result = cpss.db.proposal_list(cpss.session['username'])
+        cpss.page.proposal_list(result, cpss.session['name'])
+        self.do_footer()
+
+    def finalpdf(self, propid, proposal=None):
+        ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
+        ###                    directly to user.
+        pdf = cpss.db.pdf_get_data(propid)
+        if (len(pdf) == 0):
+            self.do_header()
+            cpss.w("""This proposal is unsubmitted. Please submit it before
+                      attempting to view.""")
+            self.do_footer()
+        else:
+            cpss.req.headers_out.add('Content-Disposition',
+                                     'attachment; filename=%s.pdf' % 
+                                     (proposal['carmaid']))
+            cpss.req.headers_out.add('Content-Length', str(len(pdf)))
+            cpss.req.content_type='application/pdf'
+            cpss.w(pdf)
+
+                
     def Root(self):
         self.do_header()
         cpss.page.main()
@@ -160,10 +291,6 @@ class Connector:
         mail.quit()
 
     def Proposal(self, pathstr):
-        if (cpss.session['authenticated'] != True):
-            self.Login()
-            return
-
         # If this access a specific proposal, verify that it can be accessed
         # by the user.
         if len(pathstr) > 2 :
@@ -410,22 +537,6 @@ class Connector:
                 self.do_header()
                 cpss.page.delete_verify(pathtext, str(title))
                 self.do_footer()
-        ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
-        ###                    directly to user.
-        elif (items == 3 and pathstr[1] == "finalpdf"):
-            pdf = cpss.db.pdf_get_data(pathstr[2])
-            if (len(pdf) == 0):
-                self.do_header()
-                cpss.w("""You have not submitted this proposal. Please submit
-                          a proposal before attempting to view a submitted 
-                          proposal.""")
-                self.do_footer()
-            else:
-                cpss.req.headers_out.add('Content-Disposition',
-                   'attachment; filename=%s.pdf' % (result['carmaid']))
-                cpss.req.headers_out.add('Content-Length', str(len(pdf)))
-                cpss.req.content_type='application/pdf'
-                cpss.w(pdf)
         ### API -- pdf -- return sample pdf file
         elif (items == 3 and pathstr[1] == "pdf"):
             # Hack to correctly parse for skip pagelength warning
@@ -596,20 +707,14 @@ class Connector:
             else:
                 self.do_header(refresh="proposal/")
                 self.do_footer()
-        ### API -- proposal list
-        elif (items == 1):
-            self.do_header()
-            result = cpss.db.proposal_list(cpss.session['username'])
-            cpss.page.proposal_list(result, cpss.session['name'])
-            self.do_footer()
         ### 404
         else:
             self.do_404()
 
-    def HelpSmall(self, pathstr):
-        self.Help(pathstr, small=True)
+    def HelpSmall(self, item='index'):
+        self.Help(item, small=True)
 
-    def Help(self, pathstr, small=False):
+    def Help(self, item='index', small=False):
         if (small == True):
             cpss.req.content_type="text/html"
             cpss.w("""<html><head>
@@ -620,47 +725,46 @@ class Connector:
         else:
             self.do_header()
 
-        if (len(pathstr) == 1):
-            pathstr.append('index')
-        else:
-            pathstr.append('')
-            
-        if (pathstr[1] == 'propinfo'):
+        if (item == 'propinfo'):
             cpss.w(cpss.text.help_propinfo)
 
-        elif (pathstr[1] == 'abstract'):
+        elif (item == 'abstract'):
             cpss.w(cpss.text.help_abstract)
 
-        elif (pathstr[1] == 'author'):
+        elif (item == 'author'):
             cpss.w(cpss.text.help_author)
 
-        elif (pathstr[1] == 'source'):
+        elif (item == 'source'):
             cpss.w(cpss.text.help_source)
 
-        elif (pathstr[1] == 'special_requirements'):
+        elif (item == 'special_requirements'):
             cpss.w(cpss.text.help_specialreq)
 
-        elif (pathstr[1] == 'prior_obs'):
+        elif (item == 'prior_obs'):
             cpss.w(cpss.text.help_priorobs)
 
-        elif (pathstr[1] == 'scientific_justification'):
+        elif (item == 'scientific_justification'):
             cpss.w(cpss.text.help_scientificjust)
 
-        elif (pathstr[1] == 'technical_justification'):
+        elif (item == 'technical_justification'):
             cpss.w(cpss.text.help_technicaljust)
 
-        elif (pathstr[1] == 'image'):
+        elif (item == 'image'):
             cpss.w(cpss.text.help_image)
 
-        elif (pathstr[1] == 'tot_hours'):
+        elif (item == 'tot_hours'):
             cpss.w(cpss.text.help_tothours)
             
-        elif (pathstr[1] ==  'index'):
+        elif (item ==  'index'):
             cpss.w(cpss.text.help_index % (cpss.config['html_base'], 
                cpss.config['html_base'], cpss.config['html_base'], 
                cpss.config['html_base'], cpss.config['html_base'], 
                cpss.config['html_base'], cpss.config['html_base'], 
                cpss.config['html_base']))
+
+        else:
+            self.do_404()
+            return
 
         if (small == True):
             cpss.w("""<br><br><br><br><br><br><br></body></html>""")
@@ -841,13 +945,12 @@ class Connector:
         result = cpss.db.proposal_fetch('admin', cid)
         if (len(pdf) == 0):
             self.do_header()
-            cpss.w("""You have not submitted this
-                      proposal. Please submit a proposal before
-                      attempting to view a submitted proposal.""")
+            cpss.w("""Proposal fetch error. May not exist.""")
             self.do_footer()
         else:
-            cpss.req.headers_out.add('Content-Disposition',
-                                     'attachment; filename=%s.pdf' % (result['carmaid']))
+            cpss.req.headers_out.add(
+                'Content-Disposition', 'attachment; filename=%s.pdf' % 
+                (result['carmaid']))
             cpss.req.headers_out.add('Content-Length', str(len(pdf)))
             cpss.req.content_type='application/pdf'
             cpss.w(pdf)
@@ -872,15 +975,17 @@ class Connector:
             for proposal in proposals:
                 _w("<tr>")
                 if proposal['status'] == 1:
-                    _w("<td class='carma-id'><a href='" + cpss.config['html_base'] + 
-                       "finalpdf/"+str(proposal['proposalid']) + "'>" + 
+                    _w("<td class='carma-id'><a href='" + 
+                       cpss.config['html_base'] + "statspdf/" + 
+                       str(proposal['proposalid']) + "'>" + 
                        str(proposal['carmaid'])+"</a></td>")
                 else:
-                    _w("<td class='carma-id'>" +str(proposal['carmaid'])+"</td>")
+                    _w("<td class='carma-id'>" + 
+                       str(proposal['carmaid'])+"</td>")
                 _w("<td class='name'>"+str(proposal['name'])+"</td>")
                 _w("<td class='email'>"+str(proposal['email'])+"</td>")
-                res = cpss.db.proposal_get_propinfo(proposal['proposalid'], 
-                                                            cycle['proposal'])
+                res = cpss.db.proposal_get_propinfo(
+                    proposal['proposalid'], cycle['proposal'])
                 _w("<td class='title'>"+ str(res['title']) + "</td>")
                 if proposal['status'] == 1:
                     _w("<td class='date'>" + str(res['date']) + "</td>")
