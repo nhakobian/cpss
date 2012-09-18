@@ -15,7 +15,8 @@ class Connector:
         self.fields = util.FieldStorage(cpss.req)
         
     def do_header(self, login=False, **keywords):
-        if (cpss.session['authenticated'] == False):
+        if (('authenticated' not in cpss.session) or 
+            (cpss.session['authenticated'] == False)):
             cpss.page.header(login=False, **keywords)
         else:
             cpss.page.header(login=True, **keywords)
@@ -26,12 +27,7 @@ class Connector:
     def Dispatch(self, pathstr):
         cpss.session["random"] = self.randomcode()
 
-        if (cpss.options['maint_mode'] == '0'):
-            cpss.session['maint_mode'] = 0
-        elif (cpss.options['maint_mode'] == '1'):
-            cpss.session['maint_mode'] = 1
-        elif (cpss.options['maint_mode'] == '2'):
-            cpss.session['maint_mode'] = 2
+        if (cpss.options['maint_mode'] == '2'):
             if (cpss.session['maint_allow'] == False):
                 if (pathstr == []):
                     pathstr = ['']
@@ -40,10 +36,14 @@ class Connector:
                     cpss.session.save()
                     self.do_header(refresh='')
                 else:
+                    if cpss.session['authenticated'] == True:
+                        cpss.session.delete()
+                        self.do_header(refresh='')
+                        self.do_footer()
+
                     self.do_header()
                     cpss.w(cpss.options['maint_message'])
                     self.do_footer()
-                    cpss.session.delete()
                     return apache.OK
             else:
                 if (pathstr == []):

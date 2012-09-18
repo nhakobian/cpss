@@ -18,12 +18,12 @@ def header(login=False, refresh=None, logon=False):
     cpss.req.content_type = "text/html"
 
     maintain = ""
-    if (cpss.session.__contains__('maint_mode') == True):
-        if (cpss.session['maint_mode'] == 1):
-            maintain = """<div class="maintenance">""" + cpss.options['maint_warn'] + "</div>"
-        elif ((cpss.session['maint_mode'] == 2) and
-              (cpss.session['maint_allow'] == True)):
-            maintain = """<div class="maintenance">A maintenance or debugging cycle is currently in effect. Beware that some features currently are not working as intended. To see the maintenance page that is shown to people who do not have access during a maintenance cycle, please click <a href='invalidate/'>here</a>. This will log out out if you are currently logged in.</div>"""
+
+    if (cpss.options['maint_mode'] == '1'):
+        maintain = """<div class="maintenance">""" + cpss.options['maint_warn'] + "</div>"
+    elif ((cpss.options['maint_mode'] == '2') and
+          (cpss.session['maint_allow'] == True)):
+        maintain = """<div class="maintenance">A maintenance or debugging cycle is currently in effect. Beware that some features currently are not working as intended. To see the maintenance page that is shown to people who do not have access during a maintenance cycle, please click <a href='invalidate/'>here</a>. This will log out out if you are currently logged in.</div>"""
 
     if (logon==True):
         onLoad = "document.getElementById('login').style.visibility='visible';"
