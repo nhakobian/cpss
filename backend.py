@@ -428,7 +428,7 @@ class Backend:
         cursor.close()
         return proposalid
 
-    def proposal_delete(self, user, proposalid, tables, cyclename):
+    def proposal_delete(self, user, proposalid, tables, cycleinfo):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
         the_tables = tables.keys()
         # Delete each row in the proposal tables corresponding to this
@@ -436,7 +436,7 @@ class Backend:
         for table_name in tables.keys():
             cursor.execute("""DELETE FROM `%(table)s`
                               WHERE `proposalid`=%(propid)s""" %
-                           {'table'  : self.options[table_name],
+                           {'table'  : cycleinfo[table_name],
                             'propid' : self.literal(proposalid)})
         # Delete the proposal entry itself.
         cursor.execute("""DELETE FROM `proposals`
@@ -464,8 +464,7 @@ class Backend:
                           FROM `images`
                           WHERE `proposalid`=%(propid)s%(numb)s
                           ORDER BY `numb`""" %
-                       {'prefix' : self.prefix,
-                        'propid' : self.literal(proposalid),
+                       {'propid' : self.literal(proposalid),
                         'numb'   : numb_text})
         result = cursor.fetchall()
         cursor.close()

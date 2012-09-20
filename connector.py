@@ -68,9 +68,8 @@ class Connector:
         #   * Break with 404. (False)
         #   * Break with nothing. (Stop processing more.) (None)
         #   * Continue (True)
-        #   * Pass data to processing function. (tuple of key - value)
 
-        def login(params):
+        def login(params, kwparams):
             if cpss.session['authenticated'] != True:
                 self.do_header(refresh='login/?redir=' + cpss.req.path_info)
                 self.do_footer()
@@ -80,27 +79,66 @@ class Connector:
                 return None
             return True
 
-        def logout(params):
+        def logout(params, kwparams):
             if cpss.session['authenticated'] != False:
                 return False
             return True
 
-        def fl_stats(params):
+        def fl_stats(params, kwparams):
             if cpss.db.test_userflag(cpss.session['username'], 
                                      'STATS') != True:
                 return False
             return True
 
-        def owner(params):
+        def owner(params, kwparams):
             proposal = cpss.db.proposal_fetch(cpss.session['username'],
                                               params[0])
             # If proposal == False, then this means that either the
             # proposal does not exist or does not belong to this user.
-            # If its real, return proposal id as a tuple and pass along.
+            # If its real, add proposalinfo to kwparams and return True.
             if proposal == False:
                 return False
             else:
-                return ('proposal', proposal)
+                kwparams['proposal'] = proposal
+                return True
+        owner.error_string = """You are not the owner of this proposal."""
+
+        def unlocked(params, kwparams):
+            if 'proposal' not in kwparams:
+                # Err on the safe side. If owner didnt return anything
+                # it means its not our proposal, so treat it as if it was
+                # locked. Realistically, owner = False should break the
+                # permissions tree and this should not get run unless
+                # someone forgot to put owner in the chain. This catches
+                # that possibility.
+                return False
+            
+            if kwparams['proposal']['lock'] == 1:
+                # If lock is true, this is definitely locked.
+                return False
+            elif kwparams['proposal']['lock'] == 0:
+                # If lock is 0, then allow editing even if the cycle 
+                # permissions say no. Useful to set this if there is a
+                # late proposal, or someone needs to make a correction after
+                # a cycle has ended.
+                return True
+            elif kwparams['proposal']['lock'] == None:
+                # None is the same as SQL Null. If this is present, respect
+                # the cycle editable setting (`create`). This is what most
+                # will be at until they are extracted. The extraction script
+                # should set lock to 1.
+                if kwparams['proposal']['create'] == 1:
+                    # Remember create is the opposite of lock. If create is
+                    # true, its also editable. If its '0', editing is also
+                    # disabled.
+                    return True
+                else:
+                    # Anything else but '1' and the proposal is uneditable,
+                    # i.e. locked.
+                    return False
+        unlocked.error_string = """The proposal you are editing has been set
+          as uneditable. This usually occurs when your proposal has been 
+          submitted."""
 
         # The dispatcher works by splitting the path string in pieces by the
         # directory dilemiter '/', testing permissions, then if permissions 
@@ -156,6 +194,10 @@ class Connector:
                              'opt'  : 1,
                              'func' : self.proposal_add,
                              },
+            'delete'     : { 'perm' : [login, owner, unlocked],
+                             'opt'  : 1,
+                             'func' : self.proposal_delete,
+                             },
             } 
 
         # Logged in permission must also check that user is activated. 
@@ -204,17 +246,19 @@ class Connector:
             if perm == None:
                 break
             elif hasattr(perm, '__call__'):
-                result = perm(params)
+                result = perm(params, kwparams)
                 if result == True:
                     continue
                 elif result == False:
-                    self.do_404()
+                    if hasattr(perm, 'error_string'):
+                        self.do_header()
+                        cpss.w(perm.error_string)
+                        self.do_footer()
+                    else:
+                        self.do_404()
                     return apache.OK
                 elif result == None:
                     return apache.OK
-                elif isinstance(result, tuple):
-                    kwparams[result[0]] = result[1]
-                    pass
 
         item['func'](*params, **kwparams)
 
@@ -252,6 +296,27 @@ class Connector:
             pass
         else:
             self.do_404()
+
+    def proposal_delete(self, proposalid, proposal=None):
+        ### API -- delete -- delete the whole proposal 
+        if 'delete' in self.fields:
+            template = cpss.Template.Template(proposal, proposalid, True,
+                                              Fetch=False)
+            cpss.db.proposal_delete(
+                cpss.session['username'], proposalid, template.tables, 
+                proposal)
+            self.do_header(refresh="list")
+            self.do_footer()
+            return
+
+        # In this case proposal['proposal'] is the name of the 
+        # database table that has the title info.
+        propinfo = cpss.db.proposal_get_propinfo(
+            proposalid, proposal['proposal'])
+
+        self.do_header()
+        cpss.page.delete_verify('delete/' + str(proposalid), propinfo['title'])
+        self.do_footer()
 
     def finalpdf(self, propid, proposal=None):
         ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
@@ -535,41 +600,6 @@ class Connector:
 
             template.make_html()
             self.do_footer()
-        ### API -- delete -- delete the whole proposal or section data. Replace
-        ###                  with individual API calls.
-        elif (items == 3 and pathstr[1] == "delete"):
-            if (result['carmaid'] != None):
-                self.do_header()
-                cpss.w("""You may not delete a proposal that has already been
-                          submitted.""")
-                self.do_footer()
-            elif (self.fields.__contains__('delete') == True):
-                template = cpss.Template.Template(result['template'], 
-                              result['cyclename'], pathstr[2], True)
-
-                cpss.db.proposal_delete(cpss.session['username'],
-                   result['proposalid'], template.tables, result['cyclename'])
-                self.do_header(refresh="proposal/")
-                self.do_footer()
-            else:
-                pathtext = ""
-                for a in pathstr:
-                    pathtext += a + '/'
-                template = cpss.Template.Template(result['template'],
-                              result['cyclename'], pathstr[2], True)
-
-                title = None
-                for asection in template.sections:
-                    if (asection['section'] == 'propinfo'):
-                        section = asection
-
-                for field in section['data'][0][1]:
-                    if (field['fieldname'] == 'title'):
-                        title = field['data']
-                        break
-                self.do_header()
-                cpss.page.delete_verify(pathtext, str(title))
-                self.do_footer()
         ### API -- pdf -- return sample pdf file
         elif (items == 3 and pathstr[1] == "pdf"):
             # Hack to correctly parse for skip pagelength warning

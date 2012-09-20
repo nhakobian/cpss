@@ -2,10 +2,10 @@ from mod_python import apache
 cpss = apache.import_module("cpss")
 
 def header(login=False, refresh=None, logon=False):
-    logout_bar = [["Login", "login/"], ["Help","help/"], 
-                  ["Create Account","create/"]]
-    login_bar =  [["Proposals", "list/"], ["User Info","user/"],
-                  ["Help","help/"], ["Logout", "logout/"]]
+    logout_bar = [["Login", "login"], ["Help","help"], 
+                  ["Create Account","create"]]
+    login_bar =  [["Proposals", "list"], ["User Info","user"],
+                  ["Help","help"], ["Logout", "logout"]]
 
     if (refresh != None):
         cpss.req.headers_out['location'] = cpss.config['html_base']+refresh
@@ -150,7 +150,7 @@ def proposal_list(list, name):
             if (entry['status'] == 0):
                 carmaid = 'None'
                 status = "Unsubmitted"
-                pdf = ("""<a href="proposal/delete/%s">delete</a>""" %
+                pdf = ("""<a href="delete/%s">delete</a>""" %
                        entry['proposalid'])
                 password = ""
             else:
@@ -178,7 +178,7 @@ def delete_verify(pathtext, title):
         <form action="%s" method="post">
         <input type=submit name="delete" value="Delete Proposal"></form>
 
-        <form action="proposal/" method="post">
-        <input type=submit name="cancel" value="Cancel"></form> """ %
+        <form action="list" method="get">
+        <input type=submit value="Cancel"></form> """ %
                        (title, pathtext))
         
