@@ -34,7 +34,7 @@ class Template:
  
         self.req = cpss.req
         self.cyclename = cyclename
-        self.error = False;
+        self.error = False
         self.propid = propid
         self.tmpLinescan = {} # For enhanced error checking routine.
         if (view == False):

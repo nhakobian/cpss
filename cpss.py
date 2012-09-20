@@ -102,7 +102,6 @@ def handler(request):
         session['authenticated'] = False
         session['activated'] = 0
         session['admin'] = False
-        session['maint_mode'] = 0
         session['maint_allow'] = False
     session.save()
         

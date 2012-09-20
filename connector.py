@@ -72,7 +72,9 @@ class Connector:
 
         def login(params):
             if cpss.session['authenticated'] != True:
-                return False
+                self.do_header(refresh='login/?redir=' + cpss.req.path_info)
+                self.do_footer()
+                return None
             if cpss.session['activated'] != '0':
                 self.Activate()
                 return None
@@ -150,6 +152,10 @@ class Connector:
                              'opt'  : 0,
                              'func' : self.proposal_list,
                              },
+            'add'        : { 'perm' : [login],
+                             'opt'  : 1,
+                             'func' : self.proposal_add,
+                             },
             } 
 
         # Logged in permission must also check that user is activated. 
@@ -219,6 +225,38 @@ class Connector:
         result = cpss.db.proposal_list(cpss.session['username'])
         cpss.page.proposal_list(result, cpss.session['name'])
         self.do_footer()
+
+    def proposal_add(self, prop_type):
+        ### API -- add -- add proposal        
+        # Verify data.
+        if prop_type not in ['main', 'ddt', 'cs', 'fast']:
+            self.do_404()
+            return
+        
+        # Add check to see if proposal creation is enabled
+        # Get the cyclename they are requesting a new proposal for.
+        if cpss.options['cycle_' + prop_type] != '':
+            cycle = cpss.db.cycle_info(cpss.options['cycle_' + prop_type])
+            if cycle['create'] == 1:
+                create = True
+            else:
+                create = False
+        else:
+            create = False
+
+        if create == True:
+            template = cpss.Template.Template(
+                cycle['template'], cpss.options['cycle_' + prop_type], 
+                None, True, Fetch=False)
+            #propno = cpss.db.proposal_add(cpss.session['username'],
+            #         template.tempclass.tables, options['cyclename'])
+            #self.do_header(refresh=("proposal/edit/%s" % (propno)))
+            #self.do_footer()
+            pass
+        else:
+            self.do_header(refresh="list/")
+            self.do_footer()
+
 
     def finalpdf(self, propid, proposal=None):
         ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
@@ -692,20 +730,6 @@ class Connector:
 
                 if ((error == False) and (error2 == False)):
                     cpss.w(cpss.text.submit_verify % str(template.propid))
-                self.do_footer()
-        ### API -- add -- add proposal        
-        elif (items == 2 and pathstr[1] == "add"):
-            # Add check to see if proposal creation is enabled
-            options = cpss.db.options_get()
-            if options['create'] == True:
-                template = cpss.Template.Template(options['template'],
-                           options['cyclename'], None, True, Fetch=False)
-                propno = cpss.db.proposal_add(cpss.session['username'],
-                         template.tempclass.tables, options['cyclename'])
-                self.do_header(refresh=("proposal/edit/%s" % (propno)))
-                self.do_footer()
-            else:
-                self.do_header(refresh="proposal/")
                 self.do_footer()
         ### 404
         else:

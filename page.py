@@ -127,9 +127,15 @@ def userpage(name, email, error=""):
                                    'email' : email } )
 
 def proposal_list(list, name):
-    if cpss.options["create"] == True:
+    cycle = cpss.db.cycle_info(cpss.options['cycle_main'])
+    if cycle['create'] == 1:
+        create = True
+    else:
+        create = False
+
+    if create == True:
         cpss.w("""<h3>%s's Proposals
-                 (<a href="proposal/add">Add New Proposal</a>)</h3>""" % name)
+                 (<a href="add/main">Add New Proposal</a>)</h3>""" % name)
     else:
         cpss.w("""<h3>%s's Proposals</h3>""" % name)
 
@@ -153,7 +159,7 @@ def proposal_list(list, name):
                 pdf =  ("""<a href="finalpdf/%s">view final pdf</a>""" %
                         (entry['proposalid']))
                 password = str(entry['carmapw'])
-            if ((entry['cyclename'] != cpss.options['main_cyclename']) and (entry['status'] == 1)):
+            if ((entry['cyclename'] != cpss.options['cycle_main']) and (entry['status'] == 1)):
                 #placeholder
                 buf += ("""<tr><td>%s</td><td>%s</td><td id="title">%s</td><td>%s</td>
                     <td>%s</td><td>  %s </td><td>%s</td></tr>"""

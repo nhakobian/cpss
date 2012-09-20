@@ -115,10 +115,22 @@ class Backend:
 
     def cycles(self):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        ret = cursor.execute("""SELECT `cyclename`, `final_date`, `proposal`
+        ret = cursor.execute("""SELECT *
                                 FROM `cycles`
                                 ORDER BY `final_date` DESC""")
         result = cursor.fetchall()
+        cursor.close()
+        return result
+
+    def cycle_info(self, cycle):
+        # Returns true if the cycle can create a new proposal, false otherwise.
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        ret = cursor.execute("""SELECT *
+                                FROM `cycles`
+                                WHERE `cyclename`=%(name)s
+                                LIMIT 1""" % 
+                             {'name' : self.literal(cycle)})
+        result = cursor.fetchone()
         cursor.close()
         return result
 
