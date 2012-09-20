@@ -280,7 +280,7 @@ class Backend:
         text = ("""UPDATE `%(table)s` 
                    SET %(tag)s 
                    WHERE %(where)s""" %
-                {'table'  : self.options[table],
+                {'table'  : table,
                  'tag'    : tagtext,
                  'where'  : wheretext}) 
         
@@ -294,7 +294,7 @@ class Backend:
                               FROM `%(table)s`
                               WHERE `proposalid`=%(propid)s
                               ORDER BY `numb` DESC""" %
-                           {'table'  : self.options[table],
+                           {'table'  : table,
                             'propid' : self.literal(propid)})
             res = cursor.fetchone()
             numbtext = ", `numb`=%s" % self.literal((res['numb'] + 1))
@@ -304,7 +304,7 @@ class Backend:
             
         cursor.execute("""INSERT INTO `%(table)s`
                           SET `proposalid`=%(propid)s %(numbtext)s""" %
-                       {'table'    : self.options[table],
+                       {'table'    : table,
                         'propid'   : self.literal(propid),
                         'numbtext' : numbtext})
         cursor.close()
@@ -408,23 +408,23 @@ class Backend:
                         'propid' : self.literal(proposalid)})        
         cursor.close()
 
-    def proposal_add(self, user, tables, cyclename):
+    def proposal_add(self, cycle, user, tables):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
         cursor.execute("""INSERT INTO `proposals` 
                           SET `user`=%(user)s, `cyclename`=%(cyclename)s, 
                               `status`='none'""" %
                        {'user'      : self.literal(user),
-                        'cyclename' : self.literal(cyclename)})
-        cursor.execute("""SELECT `proposalid` 
-                          FROM `proposals` 
-                          WHERE `user`=%(user)s 
-                          ORDER BY `proposalid` DESC""" %
-                       {'user'   : self.literal(user)})
+                        'cyclename' : self.literal(cycle['cyclename'])})
+        cursor.execute("""SELECT LAST_INSERT_ID() as `proposalid`""")
         proposalid = cursor.fetchone()['proposalid']
 
         for table in tables.keys():
-            self.proposal_table_addrow(table, proposalid)
-
+            self.proposal_table_addrow(cycle[table], proposalid)
+        # Update the date field in the proposal info since it is required   
+        # To list the proposals.        
+        self.proposal_tagset(cycle['proposal'], proposalid,
+                             [{'fieldname':'date', 'fieldtype':'date'}])
+        
         cursor.close()
         return proposalid
 

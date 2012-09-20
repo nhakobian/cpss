@@ -235,28 +235,23 @@ class Connector:
         
         # Add check to see if proposal creation is enabled
         # Get the cyclename they are requesting a new proposal for.
+        # Never allow adding a proposal if there isnt a cycle defined
+        # for the chosen proposal type.
         if cpss.options['cycle_' + prop_type] != '':
             cycle = cpss.db.cycle_info(cpss.options['cycle_' + prop_type])
-            if cycle['create'] == 1:
-                create = True
-            else:
-                create = False
-        else:
-            create = False
+            if cycle['create'] != 1:
+                self.do_header(refresh="list/")
+                self.do_footer()    
+                return
 
-        if create == True:
-            template = cpss.Template.Template(
-                cycle['template'], cpss.options['cycle_' + prop_type], 
-                None, True, Fetch=False)
-            #propno = cpss.db.proposal_add(cpss.session['username'],
-            #         template.tempclass.tables, options['cyclename'])
-            #self.do_header(refresh=("proposal/edit/%s" % (propno)))
-            #self.do_footer()
+            template = cpss.Template.Template(cycle, None, True, Fetch=False)
+            propno = cpss.db.proposal_add(
+                cycle, cpss.session['username'], template.tempclass.tables)
+            self.do_header(refresh="list")
+            self.do_footer()
             pass
         else:
-            self.do_header(refresh="list/")
-            self.do_footer()
-
+            self.do_404()
 
     def finalpdf(self, propid, proposal=None):
         ### API -- finalpdf -- return the final pdf -- REWRITE to pass file

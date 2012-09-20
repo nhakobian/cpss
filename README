@@ -1,0 +1,28 @@
+The following sections contain proposal type dependent code. These would need
+to be modified in order to support a new proposal type.
+
+connector.py - proposal_add(self, prop_type)
+  Will need to add new prop type in the list that verifies prop_type.
+
+Database
+  In table `cycles`:
+  * Create new entry with a `type` that is of the new type.
+  In table `options`:
+  * Create new entries for `cycle_` + cyclename, and 
+    `propno_` + cyclename to track the current cyclename for
+    that proposal type and to track a new proposal number counter
+    for that proposal type.
+
+POSSIBLE RACE CONDITIONS - do we need to add table locking for these 
+  operations?
+
+  * Proposal ADD - Creates a proposal and let autoincrement value choose
+    the propid. The proposal add db routine then follows it with an 
+    immediate select in order to get the propid so it can add the
+    propinfo, author, and source inital data. There could be a race
+    condition between the initial add and the initial select.
+
+    POTENTIALLY SOLVED - Switched to use LAST_INSERT_ID()
+
+TODO FIX
+  proposal_add - on successful proposal add, refresh to the proposal edit page

@@ -20,7 +20,7 @@ class strTemplate(baseTemplate):
     idpattern = r'[_a-z0-9][_a-z0-9]*'
 
 class Template:
-    def __init__(self, template, cyclename, propid, view,
+    def __init__(self, cycleinfo, propid, view,
                  Fetch=True, justification=False):
 
         self.justification = justification
@@ -33,7 +33,8 @@ class Template:
                 self.justification = True
  
         self.req = cpss.req
-        self.cyclename = cyclename
+        # self.cyclename is no more. replaced with storing the cycleinfo
+        self.cycleinfo = cycleinfo
         self.error = False
         self.propid = propid
         self.tmpLinescan = {} # For enhanced error checking routine.
@@ -44,6 +45,7 @@ class Template:
             self.view = True
             self.edit = False
         
+        template = self.cycleinfo['template']
         if (template == 'template10'):
             self.template = template10
         if (template == 'template2009b'):

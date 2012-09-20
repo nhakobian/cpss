@@ -167,7 +167,7 @@ def proposal_list(list, name):
             else:
                 buf += ("""<tr><td>%s</td><td id="id">%s</td><td id="title">%s</td><td>%s</td>
                     <td> %s </td><td><a href="proposal/edit/%s">edit</a> | %s </td><td>%s</td></tr>"""
-                    % (entry['type'], carmaid, entry['title'], status, date, entry['proposalid'],
+                    % (entry['type'], carmaid, entry['title'], status, entry['date'], entry['proposalid'],
                        pdf, password))
         buf += """</table></div>""" 
         cpss.w(buf)
