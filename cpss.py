@@ -21,19 +21,8 @@ connector = None
 
 Template = apache.import_module("Template/__init__")
 
-config = { 'html_base' : "http://localhost/proposals/",
-           'base_directory' : '/var/www/proposals/',
-           'files_directory' : 'files/',
-           'data_directory' : '/home/carmaweb/cpss-data/',
-           'sendemail' : True,
-           'error_email' : '',
-           'db' : { 'host' : "",
-                    'user' : "",
-                    'passwd' : "",
-                    'db' : "",
-                    'unix_socket' : '/var/run/mysqld/mysqld.sock',
-                    },
-           }
+config_import = apache.import_module("config")
+config = config_import.config
 
 options = None # This will be filled with the SQL options.
 session = None

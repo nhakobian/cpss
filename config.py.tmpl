@@ -1,0 +1,29 @@
+# Copy the file to config.py and fill out the fields to setup the system.
+config = {
+    # 'html_base' defines the root web address of the proposal system site.
+    # This sets the html <base> tag in every page to get relative links
+    # correct.
+    'html_base' : '',
+    # 'base_directory' is the root directory on the server the proposal
+    # system is installed in. 
+    'base_directory' : '',
+    # 'files_directory' is the directory holding the temporary working files
+    # for pdf generation. This is relative to base_directory.
+    'files_directory' : '',
+    # 'data_directory' is the directory that holds the pdf files and the
+    # uploaded images, etc.
+    'data_directory' : '',
+    # Sendemail is either true/false. Its a global flag that turns on and
+    # off email sending on user creation, etc.
+    'sendemail' : True,
+    # 'error_email' is the address that proposal system error tracebacks are
+    # sent to.
+    'error_email' : '',
+    # The database information
+    'db' : { 'host' : '',
+             'user' : '',
+             'passwd' : '',
+             'db' : '',
+             'unix_socket' : '',
+             },
+    }
