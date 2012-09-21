@@ -310,49 +310,49 @@ class Backend:
         cursor.close()
         return str(res['numb'] + 1)
 
-    def proposal_table_delrow(self, table, propid, numb=False):
+    def proposal_table_delrow(self, table, propid, numb):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        if (numb != False):
-            numbtext = "AND `numb`=%s" % (self.literal(numb))
-            cursor.execute("""SELECT `numb` 
-                              FROM `%(table)s`
-                              WHERE `proposalid`=%(propid)s
-                              ORDER BY `numb`""" %
-                           {'table'  : self.options[table],
-                            'propid' : self.literal(propid)})
-            res = cursor.fetchall()
-            if (len(res) == 1):
-                cursor.close()
-                return False
-        else:
-            numbtext = ""
+
+        cursor.execute("""SELECT `numb` 
+                          FROM `%(table)s`
+                          WHERE `proposalid`=%(propid)s
+                          ORDER BY `numb` ASC""" %
+                       {'table'  : table,
+                        'propid' : self.literal(propid)})
+        res = cursor.fetchall()
+
+        # Cannot delete last entry in table.
+        if (len(res) == 1):
+            cursor.close()
+            return False
+        # Make sure entry exists in table.
+        numbs = map(lambda x: x['numb'], res)
+        if int(numb) not in numbs:
+            cursor.close()
+            return None
             
         cursor.execute("""DELETE FROM `%(table)s`
-                          WHERE `proposalid`=%(prop)s %(numbtext)s
+                          WHERE `proposalid`=%(prop)s 
+                                AND `numb`=%(numb)s
                           LIMIT 1""" %
-                       {'table'    : self.options[table],
-                        'prop'     : self.literal(propid),
-                        'numbtext' : numbtext})
+                       {'table' : table,
+                        'prop'  : self.literal(propid),
+                        'numb'  : self.literal(numb)})
 
-        if (numb != False):
-            new_numb = 1
-            for line in res:
-                if (str(line['numb']) == str(numb)):
-                    continue
-                elif (line['numb'] == new_numb):
-                    new_numb += 1
-                    continue
-                else:
-                    cursor.execute("""UPDATE `%(table)s`
-                                      SET `numb`=%(new_numb)s 
-                                      WHERE `proposalid`=%(propid)s 
-                                            AND `numb`=%(linenumb)s 
-                                      LIMIT 1""" %
-                                   {'table'    : self.options[table],
-                                    'new_numb' : self.literal(new_numb),
-                                    'propid'   : self.literal(propid),
-                                    'linenumb' : self.literal(line['numb'])})
-                    new_numb += 1
+        # Shift remaining numbs below deleted numb up by 1
+        new_numb = int(numb)
+        for line in res:
+            if line['numb'] > new_numb:
+                cursor.execute("""UPDATE `%(table)s`
+                                  SET `numb`=%(new_numb)s 
+                                  WHERE `proposalid`=%(propid)s 
+                                         AND `numb`=%(linenumb)s 
+                                  LIMIT 1""" %
+                               {'table'    : table,
+                                'new_numb' : self.literal(new_numb),
+                                'propid'   : self.literal(propid),
+                                'linenumb' : self.literal(line['numb'])})
+                new_numb += 1
         cursor.close()
         return True
 

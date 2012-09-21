@@ -246,7 +246,7 @@ class Template:
                "multi_add/%(propid)s/%(section)s">%(addtext)s</a></p>""")
         repeat_eddel = (
             """<a href="edit/%(propid)s/%(section)s/%(id)s">edit</a> |
-               <a href="proposal/edit/%(propid)s?action=delete&section=%(section)s&id=%(id)s">delete</a>""")
+               <a href="multi_del/%(propid)s/%(section)s/%(id)s">delete</a>""")
 
         post_author = (
             """<div id="editlist">
@@ -671,9 +671,8 @@ class Template:
                     </input><input type="submit" name="update"
                                          value="Submit"/>
                 </td><td></td><td>
-                <a href="%s?action=delete&section=image&id=%s">Delete</a>
-                </td></tr></form>""" % ('proposal/edit/'+ str(propid),
-                                        image['numb']))
+                <a href="multi_del/%s/image/%s">Delete</a>
+                </td></tr></form>""" % (str(propid), image['numb']))
         else:
             fname = image['file']
             fname = fname.split('/')

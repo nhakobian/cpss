@@ -214,8 +214,16 @@ class Connector:
                              'opt'  : 2,
                              'func' : self.proposal_multi_add,
                              },
+            'multi_del'  : { 'perm' : [login, owner, unlocked],
+                             'opt'  : 3,
+                             'func' : self.proposal_multi_delete,
+                             },
+            'del_just'   : { 'perm' : [login, owner, unlocked],
+                             'opt'  : 1,
+                             'func' : self.proposal_justification_delete,
+                             },
             }
-
+        
         # Logged in permission must also check that user is activated. 
         # cpss.session['activated'] != '0'. If true run self.Activate().
 
@@ -400,6 +408,65 @@ class Connector:
                                                numb=True)
             self.do_header(refresh='edit/%s/%s/%s' % (proposalid, section, id))
 
+    def proposal_multi_delete(self, proposalid, section, id, proposal=None):
+        ### ACTION -- delete -- delete entry from section (images, author, 
+        ###                     sources, justification)
+        template = cpss.Template.Template(proposal, proposalid, True)
+
+        # Verify that the section and id exist before you try to delete it.
+        verify = False
+        for tempsection in template.sections:
+            if (tempsection['section'] == section):
+                tablename = tempsection['table']
+                section_name = tempsection['name']
+                if section == 'image':
+                    verify = True
+                elif template.tables[tablename]['type'] == 'repeat':
+                    verify = True
+                else:
+                    verify = False
+
+        if verify == False:
+            self.do_header()
+            cpss.w("""This section does not exist.""")
+            self.do_footer()
+            return
+
+        if (section == 'image'):
+            image = cpss.db.images_list(proposalid, id)
+            if len(image) == 0:
+                status = None
+            else:
+                cpss.db.images_delete(proposalid, id)
+            
+                files_dir = (cpss.config['base_directory'] +
+                             cpss.config['files_directory'])
+                prop_dir = files_dir + proposalid + '/justification/'
+                
+                if (os.path.isfile(prop_dir + image[0]['file']) == True):
+                    os.unlink(prop_dir + image[0]['file'])
+                status = True
+        else:
+            status = cpss.db.proposal_table_delrow(proposal[tablename], 
+                                                   proposalid, numb=id)
+            
+        if (status == True):
+            self.do_header(refresh='view/' + str(proposalid))
+            self.do_footer()
+        elif (status == False):
+            self.do_header()
+            cpss.w("""You must have at least one value in the %s section.""" % 
+                   section_name)
+            self.do_footer()
+        elif (status == None):
+            self.do_header()
+            cpss.w("""Cannot delete non-existant item.""")
+            self.do_footer()
+
+    def proposal_justification_delete(self, proposalid, proposal=None):
+        cpss.db.justification_delete_data(proposalid)
+        self.do_header(refresh='view/'+str(proposalid))
+
     def finalpdf(self, propid, proposal=None):
         ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
         ###                    directly to user.
@@ -474,71 +541,8 @@ class Connector:
         action = self.fields.__contains__('action')
         items = len(pathstr)
 
-        ### ACTION -- delete -- delete entry from section (images, author, 
-        ###                     sources, justification)
-        if (action and (self.fields['action'] == 'delete')):
-            if (self.fields.__contains__('section') == True):
-                section = self.fields['section']
-            else:
-                self.do_header(refresh="proposal/")
-                self.do_footer()
-            if (self.fields.__contains__('id') == True):
-                id = self.fields['id']
-            else:
-                if (section != 'justification'):
-                    self.do_header(refresh="proposal/")
-                    self.do_footer()
-
-            pathtext = ""
-            for a in pathstr:
-                pathtext += a + '/'
-
-            template = cpss.Template.Template(result['template'],
-              result['cyclename'], pathstr[2], True)
-
-            for tempsection in template.tempclass.sections:
-                if (tempsection['section'] == section):
-                    tablename = tempsection['table']
-                    section_name = tempsection['name']
-                else:
-                    #put error here
-                    pass
-
-            if (section == 'image'):
-                done = True
-                image = cpss.db.images_get(pathstr[2], id)
-                cpss.db.images_delete(pathstr[2], id)
-                
-                files_dir = (cpss.config['base_directory'] +
-                             cpss.config['files_directory'])
-                prop_dir = files_dir + pathstr[2] + '/justification/'
-                                
-                if (os.path.isfile(prop_dir + image[0]['file']) == True):
-                    os.unlink(prop_dir + image[0]['file'])
-            elif (section == 'justification'):
-                done = True
-                cpss.db.justification_delete_data(pathstr[2])
-
-                files_dir = (cpss.config['base_directory'] +
-                             cpss.config['files_directory'])
-                prop_dir = files_dir + pathstr[2] + '/justification/'
-
-                if (os.path.isfile(prop_dir + 'justification.pdf') == True):
-                    os.unlink(prop_dir + 'justification.pdf')
-            else:
-                done = cpss.db.proposal_table_delrow(tablename, pathstr[2], 
-                                                     numb=id)
-                
-            if (done == True):
-                self.do_header(refresh=pathtext)
-                self.do_footer()
-            if (done == False):
-                self.do_header()
-                cpss.w("""You must have at least one value in the %s section.
-                          You may not delete this last value.""" % 
-                       section_name)
         ### ACTION -- submit -- submit data into the db. Replace with API func.
-        elif (action and (self.fields['action'] == 'submit')):
+        if (action and (self.fields['action'] == 'submit')):
             pathtext = ""
             for a in pathstr:
                 pathtext += a + '/'
