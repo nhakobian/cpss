@@ -206,7 +206,11 @@ class Connector:
                              'opt'  : 1,
                              'func' : self.proposal_typechange,
                              },
-            } 
+            'edit'       : { 'perm' : [login, owner, unlocked],
+                             'opt'  : lambda x: x in [2, 3],
+                             'func' : self.proposal_edit,
+                             },
+            }
 
         # Logged in permission must also check that user is activated. 
         # cpss.session['activated'] != '0'. If true run self.Activate().
@@ -352,6 +356,14 @@ class Connector:
         self.do_header(refresh=("view/%s" % proposalid))
         self.do_footer()
 
+    def proposal_edit(self, proposalid, section, id=False, proposal=None):
+        ### ACTION -- edit
+        ## command formatted like /edit/propid/section/id
+        template = cpss.Template.Template(proposal, proposalid, False)
+        self.do_header()
+        template.make_html(section_choose=section, id=id)
+        self.do_footer()
+
     def finalpdf(self, propid, proposal=None):
         ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
         ###                    directly to user.
@@ -426,25 +438,8 @@ class Connector:
         action = self.fields.__contains__('action')
         items = len(pathstr)
 
-        ### ACTION -- edit
-        if (action and (self.fields['action'] == 'edit')):
-            if (self.fields.__contains__('section') == True):
-                section = self.fields['section']
-            else:
-                self.do_header(refresh="proposal/")
-                self.do_footer()
-            if (self.fields.__contains__('id') == True):
-                id = self.fields['id']
-            else:
-                id = False
-
-            template = cpss.Template.Template(result['template'], 
-                          result['cyclename'], pathstr[2], False)
-            self.do_header()
-            template.make_html(section_choose=section, id=id)
-            self.do_footer()
         ### ACTION -- add
-        elif (action and (self.fields['action'] == 'add')):
+        if (action and (self.fields['action'] == 'add')):
             if (self.fields.__contains__('section') == True):
                 section = self.fields['section']
             else:
@@ -741,9 +736,6 @@ class Connector:
                 if ((error == False) and (error2 == False)):
                     cpss.w(cpss.text.submit_verify % str(template.propid))
                 self.do_footer()
-        ### 404
-        else:
-            self.do_404()
 
     def HelpSmall(self, item='index'):
         self.Help(item, small=True)

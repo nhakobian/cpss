@@ -26,3 +26,4 @@ POSSIBLE RACE CONDITIONS - do we need to add table locking for these
 
 TODO FIX
   proposal_add - on successful proposal add, refresh to the proposal edit page
+  edit_entry - make sure id is valid for repeat section types.

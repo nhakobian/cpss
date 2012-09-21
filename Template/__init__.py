@@ -240,15 +240,13 @@ class Template:
                onClick="return popup(this, 'help')">
                [?]</a>""")
         general_edit = (
-            """<a href=
-               "proposal/edit/%(propid)s?action=edit&section=%(section)s">
-               (edit)</a></p>""")
+            """<a href="edit/%(propid)s/%(section)s">(edit)</a></p>""")
         repeat_add = (
             """<a href=
                "proposal/edit/%(propid)s?action=add&section=%(section)s">
                %(addtext)s</a></p>""")
         repeat_eddel = (
-            """<a href="proposal/edit/%(propid)s?action=edit&section=%(section)s&id=%(id)s">edit</a> |
+            """<a href="edit/%(propid)s/%(section)s/%(id)s">edit</a> |
                <a href="proposal/edit/%(propid)s?action=delete&section=%(section)s&id=%(id)s">delete</a>""")
 
         post_author = (
@@ -448,6 +446,10 @@ class Template:
             if (section['type'] == 'repeat') and (id == False):
                 self.req.write("""Please return to the proposal screen and
                 select a valid piece of information to edit.""")
+                return
+            elif (section['type'] == 'general') and (id != False):
+                cpss.w("""Section does not exist. Return to the proposal screen
+                          and select a valid section to edit.""")
                 return
             
             groups = section['data']
