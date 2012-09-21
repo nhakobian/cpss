@@ -243,8 +243,7 @@ class Template:
             """<a href="edit/%(propid)s/%(section)s">(edit)</a></p>""")
         repeat_add = (
             """<a href=
-               "proposal/edit/%(propid)s?action=add&section=%(section)s">
-               %(addtext)s</a></p>""")
+               "multi_add/%(propid)s/%(section)s">%(addtext)s</a></p>""")
         repeat_eddel = (
             """<a href="edit/%(propid)s/%(section)s/%(id)s">edit</a> |
                <a href="proposal/edit/%(propid)s?action=delete&section=%(section)s&id=%(id)s">delete</a>""")
@@ -285,8 +284,7 @@ class Template:
                     onClick="return popup(this, 'help')">
                     [?]</a>""")
         edit_image = (
-            """<a href="proposal/edit/%(propid)s?action=add&section=image">
-               (add)</a></p>""") 
+            """<a href="multi_add/%(propid)s/image">(add)</a></p>""") 
 
         for section in self.sections:
             if (self.justification == True):
