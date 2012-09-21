@@ -10,5 +10,12 @@
         href="static/justification_key.tar.gz">here</a>. This template
         conforms to all the necessary requirements. Use the following
         link for more details about <a href=
-        "http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html"
+        "http://cedarflat.mmarray.org/observing/proposals/KP_call2012b.html"
         target="_blank">Key Projects</a>.
+      </td>
+      <td>
+        %s
+      </td>
+    </tr>
+  </table>
+</div>

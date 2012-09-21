@@ -159,15 +159,17 @@ def proposal_list(list, name):
                 pdf =  ("""<a href="finalpdf/%s">view final pdf</a>""" %
                         (entry['proposalid']))
                 password = str(entry['carmapw'])
+            title = """<a href="view/%s">%s</a>""" % (entry['proposalid'], entry['title'])
+
             if ((entry['cyclename'] != cpss.options['cycle_main']) and (entry['status'] == 1)):
                 #placeholder
                 buf += ("""<tr><td>%s</td><td>%s</td><td id="title">%s</td><td>%s</td>
                     <td>%s</td><td>  %s </td><td>%s</td></tr>"""
-                        % (entry['type'], carmaid, entry['title'], status, entry['date'], pdf, password))
+                        % (entry['type'], carmaid, title, status, entry['date'], pdf, password))
             else:
                 buf += ("""<tr><td>%s</td><td id="id">%s</td><td id="title">%s</td><td>%s</td>
                     <td> %s </td><td><a href="proposal/edit/%s">edit</a> | %s </td><td>%s</td></tr>"""
-                    % (entry['type'], carmaid, entry['title'], status, entry['date'], entry['proposalid'],
+                    % (entry['type'], carmaid, title, status, entry['date'], entry['proposalid'],
                        pdf, password))
         buf += """</table></div>""" 
         cpss.w(buf)

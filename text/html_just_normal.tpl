@@ -11,7 +11,7 @@
         href='static/justification.tar.gz'>here</a>.
       </td>
       <td>
-        <form action='proposal/typechange/%s' method='post' name="form">
+        <form action='typechange/%s' method='post' name="form">
           I want to use: 
           <select name="type">
             <option value="Website Justification" %s>Website Justification
@@ -19,3 +19,9 @@
           </select>
           <input type="submit" value="Select Choice" name="submit"></input>
         </form>
+	%s
+      </td>
+    </tr>
+  </table>
+
+</div>

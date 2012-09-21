@@ -419,9 +419,15 @@ html_just_key=r"""<div id="editlist">
         href="static/justification_key.tar.gz">here</a>. This template
         conforms to all the necessary requirements. Use the following
         link for more details about <a href=
-        "http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html"
+        "http://cedarflat.mmarray.org/observing/proposals/KP_call2012b.html"
         target="_blank">Key Projects</a>.
-"""
+      </td>
+      <td>
+        %s
+      </td>
+    </tr>
+  </table>
+</div>"""
 
 html_just_normal=r"""<div id="editlist">
   <p>Justification Type</p>
@@ -436,7 +442,7 @@ html_just_normal=r"""<div id="editlist">
         href='static/justification.tar.gz'>here</a>.
       </td>
       <td>
-        <form action='proposal/typechange/%s' method='post' name="form">
+        <form action='typechange/%s' method='post' name="form">
           I want to use: 
           <select name="type">
             <option value="Website Justification" %s>Website Justification
@@ -444,7 +450,12 @@ html_just_normal=r"""<div id="editlist">
           </select>
           <input type="submit" value="Select Choice" name="submit"></input>
         </form>
-"""
+	%s
+      </td>
+    </tr>
+  </table>
+
+</div>"""
 
 page_error=r"""<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 

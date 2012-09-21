@@ -201,15 +201,15 @@ class Template:
 
     def make_html_header(self):
         ###Begin Page Header
-        self.req.write("""<div class="navbar, propheader">""")
+        cpss.w("""<div class="navbar, propheader">""")
         if (self.unlocked() != True):
-            self.req.write("""<ul id="navlist">
+            cpss.w("""<ul id="navlist">
             <li><a href="%s">Current Proposal</a></li>
             <li><a href="%s">View Submitted PDF</a></li>""" %
                            ("view/" + str(self.propid),
                             "finalpdf/" + str(self.propid)))
         elif (self.cycleinfo['status'] == 0):
-            self.req.write("""<ul id="navlist">
+            cpss.w("""<ul id="navlist">
             <li><a href="%s">Current Proposal</a></li>
             <li><a href="%s">View Draft as PDF</a></li>
             <li><a href="%s">Submit Proposal</a></li></ul>""" %
@@ -217,7 +217,7 @@ class Template:
                             "pdf/" + str(self.propid),
                             "submit/" + str(self.propid)))
         else:
-            self.req.write("""<ul id="navlist">
+            cpss.w("""<ul id="navlist">
             <li><a href="%s">Current Proposal</a></li>
             <li><a href="%s">View Draft as PDF</a></li>
             <li><a href="%s">View Submitted PDF</a></li>
@@ -227,7 +227,7 @@ class Template:
                             "finalpdf/" + str(self.propid),
                             "submit/" + str(self.propid)))
 
-        self.req.write("""</div>""")
+        cpss.w("""</div>""")
         ###End Page Header
 
     def make_html_proposal(self):
@@ -367,51 +367,60 @@ class Template:
                 if (len(result) == 0):
                     cpss.w("""<table><tr><td>None</td></tr></table>""")
                 else:
-                    cpss.w("""<span style="font-size:small;">Please use the 
-                    sample code provided and insert it in your justification 
-                    section where you would like the image to appear. Only 
-                    Postscript (ps and eps) image attachments are supported.
-                    </span>""")
+                    cpss.w("""<br><span style="font-size:small;">Please use 
+                    the sample code provided and insert it in your 
+                    justification section where you would like the image to 
+                    appear. Only Postscript (ps and eps) image attachments are
+                    supported.</span>""")
 
                     cpss.w("""<table><tr><th>File Name</th><th>
                               Sample Code</th><th>&nbsp;</tr>""")
 
                     for image in result:
-                        self.html_image_view(self.propid, image)
+                        self.html_image_view(self.propid, image, unlocked)
                     cpss.w("""</table>""")
             cpss.w("""</div><br>""")
 
             if (section['section'] == 'prior_obs'):
-                if self.is_key_project == False:
-                    if (self.justification == False):
-                        web = 'selected'
-                        pdf = ''
-                    else:
-                        web = ''
-                        pdf = 'selected'
-                    cpss.w(cpss.text.html_just_normal % (self.propid,web, pdf))
+                if (self.justification == False):
+                    web = 'selected'
+                    pdf = ''
                 else:
-                    cpss.w(cpss.text.html_just_key)
+                    web = ''
+                    pdf = 'selected'
+
+                nodata = ("""<br><form enctype="multipart/form-data" 
+                                       method="post" action="proposal/edit/%s?action=submit&section=justification">
+                                 <input type="file" name="file"></input>
+                                 <input type="submit" name="update" 
+                                        value="Submit"/>
+                                 </form>""" % str(self.propid))
+                delete = ("""<a href="proposal/edit/%s?action=delete&section=justification">
+                             Delete Uploaded LaTeX Justification</a>""" % 
+                          str(self.propid))
 
                 if (self.justification == True):
-                    cpss.w("""<br><form enctype="multipart/form-data"
-                    action="proposal/edit/%s?action=submit&section=justification"
-                    method="post">""" % (str(self.propid)))
-
-                    data = cpss.db.justification_get_data(
-                        self.propid)
-
-                    if (data == None):
-                        cpss.w("""<input type="file" name="file"></input>
-                        <input type="submit" name="update" value="Submit"/>
-                        </form>""")
+                    data = cpss.db.justification_get_data(self.propid)
+                    if data == None:
+                        command = nodata
                     else:
-                        cpss.w("""
-                        <a href="%s?action=delete&section=justification">
-                        Delete Uploaded LaTeX Justification</a>
-                        </form>""" % ('proposal/edit/'+ str(self.propid)))
-                    
-                cpss.w("""</td></tr></table></div><br>""")
+                        command = delete
+                else:
+                    command = ''
+
+                if self.is_key_project and unlocked:
+                    cpss.w(cpss.text.html_just_key % command)
+                elif unlocked:
+                    cpss.w(cpss.text.html_just_normal % (self.propid, web, 
+                                                         pdf, command))
+                else:
+                    # Is locked.
+                    cpss.w(all_head % { 'name' : "Latex Justification",
+                                        'section' : section['section']})
+                    cpss.w("""<div id="editlist">
+                              <textarea cols=100 rows=15 readonly>%(prop)s
+                              </textarea></div>""" % {'prop': data})
+                cpss.w("<br>")
         cpss.w("</div>")
 
     def make_html(self, section_choose=False, id=False):
@@ -652,14 +661,12 @@ class Template:
         self.req.write("""</table><center><input id="submit"
                        type='submit' value='Save Changes'></ center></form>""")
 
-    def html_image_view(self, propid, image):
-        if (image['file'] == ''):
-            self.req.write("""<tr><form enctype="multipart/form-data"
-                               action="%s?action=submit&section=image&id=%s"
-                               method="post">""" % ('proposal/edit/' +
-                                                    str(propid),
-                                                    image['numb']))
-            self.req.write("""
+    def html_image_view(self, propid, image, unlocked):
+        if (image['file'] == '') and unlocked:
+            cpss.w("""<tr><form enctype="multipart/form-data"
+                      action="proposal/edit/%s?action=submit&section=image&id=%s"
+                      method="post">""" % (str(propid), image['numb']))
+            cpss.w("""
                 <td><input type="file" name="file">
                     </input><input type="submit" name="update"
                                          value="Submit"/>
@@ -678,13 +685,17 @@ class Template:
             \\caption{}<br>
             \\end{center}<br>
             \\end{figure}""" % (editfile))
-
-            self.req.write("""<tr style="border-bottom:1px solid black;"><td>
-                              %s</td><td style="text-align:left;">%s</td>
-                 <td id="button">
-                <a href="%s?action=delete&section=image&id=%s">Delete</a>
-                </td></tr>""" % (editfile, sample_code, 
-                                 'proposal/edit/' + str(propid),image['numb']))
+            if unlocked:
+                delete = (
+                    """<td id="button">
+                       <a href="%s?action=delete&section=image&id=%s">
+                       Delete</a></td>""" % ('proposal/edit'+ str(propid),
+                                        image['numb']))
+            else:
+                delete = "<td></td>"
+            cpss.w("""<tr style="border-bottom:1px solid black;"><td>%s</td>
+                      <td style="text-align:left;">%s</td>%s</tr>""" % 
+                   (editfile, sample_code, delete))
 
     def collapse_lines(self, group):
         new_group = []

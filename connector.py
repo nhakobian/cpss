@@ -202,6 +202,10 @@ class Connector:
                              'opt'  : 1,
                              'func' : self.proposal_view,
                              },
+            'typechange' : { 'perm' : [login, owner, unlocked],
+                             'opt'  : 1,
+                             'func' : self.proposal_typechange,
+                             },
             } 
 
         # Logged in permission must also check that user is activated. 
@@ -337,6 +341,17 @@ class Connector:
             template.make_html_proposal()
             self.do_footer()
 
+    def proposal_typechange(self, proposalid, proposal=None):
+        ### API -- typechange -- change the justification type
+        if 'type' in self.fields:
+            if (self.fields['type'] == "Website Justification"):
+                cpss.db.justification_type_set(proposalid, 0)
+                cpss.db.justification_delete_data(proposalid)
+            elif (self.fields['type'] == "LaTeX Template"):
+                cpss.db.justification_type_set(proposalid, 1)
+        self.do_header(refresh=("view/%s" % proposalid))
+        self.do_footer()
+
     def finalpdf(self, propid, proposal=None):
         ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
         ###                    directly to user.
@@ -353,7 +368,6 @@ class Connector:
             cpss.req.headers_out.add('Content-Length', str(len(pdf)))
             cpss.req.content_type='application/pdf'
             cpss.w(pdf)
-
                 
     def Root(self):
         self.do_header()
@@ -571,27 +585,6 @@ class Connector:
                         idtext = ''
                     self.do_header(refresh=pathtext)
                     self.do_footer()
-        ###########    
-        ### API -- typechange -- change the justification type
-        elif (items == 3 and pathstr[1] == "typechange"):
-            if (self.fields.__contains__('type') == True):
-                if (self.fields['type'] == "Website Justification"):
-                    cpss.db.justification_type_set(pathstr[2], 0)
-                    cpss.db.justification_delete_data(pathstr[2])
-
-                    files_dir = (cpss.config['base_directory'] + 
-                                 cpss.config['files_directory'])
-                    prop_dir = files_dir + pathstr[2] + '/justification/'
-
-                    if (os.path.isfile(prop_dir+'justification.pdf') == True):
-                        os.unlink(prop_dir + 'justification.pdf')
-                if (self.fields['type'] == "LaTeX Template"):
-                    cpss.db.justification_type_set(pathstr[2], 1)
-                self.do_header(refresh=("""proposal/edit/%s""" % pathstr[2]))
-                self.do_footer()
-            else:
-                self.do_header(refresh='proposal/')
-                self.do_footer()
         ### API -- pdf -- return sample pdf file
         elif (items == 3 and pathstr[1] == "pdf"):
             # Hack to correctly parse for skip pagelength warning
