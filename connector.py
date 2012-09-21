@@ -10,6 +10,7 @@ from random import choice
 cpss = apache.import_module("cpss")
 
 max_image_size = 1024*1024*14 # 14 MiB
+max_latex_size = 1024*1024*10 # This used to be uploaded pdf, now latex.
 
 class CpssUserErr(Exception):
     def __init__(self, value):
@@ -230,6 +231,10 @@ class Connector:
             'del_just'   : { 'perm' : [login, owner, unlocked],
                              'opt'  : 1,
                              'func' : self.proposal_justification_delete,
+                             },
+            'save'       : { 'perm' : [login, owner, unlocked],
+                             'opt'  : 1,
+                             'func' : self.proposal_data_save,
                              },
             }
         
@@ -467,8 +472,8 @@ class Connector:
         cpss.db.justification_delete_data(proposalid)
         self.forward('view/'+str(proposalid))
 
-    def proposal_data_save(self, proposalid, section, id, proposal=None):
-        ### ACTION -- submit -- submit data into the db. Replace with API func.
+    def proposal_data_save(self, proposalid, proposal=None):
+        ### ACTION -- submit -- submit data into the db.
         template = cpss.Template.Template(proposal, proposalid, False)
 
         fields = dict(self.fields)
@@ -476,36 +481,27 @@ class Connector:
 
         if (section == 'image'):
             if ('id' in fields):
-                fname = template.process_image(fields)
+                fname = fields['file'].filename
                 image_data = fields['file'].file.read()
                 if (len(image_data) > max_image_size):
-                    self.do_header()
-                    cpss.w(cpss.text.error_ps_large)
-                    self.do_footer()
+                    raise CpssUserErr(cpss.text.error_ps_large)
                 else:
                     cpss.db.images_update(proposalid, fname, 
                        fields['id'], image_data)
-                    self.do_header(refresh='view/' + str(proposalid))
+                    self.forward('view/' + str(proposalid))
             else:
-                self.do_header(refresh="proposal/")
+                raise CpssUserErr("Improperly formatted data for saving.")
         elif (section == 'justification'):
-            pdf_data = fields['file'].file.read()
-            if (len(pdf_data) > (1024*1024*10)):
-                self.do_header()
-                cpss.w(cpss.text.error_latex_large)
-                self.do_footer()
+            latex_data = fields['file'].file.read()
+            if (len(latex_data) > (max_latex_size)):
+                raise CpssUserErr(cpss.text.error_latex_large)
             else:
-                cpss.db.justification_add_update(pathstr[2], pdf_data)
-                self.do_header(refresh=pathtext)
+                cpss.db.justification_add_update(proposalid, latex_data)
+                self.forward('view/' + str(proposalid))
         else:
-            fields = template.process_fields(section, fields,
-                                             pathstr[2])
-            if (self.fields.__contains__('id') == True):
-                idtext = "&id=%s" % self.fields['id']
-            else:
-                idtext = ''
-            self.do_header(refresh=pathtext)
-            self.do_footer()
+            fields = template.process_fields(section, fields, proposalid, 
+                                             proposal)
+            self.forward('view/' + str(proposalid))
 
     def finalpdf(self, propid, proposal=None):
         ### API -- finalpdf -- return the final pdf -- REWRITE to pass file

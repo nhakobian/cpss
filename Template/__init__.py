@@ -386,12 +386,14 @@ class Template:
                     pdf = 'selected'
 
                 nodata = ("""<br><form enctype="multipart/form-data" 
-                                       method="post" action="proposal/edit/%s?action=submit&section=justification">
+                                       method="post" action="save/%s">
+                                 <input type="hidden" name="section" 
+                                        value="justification"></input>
                                  <input type="file" name="file"></input>
                                  <input type="submit" name="update" 
                                         value="Submit"/>
                                  </form>""" % str(self.propid))
-                delete = ("""<a href="proposal/edit/%s?action=delete&section=justification">
+                delete = ("""<a href="del_just/%s">
                              Delete Uploaded LaTeX Justification</a>""" % 
                           str(self.propid))
 
@@ -618,14 +620,16 @@ class Template:
             return buf
                 
     def html_entry_edit(self, groups, keys, propid, id=False):
-        pathtext = 'proposal/edit/%s' % propid
-        if (id == False):
-            idtext = ''
-        else:
-            idtext = ('&id=%s' % id)
-        self.req.write("""<table><form enctype="multipart/form-data"
-        action='%s?action=submit&section=%s%s' method='post' name="form">""" %
-                       (pathtext, groups[0][keys[0]][0]['section'], idtext))
+        cpss.w("""<table><form enctype="multipart/form-data"
+                               action='save/%s' method='post' name="form">""" %
+               str(propid))
+
+        cpss.w("""<input type="hidden" name="section" value="%s"></input>""" %
+               groups[0][keys[0]][0]['section'])
+        if (id != False):
+            cpss.w("""<input type="hidden" name="id" value="%s"></input>""" %
+                   str(id))
+
         for line in keys:
             for lines in groups:
                 if (id != False):
@@ -649,30 +653,31 @@ class Template:
                                  '#' + entry['fieldname']))
 
                         if (entry['error'] == ''):
-                            self.req.write("""<tr><td class="label">%s:</td>
-                                       <td class="data">%s</td>
-                                       <td class="valid">%s</td></tr>""" %
-                                       (name, entry['html'], ''))
+                            cpss.w("""<tr><td class="label">%s:</td>
+                                      <td class="data">%s</td>
+                                      <td class="valid">%s</td></tr>""" %
+                                   (name, entry['html'], ''))
                         else:
-                            self.req.write("""<tr><td class="label">%s:</td>
-                                       <td class="data">%s</td>
-                                       <td class="error">%s</td></tr>""" %
-                                       (name, entry['html'], entry['error']))
-        self.req.write("""</table><center><input id="submit"
-                       type='submit' value='Save Changes'></ center></form>""")
+                            cpss.w("""<tr><td class="label">%s:</td>
+                                      <td class="data">%s</td>
+                                      <td class="error">%s</td></tr>""" %
+                                   (name, entry['html'], entry['error']))
+        cpss.w("""</table><center><input id="submit" type='submit' 
+                  value='Save Changes'></center></form>""")
 
     def html_image_view(self, propid, image, unlocked):
         if (image['file'] == '') and unlocked:
-            cpss.w("""<tr><form enctype="multipart/form-data"
-                      action="proposal/edit/%s?action=submit&section=image&id=%s"
-                      method="post">""" % (str(propid), image['numb']))
             cpss.w("""
-                <td><input type="file" name="file">
-                    </input><input type="submit" name="update"
-                                         value="Submit"/>
+                <tr><form enctype="multipart/form-data" action="save/%(prop)s"
+                             method="post">
+                <td><input type="hidden" name="section" value="image"></input>
+                    <input type="hidden" name="id" value="%(id)s"></input>
+                    <input type="file" name="file"></input>
+                    <input type="submit" name="update" value="Submit"/>
                 </td><td></td><td>
-                <a href="multi_del/%s/image/%s">Delete</a>
-                </td></tr></form>""" % (str(propid), image['numb']))
+                <a href="multi_del/%(prop)s/image/%(id)s">Delete</a>
+                </td></tr></form>""" % {'prop' : str(propid),
+                                        'id'   : image['numb']})
         else:
             fname = image['file']
             fname = fname.split('/')
@@ -705,9 +710,9 @@ class Template:
                 new_group.append(entry)
         return new_group
 
-    def process_fields(self, section_choose, fields, propid):
-        #Pop out any field whose name begins with an underscore and do other
-        #cruddy processing
+    def process_fields(self, section_choose, fields, propid, proposal):
+        # Pop out any field whose name begins with an underscore and do other
+        # cruddy processing
         for field in fields.keys():
             # Due to change in the usage of FieldStorage, this is put in here
             # to filter out "empty" items. This will correctly set their 
@@ -724,7 +729,7 @@ class Template:
                     fields[field[1:]] = fields[field]
                     fields.pop(field)
 
-        if (fields.__contains__('numb') == False):
+        if 'numb' not in fields:
             id = False
         else:
             id = fields.pop('numb')
@@ -736,13 +741,12 @@ class Template:
                 do_section = section
                 break
         if (valid != True):
-            self.req.write("""This section does not exist. Please choose
-            another. If you believe this is in error,
-            please contact the administration.""")
-            return
+            raise cpss.connector.CpssUserErr("""This section does not exist. 
+                  Please choose another. If you believe this is in error, 
+                  please contact the site administrator.""")
 
-        #Collapse along line numbers and return value matching id.
-        final_group = None #defining this pre loop so it exists post-loop.
+        # Collapse along line numbers and return value matching id.
+        final_group = None # defining this pre loop so it exists post-loop.
         for group in do_section['data']:
             final_group = self.collapse_lines(group)
             if (id == False):
@@ -778,25 +782,9 @@ class Template:
             else:
                 data_field['data'] = None
 
-        cpss.db.proposal_tagset(do_section['table'], propid,
-                                        final_group, id=id)
+        cpss.db.proposal_tagset(proposal[do_section['table']], propid, 
+                                final_group, id=id)
 
-    def process_image(self, fields):
-        if (fields['file'].filename != ''):
-
-            files_dir = (cpss.config['base_directory'] +
-                         cpss.config['files_directory'])
-            prop_dir = files_dir + self.propid + '/'
-            
-            if (os.path.isdir(prop_dir) == False):
-                os.mkdir(prop_dir)
-            if (os.path.isdir(prop_dir+'justification/') == False):
-                os.mkdir(prop_dir+'justification/')
-
-            return fields['file'].filename
-        else:
-            return ''
-        
     def element(self, element, edit=False, view=False):
         if (element.__contains__('fieldtype') == False):
             element['fieldtype'] = None
