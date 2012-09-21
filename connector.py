@@ -9,6 +9,14 @@ from random import choice
 
 cpss = apache.import_module("cpss")
 
+max_image_size = 1024*1024*14 # 14 MiB
+
+class CpssUserErr(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
 class Connector:
     def __init__(self):
         #Parse the GET/POST fields
@@ -30,6 +38,9 @@ class Connector:
     def do_footer(self):
         cpss.page.footer()
 
+    def forward(self, url, local=True):
+        cpss.page.forward(url, local)
+
     def Dispatch(self, pathstr):
         cpss.session["random"] = self.randomcode()
 
@@ -44,7 +55,7 @@ class Connector:
             (pathstr[0] == cpss.options['maint_key'])):
             cpss.session['maint_allow'] = True
             cpss.session.save()
-            self.do_header(refresh='')
+            self.forward('')
             return apache.OK
 
         if (cpss.options['maint_mode'] == '2'):
@@ -54,8 +65,7 @@ class Connector:
                 # mode message.
                 if (cpss.session['authenticated'] == True):
                     cpss.session.delete()
-                    self.do_header(refresh='')
-                    self.do_footer()
+                    self.forward('')
                     return apahe.OK
                 else:
                     self.do_header()
@@ -71,8 +81,7 @@ class Connector:
 
         def login(params, kwparams):
             if cpss.session['authenticated'] != True:
-                self.do_header(refresh='login/?redir=' + cpss.req.path_info)
-                self.do_footer()
+                self.forward('login/?redir=' + cpss.req.path_info)
                 return None
             if cpss.session['activated'] != '0':
                 self.Activate()
@@ -284,7 +293,12 @@ class Connector:
                 elif result == None:
                     return apache.OK
 
-        item['func'](*params, **kwparams)
+        try:
+            item['func'](*params, **kwparams)
+        except CpssUserErr as error:
+            self.do_header()
+            cpss.w(error.value)
+            self.do_footer()
 
         return apache.OK
 
@@ -308,18 +322,16 @@ class Connector:
         if cpss.options['cycle_' + prop_type] != '':
             cycle = cpss.db.cycle_info(cpss.options['cycle_' + prop_type])
             if cycle['create'] != 1:
-                self.do_header(refresh="list/")
-                self.do_footer()    
+                self.forward('list')
                 return
 
             template = cpss.Template.Template(cycle, None, True, Fetch=False)
             propno = cpss.db.proposal_add(
                 cycle, cpss.session['username'], template.tempclass.tables)
-            self.do_header(refresh="list")
-            self.do_footer()
-            pass
+            self.forward('list')
         else:
-            self.do_404()
+            raise CpssUserErr("""No %s proposals are being accepted at this 
+                                 time.""" % prop_type)
 
     def proposal_delete(self, proposalid, proposal=None):
         ### API -- delete -- delete the whole proposal 
@@ -329,8 +341,7 @@ class Connector:
             cpss.db.proposal_delete(
                 cpss.session['username'], proposalid, template.tables, 
                 proposal)
-            self.do_header(refresh="list")
-            self.do_footer()
+            self.forward('list')
             return
 
         # In this case proposal['proposal'] is the name of the 
@@ -344,18 +355,18 @@ class Connector:
 
     def proposal_view(self, proposalid, proposal=None):
         ### API -- view -- displays proposal, editable if unlocked
-            self.do_header()
+        self.do_header()
 
-            if (proposal['pdf_justification'] == 1):
-                justification = True
-            else:
-                justification = False
+        if (proposal['pdf_justification'] == 1):
+            justification = True
+        else:
+            justification = False
                 
-            template = cpss.Template.Template(proposal, proposalid, True, 
-                          justification=justification)
+        template = cpss.Template.Template(proposal, proposalid, True, 
+                                          justification=justification)
 
-            template.make_html_proposal()
-            self.do_footer()
+        template.make_html_proposal()
+        self.do_footer()
 
     def proposal_typechange(self, proposalid, proposal=None):
         ### API -- typechange -- change the justification type
@@ -365,8 +376,7 @@ class Connector:
                 cpss.db.justification_delete_data(proposalid)
             elif (self.fields['type'] == "LaTeX Template"):
                 cpss.db.justification_type_set(proposalid, 1)
-        self.do_header(refresh=("view/%s" % proposalid))
-        self.do_footer()
+        self.forward("view/%s" % proposalid)
 
     def proposal_edit(self, proposalid, section, id=False, proposal=None):
         ### ACTION -- edit
@@ -394,19 +404,16 @@ class Connector:
                     verify = False
 
         if verify == False:
-            self.do_header()
-            cpss.w("""This section does not exist or cannot carry any more 
-                      rows of data.""")
-            self.do_footer()
-            return
+            raise CpssUserErr("""This section does not exist or cannot carry 
+                                 any more rows of data.""")
 
         if (section == 'image'):
             id = cpss.db.images_add(proposalid)
-            self.do_header(refresh='view/' + proposalid)
+            self.forward('view/' + proposalid)
         else:
             id = cpss.db.proposal_table_addrow(proposal[tablename], proposalid,
                                                numb=True)
-            self.do_header(refresh='edit/%s/%s/%s' % (proposalid, section, id))
+            self.forward('edit/%s/%s/%s' % (proposalid, section, id))
 
     def proposal_multi_delete(self, proposalid, section, id, proposal=None):
         ### ACTION -- delete -- delete entry from section (images, author, 
@@ -427,10 +434,7 @@ class Connector:
                     verify = False
 
         if verify == False:
-            self.do_header()
-            cpss.w("""This section does not exist.""")
-            self.do_footer()
-            return
+            raise CpssUserErr("This section does not exist.")
 
         if (section == 'image'):
             image = cpss.db.images_list(proposalid, id)
@@ -451,31 +455,65 @@ class Connector:
                                                    proposalid, numb=id)
             
         if (status == True):
-            self.do_header(refresh='view/' + str(proposalid))
-            self.do_footer()
+            self.forward('view/' + str(proposalid))
         elif (status == False):
-            self.do_header()
-            cpss.w("""You must have at least one value in the %s section.""" % 
-                   section_name)
-            self.do_footer()
+            raise CpssUserErr(
+                "You must have at least one value in the %s section." % 
+                section_name)
         elif (status == None):
-            self.do_header()
-            cpss.w("""Cannot delete non-existant item.""")
-            self.do_footer()
+            raise CpssUserErr("Cannot delete non-existant item.")
 
     def proposal_justification_delete(self, proposalid, proposal=None):
         cpss.db.justification_delete_data(proposalid)
-        self.do_header(refresh='view/'+str(proposalid))
+        self.forward('view/'+str(proposalid))
+
+    def proposal_data_save(self, proposalid, section, id, proposal=None):
+        ### ACTION -- submit -- submit data into the db. Replace with API func.
+        template = cpss.Template.Template(proposal, proposalid, False)
+
+        fields = dict(self.fields)
+        section = fields.pop('section')
+
+        if (section == 'image'):
+            if ('id' in fields):
+                fname = template.process_image(fields)
+                image_data = fields['file'].file.read()
+                if (len(image_data) > max_image_size):
+                    self.do_header()
+                    cpss.w(cpss.text.error_ps_large)
+                    self.do_footer()
+                else:
+                    cpss.db.images_update(proposalid, fname, 
+                       fields['id'], image_data)
+                    self.do_header(refresh='view/' + str(proposalid))
+            else:
+                self.do_header(refresh="proposal/")
+        elif (section == 'justification'):
+            pdf_data = fields['file'].file.read()
+            if (len(pdf_data) > (1024*1024*10)):
+                self.do_header()
+                cpss.w(cpss.text.error_latex_large)
+                self.do_footer()
+            else:
+                cpss.db.justification_add_update(pathstr[2], pdf_data)
+                self.do_header(refresh=pathtext)
+        else:
+            fields = template.process_fields(section, fields,
+                                             pathstr[2])
+            if (self.fields.__contains__('id') == True):
+                idtext = "&id=%s" % self.fields['id']
+            else:
+                idtext = ''
+            self.do_header(refresh=pathtext)
+            self.do_footer()
 
     def finalpdf(self, propid, proposal=None):
         ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
         ###                    directly to user.
         pdf = cpss.db.pdf_get_data(propid)
         if (len(pdf) == 0):
-            self.do_header()
-            cpss.w("""This proposal is unsubmitted. Please submit it before
-                      attempting to view.""")
-            self.do_footer()
+            raise CpssUserErr("""This proposal is unsubmitted. Please submit 
+                                 it before attempting to view.""")
         else:
             cpss.req.headers_out.add('Content-Disposition',
                                      'attachment; filename=%s.pdf' % 
@@ -541,56 +579,8 @@ class Connector:
         action = self.fields.__contains__('action')
         items = len(pathstr)
 
-        ### ACTION -- submit -- submit data into the db. Replace with API func.
-        if (action and (self.fields['action'] == 'submit')):
-            pathtext = ""
-            for a in pathstr:
-                pathtext += a + '/'
-            if (self.fields.__contains__('section') == False):
-                self.do_header(refresh=pathtext)
-                self.do_footer()
-            else:
-                template = cpss.Template.Template(result['template'],
-                              result['cyclename'], pathstr[2], False)
-
-                fields = dict(self.fields)
-                fields.pop('action')
-                section = fields.pop('section')
-
-                if (section == 'image'):
-                    if (self.fields.__contains__('id') == True):
-                        fname = template.process_image(fields)
-                        image_data = fields['file'].file.read()
-                        if (len(image_data) > (1024*1024*14)):
-                            self.do_header()
-                            cpss.w(cpss.text.error_ps_large)
-                            self.do_footer()
-                        else:
-                            cpss.db.images_update(pathstr[2], fname, 
-                               fields['id'], image_data)
-                            self.do_header(refresh=pathtext)
-                    else:
-                        self.do_header(refresh="proposal/")
-                elif (section == 'justification'):
-                    pdf_data = fields['file'].file.read()
-                    if (len(pdf_data) > (1024*1024*10)):
-                        self.do_header()
-                        cpss.w(cpss.text.error_latex_large)
-                        self.do_footer()
-                    else:
-                        cpss.db.justification_add_update(pathstr[2], pdf_data)
-                        self.do_header(refresh=pathtext)
-                else:
-                    fields = template.process_fields(section, fields,
-                                                     pathstr[2])
-                    if (self.fields.__contains__('id') == True):
-                        idtext = "&id=%s" % self.fields['id']
-                    else:
-                        idtext = ''
-                    self.do_header(refresh=pathtext)
-                    self.do_footer()
         ### API -- pdf -- return sample pdf file
-        elif (items == 3 and pathstr[1] == "pdf"):
+        if (items == 3 and pathstr[1] == "pdf"):
             # Hack to correctly parse for skip pagelength warning
             if pathstr[2][-1] == "i":
                 ignore_pagelength = True

@@ -1,16 +1,20 @@
 from mod_python import apache
 cpss = apache.import_module("cpss")
 
-def header(login=False, refresh=None, logon=False):
+
+def forward(url, local=True):
+    if local == True:
+        url = cpss.config['html_base'] + url
+
+    cpss.req.headers_out['location'] = url
+    cpss.req.status = apache.HTTP_MOVED_TEMPORARILY
+    raise apache.SERVER_RETURN, apache.OK
+
+def header(login=False, logon=False):
     logout_bar = [["Login", "login"], ["Help","help"], 
                   ["Create Account","create"]]
     login_bar =  [["Proposals", "list"], ["User Info","user"],
                   ["Help","help"], ["Logout", "logout"]]
-
-    if (refresh != None):
-        cpss.req.headers_out['location'] = cpss.config['html_base']+refresh
-        cpss.req.status = apache.HTTP_MOVED_TEMPORARILY
-        raise apache.SERVER_RETURN, apache.OK
 
     cpss.req.headers_out['Expires'] = 'Thu, 19 Nov 1981 09:52:00 GMT'
     cpss.req.headers_out['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0'

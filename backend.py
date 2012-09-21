@@ -321,15 +321,15 @@ class Backend:
                         'propid' : self.literal(propid)})
         res = cursor.fetchall()
 
-        # Cannot delete last entry in table.
-        if (len(res) == 1):
-            cursor.close()
-            return False
         # Make sure entry exists in table.
         numbs = map(lambda x: x['numb'], res)
         if int(numb) not in numbs:
             cursor.close()
             return None
+        # Cannot delete last entry in table.
+        if (len(res) == 1):
+            cursor.close()
+            return False
             
         cursor.execute("""DELETE FROM `%(table)s`
                           WHERE `proposalid`=%(prop)s 
