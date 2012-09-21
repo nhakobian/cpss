@@ -38,12 +38,13 @@ class Template:
         self.error = False
         self.propid = propid
         self.tmpLinescan = {} # For enhanced error checking routine.
-        if (view == False):
-            self.view = False
-            self.edit = True
-        else:
+
+        if view == True:
             self.view = True
             self.edit = False
+        else:
+            self.view = False
+            self.edit = True
         
         template = self.cycleinfo['template']
         if (template == 'template10'):
@@ -69,9 +70,26 @@ class Template:
 
         if (Fetch == True):
             self.proposal = cpss.db.proposal_get(self.tempclass.tables,
-                                                         cyclename, propid) 
+                                                         cycleinfo, propid) 
             # Merge database data with template style
             self.data_merge()
+
+    def unlocked(self):
+        # Identical to unlocked in connector.py. Perhaps find a way to call
+        # that code?
+        propinfo = self.cycleinfo
+        if 'lock' not in propinfo:
+            return False
+
+        if propinfo['lock'] == 1:
+            return False
+        elif propinfo['lock'] == 0:
+            return True
+        elif propinfo['lock'] == None:
+            if propinfo['create'] == 1:
+                return True
+            else:
+                return False
 
     def calc_hours(self):
         for section in self.sections:
@@ -181,6 +199,221 @@ class Template:
                     buff[segment['fieldname']] = segment['data']
         return buff
 
+    def make_html_header(self):
+        ###Begin Page Header
+        self.req.write("""<div class="navbar, propheader">""")
+        if (self.unlocked() != True):
+            self.req.write("""<ul id="navlist">
+            <li><a href="%s">Current Proposal</a></li>
+            <li><a href="%s">View Submitted PDF</a></li>""" %
+                           ("view/" + str(self.propid),
+                            "finalpdf/" + str(self.propid)))
+        elif (self.cycleinfo['status'] == 0):
+            self.req.write("""<ul id="navlist">
+            <li><a href="%s">Current Proposal</a></li>
+            <li><a href="%s">View Draft as PDF</a></li>
+            <li><a href="%s">Submit Proposal</a></li></ul>""" %
+                           ("view/" + str(self.propid),
+                            "pdf/" + str(self.propid),
+                            "submit/" + str(self.propid)))
+        else:
+            self.req.write("""<ul id="navlist">
+            <li><a href="%s">Current Proposal</a></li>
+            <li><a href="%s">View Draft as PDF</a></li>
+            <li><a href="%s">View Submitted PDF</a></li>
+            <li><a href="%s">Re-Submit Proposal</a></li></ul>""" %
+                           ("view/" + str(self.propid),
+                            "pdf/" + str(self.propid),
+                            "finalpdf/" + str(self.propid),
+                            "submit/" + str(self.propid)))
+
+        self.req.write("""</div>""")
+        ###End Page Header
+
+    def make_html_proposal(self):
+        self.make_html_header()
+        unlocked = self.unlocked()
+
+        all_head = (
+            """<div id="editlist"><p> %(name)s &nbsp;
+               <a href="help_small/%(section)s" 
+               onClick="return popup(this, 'help')">
+               [?]</a>""")
+        general_edit = (
+            """<a href=
+               "proposal/edit/%(propid)s?action=edit&section=%(section)s">
+               (edit)</a></p>""")
+        repeat_add = (
+            """<a href=
+               "proposal/edit/%(propid)s?action=add&section=%(section)s">
+               %(addtext)s</a></p>""")
+        repeat_eddel = (
+            """<a href="proposal/edit/%(propid)s?action=edit&section=%(section)s&id=%(id)s">edit</a> |
+               <a href="proposal/edit/%(propid)s?action=delete&section=%(section)s&id=%(id)s">delete</a>""")
+
+        post_author = (
+            """<div id="editlist">
+                 <table><tr>
+                   <td style="width:50%%;text-align:center;font-weight:bold;">
+                     Advisor must send a supporting letter if Thesis is 
+                     checked. See Instructions.</td>
+                 </tr></table>
+               </div>""")
+        post_source = (
+            """<div id="editlist">
+                 <table>
+                   <tr>
+                     <th style="width:50%%;text-align:center;
+                                font-weight:bold;">
+                       Total Hours: %(hours)s
+                       <i><a href="help_small/tot_hours" 
+                             onClick="return popup(this, 'help')">
+                          (Why is this number large?)</a></i>
+                     </th>
+                   </tr>
+                   <tr><td>
+                     <sup>1</sup>Requests for A and B-configuration 
+                     observations must include a description of the 
+                     calibration strategy in the technical justification. 
+                     Please see the <a href="http://cedarflat.mmarray.org/observing/doc/instrument_desc.html" 
+                     target="_blank"> instrument description</a> for more
+                     details.
+                   </td></tr>
+                 </table>
+               </div>""")
+        pre_image = (
+            """<div id="editlist"><p>Image Attachments
+                 <a href="help_small/%(section)s" 
+                    onClick="return popup(this, 'help')">
+                    [?]</a>""")
+        edit_image = (
+            """<a href="proposal/edit/%(propid)s?action=add&section=image">
+               (add)</a></p>""") 
+
+        for section in self.sections:
+            if (self.justification == True):
+                # If true, we have PDF justifications which are
+                # handled differently.
+                if (section['section'] == 'scientific_justification'):
+                    continue
+                if (section['section'] == 'technical_justification'):
+                    continue
+
+            if (section['type'] == 'general'):
+                groups = section['data']
+                keys = groups[0].keys()
+                keys.sort()
+
+                cpss.w(all_head % {'name'    : section['name'], 
+                                   'section' : section['section']})
+                if unlocked:
+                    cpss.w(general_edit % {'propid' : self.propid, 
+                                           'section': section['section']})
+
+                self.html_entry_view(groups, keys)                
+            elif (section['type'] == 'repeat'):
+                groups = section['data']
+                keys = groups[0].keys()
+                keys.sort()
+
+                addtext = "(add)"
+                #The IsAuthor lines are part of the crude hack to make
+                #Author#1 the PI. Revision 46
+                IsAuthor = False
+                if (section['section'] == 'author'):
+                    addtext = "(add additional author)"
+                    IsAuthor = True
+                elif (section['section'] == 'source'):
+                    addtext = "(add additional source)"
+
+                cpss.w(all_head % {'name'    : section['name'], 
+                                   'section' : section['section']})
+
+                if unlocked:
+                    cpss.w(repeat_add % { 'propid'  : self.propid, 
+                                          'section' : section['section'], 
+                                          'addtext' : addtext})
+                for lines in groups:
+                    if unlocked == False:
+                        break
+                    lines = {keys[0] : lines[keys[0]]}
+                    keys = [keys[0]]
+                    lines[keys[0]] += [self.element({
+                        'name' : '&nbsp;',
+                        'data' : repeat_eddel % {
+                            'propid'  : self.propid,
+                            'section' : section['section'],
+                            'id'      : lines[keys[0]][0]['data'],
+                            },
+                        }, view=True)]
+
+                self.html_entry_view(groups, keys, IsAuthor=IsAuthor)
+                if (section['section'] == 'author'):
+                    cpss.w(post_author)
+
+                if (section['section'] == 'source'):
+                    hours = self.calc_hours()
+                    if hours == -1:
+                        hours = "N/A"
+                    cpss.w(post_source % {'hours' : hours})
+
+            elif (section['type'] == 'image'):
+                cpss.w(pre_image % { 'section' : section['section'] })
+                if unlocked:
+                    cpss.w(edit_image % { 'propid' : self.propid} )
+
+                result = cpss.db.images_list(self.propid)
+
+                if (len(result) == 0):
+                    cpss.w("""<table><tr><td>None</td></tr></table>""")
+                else:
+                    cpss.w("""<span style="font-size:small;">Please use the 
+                    sample code provided and insert it in your justification 
+                    section where you would like the image to appear. Only 
+                    Postscript (ps and eps) image attachments are supported.
+                    </span>""")
+
+                    cpss.w("""<table><tr><th>File Name</th><th>
+                              Sample Code</th><th>&nbsp;</tr>""")
+
+                    for image in result:
+                        self.html_image_view(self.propid, image)
+                    cpss.w("""</table>""")
+            cpss.w("""</div><br>""")
+
+            if (section['section'] == 'prior_obs'):
+                if self.is_key_project == False:
+                    if (self.justification == False):
+                        web = 'selected'
+                        pdf = ''
+                    else:
+                        web = ''
+                        pdf = 'selected'
+                    cpss.w(cpss.text.html_just_normal % (self.propid,web, pdf))
+                else:
+                    cpss.w(cpss.text.html_just_key)
+
+                if (self.justification == True):
+                    cpss.w("""<br><form enctype="multipart/form-data"
+                    action="proposal/edit/%s?action=submit&section=justification"
+                    method="post">""" % (str(self.propid)))
+
+                    data = cpss.db.justification_get_data(
+                        self.propid)
+
+                    if (data == None):
+                        cpss.w("""<input type="file" name="file"></input>
+                        <input type="submit" name="update" value="Submit"/>
+                        </form>""")
+                    else:
+                        cpss.w("""
+                        <a href="%s?action=delete&section=justification">
+                        Delete Uploaded LaTeX Justification</a>
+                        </form>""" % ('proposal/edit/'+ str(self.propid)))
+                    
+                cpss.w("""</td></tr></table></div><br>""")
+        cpss.w("</div>")
+
     def make_html(self, section_choose=False, id=False):
         #Validate section
         if (section_choose != False):
@@ -197,200 +430,25 @@ class Template:
         else:
             do_sections = self.sections
 
-        fetch = cpss.db.proposal_status(self.propid)
+        unlocked = self.unlocked()
 
-        ###Begin Page Header
-        self.req.write("""<div class="navbar, propheader">""")
-        if (self.cyclename != cpss.db.options['cyclename']):
-            self.req.write("""<ul id="navlist">
-            <li><a href="%s">Current Proposal</a></li>""" %
-                           ("proposal/edit/" + str(self.propid)))
-        elif (fetch['status'] == 0):
-            self.req.write("""<ul id="navlist">
-            <li><a href="%s">Current Proposal</a></li>
-            <li><a href="%s">View Draft as PDF</a></li>
-            <li><a href="%s">Submit Proposal</a></li></ul>""" %
-                           ("proposal/edit/" + str(self.propid),
-                            "proposal/pdf/" + str(self.propid),
-                            "proposal/submit/" + str(self.propid)))
-        else:
-            self.req.write("""<ul id="navlist">
-            <li><a href="%s">Current Proposal</a></li>
-            <li><a href="%s">View Draft as PDF</a></li>
-            <li><a href="%s">View Submitted PDF</a></li>
-            <li><a href="%s">Re-Submit Proposal</a></li></ul>""" %
-                           ("proposal/edit/" + str(self.propid),
-                            "proposal/pdf/" + str(self.propid),
-                            "proposal/finalpdf/" + str(self.propid),
-                            "proposal/submit/" + str(self.propid)))
-
-        self.req.write("""</div>""")
-
-        ###End Page Header
+        self.make_html_header()
         ###Begin Page Body
 
-        ##If we are viewing the whole proposal:
-        if (section_choose == False):
-            for section in do_sections:
-                if (self.justification == True):
-                    if (section['section'] == 'scientific_justification'):
-                        continue
-                    if (section['section'] == 'technical_justification'):
-                        continue
-
-                if (section['type'] == 'general'):
-                    groups = section['data']
-                    keys = groups[0].keys()
-                    keys.sort()
-
-                    self.req.write("""<div id="editlist"><p>%s&nbsp;
-                    <a href="help_small/%s"
-                    onClick="return popup(this, 'help')">[?]</a>
-                    <a href="proposal/edit/%s?action=edit&section=%s">
-                    (edit)</a></p>""" % (section['name'], section['section'],
-                                         self.propid, section['section']))
-                    self.html_entry_view(groups, keys)                
-                elif (section['type'] == 'repeat'):
-                    groups = section['data']
-                    keys = groups[0].keys()
-                    keys.sort()
-
-                    addtext = "(add)"
-                    #The IsAuthor lines are part of the crude hack to make
-                    #Author#1 the PI. Revision 46
-                    IsAuthor = False
-                    if (section['section'] == 'author'):
-                        addtext = "(add additional author)"
-                        IsAuthor = True
-                    elif (section['section'] == 'source'):
-                        addtext = "(add additional source)"
-
-                    self.req.write("""<div id="editlist"><p>%s&nbsp;
-                    <a href="help_small/%s"
-                    onClick="return popup(this, 'help')">[?]</a>
-                    <a href="proposal/edit/%s?action=add&section=%s">
-                    %s</a></p>""" % (section['name'], section['section'],
-                                     self.propid, section['section'], addtext))
-                    for lines in groups:
-                        pathtext = "proposal/edit/%s" % self.propid
-                        lines = {keys[0] : lines[keys[0]]}
-                        keys = [keys[0]]
-                        lines[keys[0]] += [self.element({'name' : '&nbsp;',
-                                            'data' :
-                     """<a href="%s?action=edit&section=%s&id=%s">edit</a> |
-                     <a href="%s?action=delete&section=%s&id=%s">delete</a>"""%
-                                            (pathtext, section['section'],
-                                             lines[keys[0]][0]['data'],
-                                             pathtext, section['section'],
-                                             lines[keys[0]][0]['data'])},
-                                                       view=True)]
-                    self.html_entry_view(groups, keys, IsAuthor=IsAuthor)
-                    if (section['section'] == 'author'):
-                        self.req.write("""<div id="editlist"><table><tr>
-                                          <td style="width:50%%;
-                                                     text-align:center;
-                                                     font-weight:bold;">
-                                          Advisor must send a supporting
-                                          letter if Thesis is checked.
-                                          See Instructions.
-                                          </td></tr></table></div>""")
-                    if (section['section'] == 'source'):
-                        hours = self.calc_hours()
-                        if hours == -1:
-                            hours = "N/A"
-                        self.req.write("""<div id="editlist"><table><tr>
-                                          <th style="width:50%%;
-                                                     text-align:center;
-                                                     font-weight:bold;">
-                                          Total Hours: %s
-          <i><a href="help_small/tot_hours" onClick="return popup(this, 'help')">(Why is this number large?)</a></i>
-                                          </th></tr>
-<tr><td><sup>1</sup>Requests for A and B-configuration observations must include a description of the calibration strategy in the technical justification. Please see <a href="http://cedarflat.mmarray.org/observing/doc/instrument_desc.html" target="_blank">http://cedarflat.mmarray.org/observing/doc/instrument_desc.html</a>.</td></tr>
-</table></div>""" % hours)
-                elif (section['type'] == 'image'):
-                    self.req.write("""<div id="editlist"><p>
-                    Image Attachments
-                    <a href="help_small/%s"
-                    onClick="return popup(this, 'help')">[?]</a>
-                    <a href="proposal/edit/%s?action=add&section=%s">
-                    (add)</a></p>""" % (section['section'],
-                                        self.propid, 'image'))
-
-                    result = cpss.db.images_list(self.propid)
-
-                    if (len(result) == 0):
-                        self.req.write("""<table><tr><td>None
-                                          </td></tr></table>""")
-                    else:
-                        self.req.write("""<span style="font-size:small;">Please use the sample code provided
-                        and insert it in your justification section where you 
-                        would like the image to appear. Only Postscript (ps and eps)
-                        image attachments are supported.</span>""")
-                        self.req.write("""<table><tr><th>File Name</th><th>
-                                          Sample Code</th><th>&nbsp;</tr>""")
-
-                        for image in result:
-                            self.html_image_view(self.propid, image)
-                        self.req.write("""</table>""")
-
-                self.req.write("""</div><br>""")
-
-
-                if (section['section'] == 'prior_obs'):
-                    if self.is_key_project == False:
-                        if (self.justification == False):
-                            web = 'selected'
-                            pdf = ''
-                        else:
-                            web = ''
-                            pdf = 'selected'
-                        self.req.write(cpss.text.html_just_normal % 
-                                       (self.propid, web, pdf))
-                    else:
-                        self.req.write(cpss.text.html_just_key)
-
-                    if (self.justification == True):
-                        self.req.write("""<br>
-                        <form enctype="multipart/form-data"
-                        action="%s?action=submit&section=justification"
-                        method="post">""" % ('proposal/edit/' +
-                                             str(self.propid)))
-
-                        data = cpss.db.justification_get_data(
-                            self.propid)
-
-                        if (data == None):
-                            self.req.write("""
-                            <input type="file" name="file">
-                            </input><input type="submit" name="update"
-                            value="Submit"/></form>""")
-                        else:
-                            self.req.write("""
-                            <a href="%s?action=delete&section=justification">
-                            Delete Uploaded LaTeX Justification</a>
-                            </form>""" % ('proposal/edit/'+ str(self.propid)))
-                        
-                    self.req.write("""</td></tr></table></div><br>""")
-
-        ##If we are editing one section
-        else:
-            for section in do_sections:
-                if (section['type'] == 'repeat') and (id == False):
-                    self.req.write("""Please return to the proposal screen and
-                    select a valid piece of information to edit.""")
-                    return
-                
-                groups = section['data']
-                keys = groups[0].keys()
-                keys.sort()
-                self.req.write("""<div id="editdata">""")
-                self.req.write("""<p>%s&nbsp;</p>""" % (section['name']))
-                self.html_entry_edit(groups, keys, self.propid, id=id)
-                self.req.write("""</div><br>""")
+        for section in do_sections:
+            if (section['type'] == 'repeat') and (id == False):
+                self.req.write("""Please return to the proposal screen and
+                select a valid piece of information to edit.""")
+                return
+            
+            groups = section['data']
+            keys = groups[0].keys()
+            keys.sort()
+            self.req.write("""<div id="editdata">""")
+            self.req.write("""<p>%s&nbsp;</p>""" % (section['name']))
+            self.html_entry_edit(groups, keys, self.propid, id=id)
+            self.req.write("""</div><br>""")
         ###End Page Body
-
-        ###Begin Page Footer
-        ###End Page Footer
 
     def data_verify(self):
         #Validate section

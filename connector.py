@@ -198,6 +198,10 @@ class Connector:
                              'opt'  : 1,
                              'func' : self.proposal_delete,
                              },
+            'view'       : { 'perm' : [login, owner],
+                             'opt'  : 1,
+                             'func' : self.proposal_view,
+                             },
             } 
 
         # Logged in permission must also check that user is activated. 
@@ -318,6 +322,21 @@ class Connector:
         cpss.page.delete_verify('delete/' + str(proposalid), propinfo['title'])
         self.do_footer()
 
+    def proposal_view(self, proposalid, proposal=None):
+        ### API -- view -- displays proposal, editable if unlocked
+            self.do_header()
+
+            if (proposal['pdf_justification'] == 1):
+                justification = True
+            else:
+                justification = False
+                
+            template = cpss.Template.Template(proposal, proposalid, True, 
+                          justification=justification)
+
+            template.make_html_proposal()
+            self.do_footer()
+
     def finalpdf(self, propid, proposal=None):
         ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
         ###                    directly to user.
@@ -389,18 +408,6 @@ class Connector:
         mail.quit()
 
     def Proposal(self, pathstr):
-        # If this access a specific proposal, verify that it can be accessed
-        # by the user.
-        if len(pathstr) > 2 :
-            result = cpss.db.proposal_fetch(cpss.session['username'], 
-                                            pathstr[2])
-        else:
-            result = None
-        if (result == False):
-            self.do_header(refresh="proposal/")
-            cpss.w("""You do not have access to this proposal.""")
-            self.do_footer()
-            return
 
         action = self.fields.__contains__('action')
         items = len(pathstr)
@@ -585,21 +592,6 @@ class Connector:
             else:
                 self.do_header(refresh='proposal/')
                 self.do_footer()
-        ### API -- edit -- displays editable proposal    
-        elif (items == 3 and pathstr[1] == "edit"):
-            self.do_header()
-
-            if (result['pdf_justification'] == 1):
-                justification = True
-            else:
-                justification = False
-                
-            template = cpss.Template.Template(result['template'], 
-                          result['cyclename'], pathstr[2], True, 
-                          justification=justification)
-
-            template.make_html()
-            self.do_footer()
         ### API -- pdf -- return sample pdf file
         elif (items == 3 and pathstr[1] == "pdf"):
             # Hack to correctly parse for skip pagelength warning

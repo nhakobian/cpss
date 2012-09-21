@@ -221,28 +221,28 @@ class Backend:
         cursor.close()
         return ret
 
-    def proposal_get(self, tables, cyclename, proposalid, subid=False):
+    def proposal_get(self, tables, cycleinfo, proposalid):
         result = {}
         table_list = tables.keys()
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
         for key in table_list:
             if (tables[key]['type'] == 'single'):
                 cursor.execute("""SELECT * 
-                                  FROM `%(cyclename)s`
+                                  FROM `%(table)s`
                                   WHERE `proposalid`=%(propid)s 
-`                                 LIMIT 1""" %
-                               {'cyclename' : self.options[key],
-                                'propid'    : self.literal(proposalid)})
+                                  LIMIT 1""" %
+                               {'table'  : cycleinfo[key],
+                                'propid' : self.literal(proposalid)})
                 temp = cursor.fetchall()
 
                 result[key] = temp
             if (tables[key]['type'] == 'repeat'):
                 cursor.execute("""SELECT * 
-                                  FROM `%(cyclename)s`
+                                  FROM `%(table)s`
                                   WHERE `proposalid`=%(propid)s
                                   ORDER BY `numb`""" %
-                               {'cyclename' : self.options[key],
-                                'propid'    : self.literal(proposalid)})
+                               {'table'  : cycleinfo[key],
+                                'propid' : self.literal(proposalid)})
                 temp = cursor.fetchall()
 
                 result[key] = temp
