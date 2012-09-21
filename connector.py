@@ -210,6 +210,10 @@ class Connector:
                              'opt'  : lambda x: x in [2, 3],
                              'func' : self.proposal_edit,
                              },
+            'multi_add'  : { 'perm' : [login, owner, unlocked],
+                             'opt'  : 2,
+                             'func' : self.proposal_multi_add,
+                             },
             }
 
         # Logged in permission must also check that user is activated. 
@@ -364,6 +368,38 @@ class Connector:
         template.make_html(section_choose=section, id=id)
         self.do_footer()
 
+    def proposal_multi_add(self, proposalid, section, proposal=None):
+        ### ACTION -- add
+        template = cpss.Template.Template(proposal, proposalid, True, 
+                                          Fetch=False)
+
+        # Verify that section exists and can have additional values.
+        verify = False
+        for tempsection in template.sections:
+            if (tempsection['section'] == section):
+                tablename = tempsection['table']
+                if section == 'image':
+                    verify = True
+                elif template.tables[tablename]['type'] == 'repeat':
+                    verify = True
+                else:
+                    verify = False
+
+        if verify == False:
+            self.do_header()
+            cpss.w("""This section does not exist or cannot carry any more 
+                      rows of data.""")
+            self.do_footer()
+            return
+
+        if (section == 'image'):
+            id = cpss.db.images_add(proposalid)
+            self.do_header(refresh='view/' + proposalid)
+        else:
+            id = cpss.db.proposal_table_addrow(proposal[tablename], proposalid,
+                                               numb=True)
+            self.do_header(refresh='edit/%s/%s/%s' % (proposalid, section, id))
+
     def finalpdf(self, propid, proposal=None):
         ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
         ###                    directly to user.
@@ -438,40 +474,9 @@ class Connector:
         action = self.fields.__contains__('action')
         items = len(pathstr)
 
-        ### ACTION -- add
-        if (action and (self.fields['action'] == 'add')):
-            if (self.fields.__contains__('section') == True):
-                section = self.fields['section']
-            else:
-                self.do_header(refresh="proposal/")
-                self.do_footer()
-
-            pathtext = ""
-            for a in pathstr:
-                pathtext += a + '/'
-
-            template = cpss.Template.Template(result['template'],
-               result['cyclename'], pathstr[2], True, Fetch=False)
-
-            for tempsection in template.sections:
-                if (tempsection['section'] == section):
-                    tablename = tempsection['table']
-                else:
-                    #put error here
-                    pass
-
-            if (section == 'image'):
-                id = cpss.db.images_add(pathstr[2])
-                self.do_header(refresh='proposal/edit/' + pathstr[2])
-            else:
-                id = cpss.db.proposal_table_addrow(tablename, pathstr[2],
-                                                   numb=True)
-                self.do_header(refresh =
-                   'proposal/edit/%s/?action=edit&section=%s&id=%s' % 
-                               (pathstr[2], section, id))
         ### ACTION -- delete -- delete entry from section (images, author, 
         ###                     sources, justification)
-        elif (action and (self.fields['action'] == 'delete')):
+        if (action and (self.fields['action'] == 'delete')):
             if (self.fields.__contains__('section') == True):
                 section = self.fields['section']
             else:
