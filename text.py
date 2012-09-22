@@ -408,7 +408,7 @@ help_tothours=r"""
 """
 
 html_just_key=r"""<div id="editlist">
-  <p>Justification Type</p>
+  <a name="type"></a><p>Justification Type</p>
 
   <table>
     <tr>
@@ -430,7 +430,7 @@ html_just_key=r"""<div id="editlist">
 </div>"""
 
 html_just_normal=r"""<div id="editlist">
-  <p>Justification Type</p>
+  <a name="type"></a><p>Justification Type</p>
 
   <table>
     <tr>

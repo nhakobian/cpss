@@ -235,7 +235,7 @@ class Template:
         unlocked = self.unlocked()
 
         all_head = (
-            """<div id="editlist"><p> %(name)s &nbsp;
+            """<div id="editlist"><p><a name="%(section)s"></a>%(name)s &nbsp;
                <a href="help_small/%(section)s" 
                onClick="return popup(this, 'help')">
                [?]</a>""")
@@ -279,7 +279,7 @@ class Template:
                  </table>
                </div>""")
         pre_image = (
-            """<div id="editlist"><p>Image Attachments
+            """<div id="editlist"><p><a name="image"></a>Image Attachments
                  <a href="help_small/%(section)s" 
                     onClick="return popup(this, 'help')">
                     [?]</a>""")
@@ -363,7 +363,7 @@ class Template:
                 if (len(result) == 0):
                     cpss.w("""<table><tr><td>None</td></tr></table>""")
                 else:
-                    cpss.w("""<br><span style="font-size:small;">Please use 
+                    cpss.w("""<span style="font-size:small;">Please use 
                     the sample code provided and insert it in your 
                     justification section where you would like the image to 
                     appear. Only Postscript (ps and eps) image attachments are
@@ -691,10 +691,8 @@ class Template:
             \\end{figure}""" % (editfile))
             if unlocked:
                 delete = (
-                    """<td id="button">
-                       <a href="%s?action=delete&section=image&id=%s">
-                       Delete</a></td>""" % ('proposal/edit'+ str(propid),
-                                        image['numb']))
+                    """<td id="button"><a href="multi_del/%s/image/%s">
+                       Delete</a></td>""" % (str(propid), image['numb']))
             else:
                 delete = "<td></td>"
             cpss.w("""<tr style="border-bottom:1px solid black;"><td>%s</td>
@@ -1066,8 +1064,7 @@ class Template:
                 element['error'] = ''
             if (element['fieldname'] == 'scientific_justification'):
                 element['error'] = ''
-                
-            
+                            
         return element
 
     def escape_underscore(self, data):
@@ -1205,7 +1202,7 @@ class Template:
         out = cover.safe_substitute(propinfo, author_lines=author_lines, 
                                     source_data=source_data, 
                                     propno=carma_propno, 
-                                    semester=self.cyclename)
+                                    semester=self.cycleinfo['cyclename'])
 
         tfile = open(prop_dir + 'latex.tex', 'w')
         tfile.write(out)
@@ -1286,9 +1283,9 @@ class Template:
                 # warn info here
                 if file_send == False:
                     return 1
-                cpss.page.header()
-                self.req.write("Your justification has produced %s pages of output. The proposal system will not accept justification sections that are greater than %s pages long. <a href='%s'>Click here</a> to view your PDF with truncated output." % (num_just_pages, max_pages, "proposal/pdf/" + str(self.propid) + "i"))
-                cpss.page.footer()
+                cpss.connector.do_header()
+                self.req.write("Your justification has produced %s pages of output. The proposal system will not accept justification sections that are greater than %s pages long. <a href='%s'>Click here</a> to view your PDF with truncated output." % (num_just_pages, max_pages, "pdf/" + str(self.propid) + "/skip"))
+                cpss.connector.do_footer()
                 return 1
             num_just_pages = max_pages
 
@@ -1322,7 +1319,6 @@ class Template:
             file = open(propdir + 'justification/' + imdata['file'], 'wb')
             file.write(imdata['ps_data'])
             file.close()
-
 
 class ErrorCheck:
     def __init__(self, value, error_list, tmpLinescan):

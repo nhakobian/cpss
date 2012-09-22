@@ -1,5 +1,5 @@
 <div id="editlist">
-  <p>Justification Type</p>
+  <a name="type"></a><p>Justification Type</p>
 
   <table>
     <tr>

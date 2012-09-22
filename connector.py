@@ -236,6 +236,10 @@ class Connector:
                              'opt'  : 1,
                              'func' : self.proposal_data_save,
                              },
+            'pdf'        : { 'perm' : [login, owner, unlocked],
+                             'opt'  : lambda x: x in [1, 2],
+                             'func' : self.proposal_draft_pdf,
+                             },
             }
         
         # Logged in permission must also check that user is activated. 
@@ -381,7 +385,7 @@ class Connector:
                 cpss.db.justification_delete_data(proposalid)
             elif (self.fields['type'] == "LaTeX Template"):
                 cpss.db.justification_type_set(proposalid, 1)
-        self.forward("view/%s" % proposalid)
+        self.forward("view/%s#type" % proposalid)
 
     def proposal_edit(self, proposalid, section, id=False, proposal=None):
         ### ACTION -- edit
@@ -414,7 +418,7 @@ class Connector:
 
         if (section == 'image'):
             id = cpss.db.images_add(proposalid)
-            self.forward('view/' + proposalid)
+            self.forward('view/' + proposalid + '#image')
         else:
             id = cpss.db.proposal_table_addrow(proposal[tablename], proposalid,
                                                numb=True)
@@ -460,7 +464,7 @@ class Connector:
                                                    proposalid, numb=id)
             
         if (status == True):
-            self.forward('view/' + str(proposalid))
+            self.forward('view/' + str(proposalid) + '#' + section)
         elif (status == False):
             raise CpssUserErr(
                 "You must have at least one value in the %s section." % 
@@ -470,7 +474,7 @@ class Connector:
 
     def proposal_justification_delete(self, proposalid, proposal=None):
         cpss.db.justification_delete_data(proposalid)
-        self.forward('view/'+str(proposalid))
+        self.forward('view/' + str(proposalid) + '#type')
 
     def proposal_data_save(self, proposalid, proposal=None):
         ### ACTION -- submit -- submit data into the db.
@@ -488,7 +492,7 @@ class Connector:
                 else:
                     cpss.db.images_update(proposalid, fname, 
                        fields['id'], image_data)
-                    self.forward('view/' + str(proposalid))
+                    self.forward('view/' + str(proposalid) + '#image')
             else:
                 raise CpssUserErr("Improperly formatted data for saving.")
         elif (section == 'justification'):
@@ -497,11 +501,40 @@ class Connector:
                 raise CpssUserErr(cpss.text.error_latex_large)
             else:
                 cpss.db.justification_add_update(proposalid, latex_data)
-                self.forward('view/' + str(proposalid))
+                self.forward('view/' + str(proposalid) + '#type')
         else:
             fields = template.process_fields(section, fields, proposalid, 
                                              proposal)
-            self.forward('view/' + str(proposalid))
+            self.forward('view/' + str(proposalid) + '#' + section)
+
+    def proposal_draft_pdf(self, proposalid, skipwarn=False, proposal=None):
+        ### API -- pdf -- return sample pdf file
+        # Hack to correctly parse for skip pagelength warning
+        if skipwarn == False:
+            ignore_pagelength = False
+        elif skipwarn == 'skip':
+            ignore_pagelength = True
+
+        # Update the date field to the current date:
+        cpss.db.proposal_tagset(proposal['proposal'], proposalid, 
+                                [{'fieldname':'date', 
+                                  'fieldtype':'date'}])
+
+        if (proposal['pdf_justification'] == 0):
+            justification = False
+        else:
+            justification = True
+
+        template = cpss.Template.Template(proposal, proposalid, True, 
+                                          justification=justification)
+        retval = template.latex_generate(proposalid, 
+                                         ignore_pagelength=ignore_pagelength)
+
+        if (retval != 0) and (retval != 1):
+            self.do_header()
+            cpss.w("""<b>A LaTeX error occured. The output is displayed 
+                   below:</b><br><br>%s""" % (self.lines2text(retval[7:])))
+            self.do_footer()
 
     def finalpdf(self, propid, proposal=None):
         ### API -- finalpdf -- return the final pdf -- REWRITE to pass file
@@ -575,35 +608,8 @@ class Connector:
         action = self.fields.__contains__('action')
         items = len(pathstr)
 
-        ### API -- pdf -- return sample pdf file
-        if (items == 3 and pathstr[1] == "pdf"):
-            # Hack to correctly parse for skip pagelength warning
-            if pathstr[2][-1] == "i":
-                ignore_pagelength = True
-                pathstr[2] = pathstr[2][:-1]
-            else:
-                ignore_pagelength = False
-
-            # Update the date field to the current date:
-            cpss.db.proposal_tagset('proposal', pathstr[2], 
-                                    [{'fieldname':'date', 'fieldtype':'date'}])
-            if (result['pdf_justification'] == 0):
-                justification = False
-            else:
-                justification = True
-            template = cpss.Template.Template(result['template'], 
-                          result['cyclename'], pathstr[2], True, 
-                          justification=justification)
-            retval = template.latex_generate(pathstr[2], 
-                                          ignore_pagelength=ignore_pagelength)
-
-            if (retval != 0) and (retval != 1):
-                self.do_header()
-                cpss.w("""<b>A LaTeX error occured. The output is displayed 
-                       below:</b><br><br>%s""" % (self.lines2text(retval[7:])))
-                self.do_footer()
         ### API -- submit -- submit the proposal and perform checks.
-        elif (items == 3 and pathstr[1] == 'submit'):
+        if (items == 3 and pathstr[1] == 'submit'):
             if (self.fields.__contains__('sub_prop') == True):
                 if (self.fields['sub_prop'] == 'Submit Proposal'):
                     # Update the date field to the current date:
