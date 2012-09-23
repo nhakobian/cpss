@@ -11,7 +11,7 @@ cpss = apache.import_module("cpss")
 
 max_image_size = 1024*1024*14 # 14 MiB
 max_latex_size = 1024*1024*10 # This used to be uploaded pdf, now latex.
-
+max_pdf_size = 1024*1024*14
 class CpssUserErr(Exception):
     def __init__(self, value):
         self.value = value
@@ -240,6 +240,10 @@ class Connector:
                              'opt'  : lambda x: x in [1, 2],
                              'func' : self.proposal_draft_pdf,
                              },
+            'submit_verify' : { 'perm' : [login, owner, unlocked],
+                                'opt'  : 1,
+                                'func' : self.submit_verify,
+                                },
             }
         
         # Logged in permission must also check that user is activated. 
@@ -550,6 +554,134 @@ class Connector:
             cpss.req.headers_out.add('Content-Length', str(len(pdf)))
             cpss.req.content_type='application/pdf'
             cpss.w(pdf)
+
+    def submit_verify(self, proposalid, proposal=None):
+        # Update the date field to the current date:
+        cpss.db.proposal_tagset(proposal['proposal'], proposalid,
+                                [{'fieldname':'date',
+                                  'fieldtype':'date'}])
+
+        if (proposal['pdf_justification'] == 0):
+            justification = False
+        else:
+            justification = True
+            
+        template = cpss.Template.Template(proposal, proposalid, True,
+                                          justification=justification)
+        self.do_header()
+        cpss.w("""<div class="navbar, propheader">
+                    <ul id="navlist">
+                      <li>
+                        <a href="%s">Current Proposal</a>
+                      </li>
+                    </ul>
+                  </div>
+                  <ul><li>Checking to make sure all required fields 
+                  have been completed...""" % 
+               ('view/' + str(template.propid)))
+                                
+        error = template.data_verify()
+
+        #Check to make sure no fields have errors.
+        if (error == True):
+            cpss.w("""<br><span style="color:red;font-weight:bold;">
+               You must fix the errors above before you can submit the
+               proposal.</span>""")
+        else:
+            cpss.w("""<span style="color:green;font-weight:bold;">
+               All fields have been verified.</span>""")
+
+        cpss.w("</li>")
+
+        #Do additional checks such as obsblock and time alloc.
+        if (error == False):
+            cpss.w("<li>Performing other error checks...")
+            ##### IS THIS REQUIRED ANYMORE? ######################
+            #checking to see if all obsblock names are unique.
+            error_obsblock = template.obsblock_verify()
+            #add other checks in here...
+
+            if (error_obsblock == False):
+                error2 = False
+                cpss.w("""<span style="color:green;font-weight:bold;">
+                          done</span></li>""")
+            else:
+                error2 = True
+                cpss.w("""</li>""")
+        else:
+            error2 = False
+
+        if (error2 == True):
+            cpss.w("""<br><span style="color:red;font-weight:bold;">
+               You must fix the errors above before you can submit the
+               proposal.</span>""")
+        #display final check
+        if ((error == False) and (error2 == False)):
+            cpss.w("""<li>Please click <a href="pdf/%s">here
+               </a> to proofread your proposal before you perform the 
+               final submit.</li>""" % str(template.propid))
+        cpss.w("""</ul>""")
+
+        if ((error == False) and (error2 == False)):
+            cpss.w(cpss.text.submit_verify % str(template.propid))
+        self.do_footer()
+
+    def submit(self, proposalid, proposal=None):
+        ### API -- submit -- submit the proposal and perform checks.
+        if (('sub_prop' not in self.fields) or
+            (self.fields['sub_prop'] != 'Submit Proposal')):
+            self.forward('submit_verify/' + str(proposalid))
+            return
+
+        # Update the date field to the current date:
+        cpss.db.proposal_tagset(proposal['proposal'], proposalid,
+                                [{'fieldname':'date', 
+                                  'fieldtype':'date'}])
+
+        if (result['carmaid'] == None):
+            # Generate carmaid.
+            idstr = str(cpss.options['next_propno'])
+            length = len(idstr)
+            if (length < 4):
+                for i in xrange(0, 4 - length):
+                    idstr = "0" + idstr
+            idstr = "c" + idstr
+            cpss.db.set_next_propno(cpss.options['next_propno']+1, 
+                                    result['cyclename'])
+            cpss.db.pw_generate(proposalid)
+            cpss.db.proposal_setcarmaid(proposalid, idstr)
+        else:
+            idstr = proposal['carmaid']
+
+        if (proposal['pdf_justification'] == 0):
+            justification = False
+        else:
+            justification = True
+
+        template = cpss.Template.Template(proposal, proposalid, True, 
+                      justification=justification)
+        
+        ret = template.latex_generate(template.propid, file_send = False,
+                                      carma_propno = idstr)
+
+        self.do_header()
+
+        if (ret != 0):
+            cpss.w(cpss.text.submit_failed_error % proposalid)
+        else:
+            pdf = open(cpss.config['base_directory'] + 
+                       cpss.config['files_directory'] + '/' + proposalid + 
+                       '/latex-final.pdf', 'r')
+            pdf_data = pdf.read()
+            pdf.close()
+
+            if (len(pdf_data) > max_pdf_size):
+                cpss.w(cpss.text.submit_failed_size % proposalid)
+            else:
+                cpss.db.pdf_add_update(proposalid, pdf_data)
+                cpss.db.proposal_submit(proposalid)
+                cpss.w(cpss.text.submit_success)
+        self.do_footer()
                 
     def Root(self):
         self.do_header()
@@ -602,141 +734,6 @@ class Connector:
         msg = (cpss.text.email_activation % (name, email, name, code))
         mail.sendmail("do_not_reply@carma-prop.astro.illinois.edu", email, msg)
         mail.quit()
-
-    def Proposal(self, pathstr):
-
-        action = self.fields.__contains__('action')
-        items = len(pathstr)
-
-        ### API -- submit -- submit the proposal and perform checks.
-        if (items == 3 and pathstr[1] == 'submit'):
-            if (self.fields.__contains__('sub_prop') == True):
-                if (self.fields['sub_prop'] == 'Submit Proposal'):
-                    # Update the date field to the current date:
-                    cpss.db.proposal_tagset('proposal', pathstr[2],
-                                            [{'fieldname':'date', 
-                                              'fieldtype':'date'}])
-                    idstr = ""
-                    if (result['carmaid'] == None):
-                        idstr = str(cpss.options['next_propno'])
-                        length = len(idstr)
-                        if (length < 4):
-                            for i in xrange(0, 4 - length):
-                                idstr = "0" + idstr
-                        idstr = "c" + idstr
-                        cpss.db.set_next_propno(cpss.options['next_propno']+1, 
-                                                result['cyclename'])
-                        cpss.db.pw_generate(pathstr[2])
-                        cpss.db.proposal_setcarmaid(pathstr[2], idstr)
-                    else:
-                        idstr = result['carmaid']
-
-                    if (result['pdf_justification'] == 0):
-                        justification = False
-                    else:
-                        justification = True
-
-                    template = cpss.Template.Template(result['template'], 
-                                  result['cyclename'], pathstr[2], True, 
-                                  justification=justification)
-                    
-                    ret = template.latex_generate(template.propid,
-                             file_send = False, carma_propno = idstr)
-
-                    self.do_header()
-
-                    if (ret != 0):
-                        cpss.w(cpss.text.submit_failed_error %
-                                       pathstr[2])
-                    else:
-                        pdf = open(cpss.config['base_directory']
-                                   + cpss.config['files_directory'] + '/' +
-                                   pathstr[2] + '/latex-final.pdf', 'r')
-                        pdf_data = pdf.read()
-                        pdf.close()
-
-                        if (len(pdf_data) > (1024*1024*14)):
-                            cpss.w(cpss.text.submit_failed_size % pathstr[2])
-                        else:
-                            cpss.db.pdf_add_update(pathstr[2], pdf_data)
-                            cpss.db.proposal_submit(pathstr[2])
-                            cpss.w(cpss.text.submit_success)
-                    self.do_footer()
-                else:
-                    self.do_header(refresh=('proposal/submit/%s' % pathstr[2]))
-                    self.do_footer()
-            else:
-                # Update the date field to the current date:
-                cpss.db.proposal_tagset('proposal', pathstr[2],
-                                        [{'fieldname':'date',
-                                          'fieldtype':'date'}])
-
-                if (result['pdf_justification'] == 0):
-                    justification = False
-                else:
-                    justification = True
-                    
-                template = cpss.Template.Template(result['template'],
-                              result['cyclename'], pathstr[2], True,
-                              justification=justification)
-                self.do_header()
-            
-                cpss.w("""<div class="navbar, propheader">
-                            <ul id="navlist">
-                              <li>
-                                <a href="%s">Current Proposal</a>
-                              </li>
-                            </ul>
-                          </div>""" % ("proposal/edit/" +str(template.propid)))
-                                        
-                cpss.w("""<ul><li>Checking to make sure all required fields 
-                          have been completed...""")
-
-                error = template.data_verify()
-
-                #Check to make sure no fields have errors.
-                if (error == True):
-                    cpss.w("""<br><span style="color:red;font-weight:bold;">
-                       You must fix the errors above before you can submit the
-                       proposal.</span>""")
-                else:
-                    cpss.w("""<span style="color:green;font-weight:bold;">
-                       All fields have been verified.</span>""")
-
-                cpss.w("</li>")
-
-                #Do additional checks such as obsblock and time alloc.
-                if (error == False):
-                    cpss.w("<li>Performing other error checks...")
-                    ##### IS THIS REQUIRED ANYMORE? ######################
-                    #checking to see if all obsblock names are unique.
-                    error_obsblock = template.obsblock_verify()
-                    #add other checks in here...
-
-                    if (error_obsblock == False):
-                        error2 = False
-                        cpss.w("""<span style="color:green;font-weight:bold;">
-                                  done</span></li>""")
-                    else:
-                        error2 = True
-                        cpss.w("""</li>""")
-                else:
-                    error2 = False
-
-                if (error2 == True):
-                    cpss.w("""<br><span style="color:red;font-weight:bold;">
-                       You must fix the errors above before you can submit the
-                       proposal.</span>""")
-                #display final check
-                if ((error == False) and (error2 == False)):
-                    cpss.w("""<li>Please click <a href="proposal/pdf/%s">here
-                       </a> to proofread your proposal before you perform the 
-                       final submit.</li>""" % str(template.propid))
-                cpss.w("""</ul>""")
-
-                if ((error == False) and (error2 == False)):
-                    cpss.w(cpss.text.submit_verify % str(template.propid))
-                self.do_footer()
 
     def HelpSmall(self, item='index'):
         self.Help(item, small=True)

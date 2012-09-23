@@ -1,7 +1,6 @@
 from mod_python import apache
 cpss = apache.import_module("cpss")
 
-
 def forward(url, local=True):
     if local == True:
         url = cpss.config['html_base'] + url

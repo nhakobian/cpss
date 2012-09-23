@@ -215,7 +215,7 @@ class Template:
             <li><a href="%s">Submit Proposal</a></li></ul>""" %
                            ("view/" + str(self.propid),
                             "pdf/" + str(self.propid),
-                            "submit/" + str(self.propid)))
+                            "submit_verify/" + str(self.propid)))
         else:
             cpss.w("""<ul id="navlist">
             <li><a href="%s">Current Proposal</a></li>
@@ -225,7 +225,7 @@ class Template:
                            ("view/" + str(self.propid),
                             "pdf/" + str(self.propid),
                             "finalpdf/" + str(self.propid),
-                            "submit/" + str(self.propid)))
+                            "submit_verify/" + str(self.propid)))
 
         cpss.w("""</div>""")
         ###End Page Header
