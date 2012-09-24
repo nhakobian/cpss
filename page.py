@@ -136,11 +136,6 @@ def proposal_list(list, name):
         cycle = cpss.db.cycle_info(cpss.options['cycle_main'])
 
     if cycle['create'] == 1:
-        create = True
-    else:
-        create = False
-
-    if create == True:
         cpss.w("""<h3>%s's Proposals
                  (<a href="add/main">Add New Proposal</a>)</h3>""" % name)
     else:
@@ -155,41 +150,40 @@ def proposal_list(list, name):
                    <th>Date</th><th>Action</th><th>Data Password</th></tr>"""
         for entry in list:
             if (entry['status'] == 0):
-                carmaid = 'None'
+                carmaid = '--'
                 status = "Unsubmitted"
-                pdf = ("""<a href="delete/%s">
-                          <image src="static/delete.png"></a>""" %
+                pdf = ("""<a href="delete/%s"><image 
+                           src="static/delete.png"></a>""" %
                        entry['proposalid'])
                 password = ""
             else:
                 carmaid = str(entry['carmaid'])
                 status = 'Submitted'
-                pdf =  ("""<a href="finalpdf/%s">
-                             <image src="static/page_white_acrobat.png">
-                           </a>""" % entry['proposalid'])
+                pdf =  ("""<a href="finalpdf/%s"><image 
+                            src="static/page_white_acrobat.png"></a>"""
+                        % entry['proposalid'])
                 password = str(entry['carmapw'])
+
+            if ((entry['lock'] == 1) or 
+                ((entry['create'] == 0) and entry['lock'] == None)):
+                edit = ''
+            else:
+                edit = ("""<a href="view/%s"><image 
+                            src="static/page_white_edit.png"></a>""" %
+                        entry['proposalid'])
+
             title = """<a href="view/%s">%s</a>""" % (entry['proposalid'], 
                                                       entry['title'])
 
-            if ((entry['cyclename'] != cpss.options['cycle_main']) and 
-                (entry['status'] == 1)):
-                #placeholder
-                buf += ("""<tr><td>%s</td><td>%s</td><td id="title">%s</td>
-                               <td>%s</td><td>%s</td><td>%s</td>
-                               <td>%s</td>
+            buf += ("""<tr><td>%s</td>
+                           <td id="id">%s</td>
+                           <td id="title">%s</td>
+                           <td id="status">%s</td>
+                           <td id="date"> %s </td>
+                           <td id="icons">%s%s</td>
+                           <td id="password">%s</td>
                            </tr>""" % (entry['type'], carmaid, title, status, 
-                                       entry['date'], pdf, password))
-            else:
-                buf += ("""<tr><td>%s</td><td id="id">%s</td>
-                               <td id="title">%s</td><td>%s</td><td> %s </td>
-                               <td><a href="view/%s">
-                                   <image src="static/page_white_edit.png"></a>
-                                   %s
-                               </td>
-                               <td>%s</td>
-                           </tr>""" % (entry['type'], carmaid, title, status, 
-                                       entry['date'], entry['proposalid'],
-                                       pdf, password))
+                                       entry['date'], edit, pdf, password))
         buf += """</table></div>""" 
         cpss.w(buf)
         

@@ -20,6 +20,7 @@ template_list = [ 'main_10',
                   'ddt_2010a',
                   'ddt_2011',
                   'ddt_2012a',
+                  'ddt_2012b',
                   'cs_10',
                   'cs_2011',
                   'cs_2012',
@@ -1204,12 +1205,12 @@ class Template:
         #This is done above in author block to remove escaping email addresses.
         #author_lines = self.escape_underscore(author_lines)
         source_data = self.escape_underscore(source_data)
+        semester = self.escape_underscore(self.cycleinfo['cyclename'])
 
         cover = strTemplate(cover_template)
         out = cover.safe_substitute(propinfo, author_lines=author_lines, 
                                     source_data=source_data, 
-                                    propno=carma_propno, 
-                                    semester=self.cycleinfo['cyclename'])
+                                    propno=carma_propno, semester=semester)
 
         tfile = open(prop_dir + 'latex.tex', 'w')
         tfile.write(out)
