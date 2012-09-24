@@ -8,6 +8,8 @@ from string import Template as baseTemplate
 cpss = apache.import_module("../cpss.py")
 
 template_list = [ 'main_10',
+                  'main_2008b',
+                  'main_2009a',
                   'main_2009b',
                   'main_2010a',
                   'main_2010b',
@@ -15,6 +17,12 @@ template_list = [ 'main_10',
                   'main_2011b',
                   'main_2012a',
                   'main_2012b',
+                  'ddt_2010a',
+                  'ddt_2011',
+                  'ddt_2012a',
+                  'cs_10',
+                  'cs_2011',
+                  'cs_2012',
                   ]
 
 templates = {}
