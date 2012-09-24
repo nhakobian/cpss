@@ -130,7 +130,11 @@ def userpage(name, email, error=""):
                                    'email' : email } )
 
 def proposal_list(list, name):
-    cycle = cpss.db.cycle_info(cpss.options['cycle_main'])
+    if cpss.options['cycle_main'] == '':
+        cycle = {'create' : 0}
+    else:
+        cycle = cpss.db.cycle_info(cpss.options['cycle_main'])
+
     if cycle['create'] == 1:
         create = True
     else:
