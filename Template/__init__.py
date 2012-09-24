@@ -7,14 +7,20 @@ from string import Template as baseTemplate
 
 cpss = apache.import_module("../cpss.py")
 
-template10 = apache.import_module('template10')
-template2009b = apache.import_module('template2009b')
-template2010a = apache.import_module('template2010a')
-template2010b = apache.import_module('template2010b')
-template2011a = apache.import_module('template2011a')
-template2011b = apache.import_module('template2011b')
-template2012a = apache.import_module('template2012a')
-template2012b = apache.import_module('template2012b')
+template_list = [ 'main_10',
+                  'main_2009b',
+                  'main_2010a',
+                  'main_2010b',
+                  'main_2011a',
+                  'main_2011b',
+                  'main_2012a',
+                  'main_2012b',
+                  ]
+
+templates = {}
+
+for i in template_list:
+    templates[i] = apache.import_module(i)
 
 class strTemplate(baseTemplate):
     idpattern = r'[_a-z0-9][_a-z0-9]*'
@@ -47,22 +53,11 @@ class Template:
             self.edit = True
         
         template = self.cycleinfo['template']
-        if (template == 'template10'):
-            self.template = template10
-        if (template == 'template2009b'):
-            self.template = template2009b
-        if (template == 'template2010a'):
-            self.template = template2010a
-        if (template == 'template2010b'):
-            self.template = template2010b
-        if (template == 'template2011a'):
-            self.template = template2011a
-        if (template == 'template2011b'):
-            self.template = template2011b
-        if (template == 'template2012a'):
-            self.template = template2012a
-        if (template == 'template2012b'):
-            self.template = template2012b
+
+        # Set self.template to the correct class loaded in the header of the
+        # file.
+        self.template = templates[template]
+
         self.template_name = template
         self.tempclass = self.template.template()
         self.sections = self.tempclass.sections
