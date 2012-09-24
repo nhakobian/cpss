@@ -11,7 +11,7 @@ div.maintenance, div.browser_error {
 	width : 650px;
 	border : 1px solid black;
 	margin : 1em auto 1em auto;
-	-moz-border-radius : 10px 10px 10px 10px;
+	border-radius : 10px 10px 10px 10px;
 	text-align : center;
 	font-weight : bold;
 	padding : 5px;
@@ -23,7 +23,7 @@ div.submitted {
 	width : 650px;
 	border : 1px solid black;
 	margin : 1em auto 1em auto;
-	-moz-border-radius : 10px 10px 10px 10px;
+	border-radius : 10px 10px 10px 10px;
 	text-align : center;
 	font-weight : bold;
 }
@@ -33,7 +33,7 @@ div.container {
 	width : 950px;
 	border: 1px solid black;
 	margin : 1em auto 1em auto;
-	-moz-border-radius : 10px 10px 10px 10px;
+	border-radius : 10px 10px 10px 10px;
      }
 
 div.top table {
@@ -88,6 +88,7 @@ div.propheader {
      }
 
 #navlist li a:link { color: #448 }
+
 #navlist li a:visited { color : #667;}
 
 #navlist li a:hover {
@@ -115,6 +116,7 @@ h3 a {
 }
 
 h3 a:hover { color : blue; }
+
 h3 a:visited { color : black; }
 
 div#proplist {
@@ -175,6 +177,7 @@ div#proplist {
 }
 
 #proplist table tr td a:link { color : blue; }
+
 #proplist table tr td a:visited { color : blue; }
 
 div#editlist {
@@ -294,9 +297,10 @@ div#editdata {
 }
 
 #editdata td.label a:link { color : blue;}
-#editdata td.label a:visited { color : blue;}
-#editdata td.label a:hover { color : white; background:black;}
 
+#editdata td.label a:visited { color : blue;}
+
+#editdata td.label a:hover { color : white; background:black;}
 
 #editdata td.error {
 	width : 30%;
