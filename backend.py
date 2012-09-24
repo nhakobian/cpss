@@ -368,13 +368,13 @@ class Backend:
 
         return options
 
-    def set_next_propno(self, nextpropno, cyclename):
+    def set_next_propno(self, propno, proptype):
         cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
         cursor.execute("""UPDATE `options` 
-                          SET `next_propno`=%(propno)s
-                          WHERE `cyclename`=%(cyclename)s""" %
-                       {'propno'    : self.literal(nextpropno),
-                        'cyclename' : self.literal(cyclename)})
+                          SET `value`='%(propno)s'
+                          WHERE `key`='%(option)s'""" %
+                       { 'option' : 'propid_' + proptype,
+                         'propno' : self.literal(propno)})
         cursor.close()
 
     def proposal_setcarmaid(self, proposalid, carmaid):

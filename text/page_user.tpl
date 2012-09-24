@@ -27,7 +27,7 @@
 <br>
 
 <center>
-   <form action="user/" method="post">
+   <form action="user" method="post">
    <table>
       <tr>
         <td colspan=2>

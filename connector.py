@@ -12,6 +12,7 @@ cpss = apache.import_module("cpss")
 max_image_size = 1024*1024*14 # 14 MiB
 max_latex_size = 1024*1024*10 # This used to be uploaded pdf, now latex.
 max_pdf_size = 1024*1024*14
+
 class CpssUserErr(Exception):
     def __init__(self, value):
         self.value = value
@@ -244,6 +245,10 @@ class Connector:
                                 'opt'  : 1,
                                 'func' : self.submit_verify,
                                 },
+            'submit'     : { 'perm' : [login, owner, unlocked],
+                             'opt'  : 1,
+                             'func' : self.submit,
+                             },
             }
         
         # Logged in permission must also check that user is activated. 
@@ -348,6 +353,9 @@ class Connector:
 
     def proposal_delete(self, proposalid, proposal=None):
         ### API -- delete -- delete the whole proposal 
+        if proposal['status'] == 1:
+            raise CpssUserErr("You cannot delete a submitted proposal.")
+
         if 'delete' in self.fields:
             template = cpss.Template.Template(proposal, proposalid, True,
                                               Fetch=False)
@@ -638,20 +646,34 @@ class Connector:
                                 [{'fieldname':'date', 
                                   'fieldtype':'date'}])
 
-        if (result['carmaid'] == None):
+        if (proposal['carmaid'] == None):
             # Generate carmaid.
-            idstr = str(cpss.options['next_propno'])
-            length = len(idstr)
-            if (length < 4):
-                for i in xrange(0, 4 - length):
-                    idstr = "0" + idstr
-            idstr = "c" + idstr
-            cpss.db.set_next_propno(cpss.options['next_propno']+1, 
-                                    result['cyclename'])
+            type_prefix = { 'main' : 'c',
+                            'ddt'  : 'cx',
+                            'cs'   : 'cs',
+                            'fast' : 'cf',
+                            }
+            min_digits = { 'main' : 4,
+                           'ddt'  : 3,
+                           'cs'   : 3,
+                           'fast' : 4,
+                           }
+
+            next_propno = cpss.options['propid_' + proposal['type']]
+
+            if len(str(next_propno)) < min_digits[proposal['type']]:
+                padding = min_digits[proposal['type']] - len(str(next_propno))
+            else:
+                padding = 0
+
+            carmaid = (type_prefix[proposal['type']] + ('0' * padding) +
+                       str(next_propno))
+
+            cpss.db.set_next_propno(int(next_propno) + 1, proposal['type'])
             cpss.db.pw_generate(proposalid)
-            cpss.db.proposal_setcarmaid(proposalid, idstr)
+            cpss.db.proposal_setcarmaid(proposalid, carmaid)
         else:
-            idstr = proposal['carmaid']
+            carmaid = proposal['carmaid']
 
         if (proposal['pdf_justification'] == 0):
             justification = False
@@ -661,8 +683,8 @@ class Connector:
         template = cpss.Template.Template(proposal, proposalid, True, 
                       justification=justification)
         
-        ret = template.latex_generate(template.propid, file_send = False,
-                                      carma_propno = idstr)
+        ret = template.latex_generate(template.propid, file_send=False,
+                                      carma_propno=carmaid)
 
         self.do_header()
 
@@ -841,7 +863,7 @@ class Connector:
                     cpss.session['activated'] = '0'
                     cpss.session['admin'] = True
                     cpss.session.save()
-                    self.do_header(refresh="list/")
+                    self.forward('list')
                 else:
                     Error = """The username and password you have supplied 
                                are not valid. Please try again."""
@@ -855,8 +877,7 @@ class Connector:
                 Error = "You must enter both a username and a password."
                 authenticate = False
             else:
-                (authenticate, user) = cpss.db.verify_user(username, 
-                                                           password)
+                (authenticate, user) = cpss.db.verify_user(username, password)
             if (authenticate == False):
                 Error = """The username and password you have supplied are 
                            not valid. Please try again."""
@@ -869,7 +890,7 @@ class Connector:
                 cpss.session['name'] = user['name']
                 cpss.session['activated'] = user['activated']
                 cpss.session.save()
-                self.do_header(refresh="list/")
+                self.forward('list')
         else:
             self.do_header(logon=True)
             cpss.page.logon(Error=Error)
@@ -930,11 +951,7 @@ class Connector:
                 cpss.db.update_code(cpss.session['username'], "0")
                 cpss.session['activated'] = "0"
                 cpss.session.save()
-                self.do_header(refresh='proposal/')
-                cpss.page.activate(Error="""You have successfully activated
-                your account. Click on the proposals tab above in order to
-                start using the system.""")
-                self.do_footer()
+                self.forward('list')
             else:
                 self.do_header()
                 cpss.page.activate(Error="""The code you entered is invalid.

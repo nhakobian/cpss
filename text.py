@@ -743,7 +743,7 @@ page_user=r"""<div class=browser_error style="%(errorsty)s">%(error)s</div>
 <br>
 
 <center>
-   <form action="user/" method="post">
+   <form action="user" method="post">
    <table>
       <tr>
         <td colspan=2>
@@ -804,7 +804,7 @@ submit_failed_error=r"""
   proposal has NOT been submitted. You may use the "View as PDF"
   option to view your proposal and any errors that were generated. You
   must complete the submit process again.<br>Click
-  <a href="proposal/edit/%s">here</a> to continue.
+  <a href="view/%s">here</a> to continue.
 </div>
 """
 
@@ -861,7 +861,7 @@ submit_verify=r"""<div class="maintenance" style="text-align : left; padding : 1
     </li>
   </br>
                                                                                
-  <form action="proposal/submit/%s" method=post>
+  <form action="submit/%s" method=post>
     <center>
       <input type=submit name="sub_prop" value="Submit Proposal"/>
     </center>

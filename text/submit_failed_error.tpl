@@ -5,5 +5,5 @@
   proposal has NOT been submitted. You may use the "View as PDF"
   option to view your proposal and any errors that were generated. You
   must complete the submit process again.<br>Click
-  <a href="proposal/edit/%s">here</a> to continue.
+  <a href="view/%s">here</a> to continue.
 </div>

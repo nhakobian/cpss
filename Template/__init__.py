@@ -240,13 +240,17 @@ class Template:
                onClick="return popup(this, 'help')">
                [?]</a>""")
         general_edit = (
-            """<a href="edit/%(propid)s/%(section)s">(edit)</a></p>""")
+            """<a href="edit/%(propid)s/%(section)s">
+               <image src="static/page_white_edit.png"></a></p>""")
         repeat_add = (
             """<a href=
-               "multi_add/%(propid)s/%(section)s">%(addtext)s</a></p>""")
+               "multi_add/%(propid)s/%(section)s">
+               <image src="static/add.png"></a></p>""")
         repeat_eddel = (
-            """<a href="edit/%(propid)s/%(section)s/%(id)s">edit</a> |
-               <a href="multi_del/%(propid)s/%(section)s/%(id)s">delete</a>""")
+            """<a href="edit/%(propid)s/%(section)s/%(id)s">
+                 <image src="static/page_white_edit.png"></a>
+               <a href="multi_del/%(propid)s/%(section)s/%(id)s">
+                 <image src="static/delete.png"></a>""")
 
         post_author = (
             """<div id="editlist">
@@ -284,7 +288,8 @@ class Template:
                     onClick="return popup(this, 'help')">
                     [?]</a>""")
         edit_image = (
-            """<a href="multi_add/%(propid)s/image">(add)</a></p>""") 
+            """<a href="multi_add/%(propid)s/image">
+                 <image src="static/add.png"></a>""") 
 
         for section in self.sections:
             if (self.justification == True):
@@ -312,23 +317,19 @@ class Template:
                 keys = groups[0].keys()
                 keys.sort()
 
-                addtext = "(add)"
                 #The IsAuthor lines are part of the crude hack to make
                 #Author#1 the PI. Revision 46
+
                 IsAuthor = False
                 if (section['section'] == 'author'):
-                    addtext = "(add additional author)"
                     IsAuthor = True
-                elif (section['section'] == 'source'):
-                    addtext = "(add additional source)"
 
                 cpss.w(all_head % {'name'    : section['name'], 
                                    'section' : section['section']})
 
                 if unlocked:
                     cpss.w(repeat_add % { 'propid'  : self.propid, 
-                                          'section' : section['section'], 
-                                          'addtext' : addtext})
+                                          'section' : section['section']})
                 for lines in groups:
                     if unlocked == False:
                         break
@@ -358,6 +359,7 @@ class Template:
                 if unlocked:
                     cpss.w(edit_image % { 'propid' : self.propid} )
 
+                cpss.w("</p>")
                 result = cpss.db.images_list(self.propid)
 
                 if (len(result) == 0):
@@ -408,17 +410,19 @@ class Template:
 
                 if self.is_key_project and unlocked:
                     cpss.w(cpss.text.html_just_key % command)
+                    cpss.w('<br>')
                 elif unlocked:
                     cpss.w(cpss.text.html_just_normal % (self.propid, web, 
                                                          pdf, command))
-                else:
+                    cpss.w('<br>')
+                elif self.justification == True:
                     # Is locked.
                     cpss.w(all_head % { 'name' : "Latex Justification",
                                         'section' : section['section']})
                     cpss.w("""<div id="editlist">
                               <textarea cols=100 rows=15 readonly>%(prop)s
-                              </textarea></div>""" % {'prop': data})
-                cpss.w("<br>")
+                              </textarea></div><br>""" % {'prop': data})
+
         cpss.w("</div>")
 
     def make_html(self, section_choose=False, id=False):

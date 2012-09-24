@@ -20,7 +20,7 @@
     </li>
   </br>
                                                                                
-  <form action="proposal/submit/%s" method=post>
+  <form action="submit/%s" method=post>
     <center>
       <input type=submit name="sub_prop" value="Submit Proposal"/>
     </center>
