@@ -5,7 +5,7 @@ PythonHandler cpss
 PythonDebug On
 RewriteEngine on
 
-RewriteCond %{REQUEST_URI} "./static/"
+RewriteCond %{REQUEST_URI} "static/"
 RewriteRule (.*) $1 [L]
 
 RewriteRule ^cpss(.*) - [L]
