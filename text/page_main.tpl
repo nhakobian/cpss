@@ -1,31 +1,24 @@
-<center>
-  <h2>
+  <h2 class="center">
     Semester 2012b: Deadline 14 May 2012 5PM CDT
   </h2>
-</center>
 
-Welcome to the CARMA Proposal System. This system is used to propose
+
+<p>Welcome to the CARMA Proposal System. This system is used to propose
 for time on the CARMA array during TAC-approved proposal calls. If you
 have comments, or encounter difficulties and need help, please send
 email to: <a href="mailto:proposal-help@astro.uiuc.edu">
-proposal-help@astro.uiuc.edu</a>
-<br>
-<br>
+proposal-help@astro.uiuc.edu</a></p>
 
-Information for proposers, including a link to information on the
+<p>Information for proposers, including a link to information on the
 CARMA Array status, is available at: <a href="http://www.mmarray.org/">
-www.mmarray.org</a>
-<br>
-<br>
+www.mmarray.org</a></p>
 
-The CARMA Proposal System will ask you to establish an account for
+<p>The CARMA Proposal System will ask you to establish an account for
 your proposals. You can work on proposals and save partial and draft
 results, and come back later to edit and finish your proposals. Old
-proposals will be kept on the system as reference.
-<br>
-<br>
+proposals will be kept on the system as reference.</p>
 
-Most people try to write proposals the last day or last hour before
+<p>Most people try to write proposals the last day or last hour before
 the deadline. Be aware that things may be very busy near the deadline,
 with the proposal computer response slower than normal and our ability
 to help you with problems in time for you to meet the deadline
@@ -33,30 +26,26 @@ reduced. It would be to your advantage to get proposals into the
 system as early as possible. Even after you submit a proposal, you can
 come back and revise it anytime before the deadline, so getting a
 complete proposal in early insures that you will meet the deadline
-without compromising your ability to make last minute changes.
-<br>
-<br>
+without compromising your ability to make last minute changes.</p>
 
 <h3>Scientific and Technical Justification</h3>
 
-This part of the proposal is strictly limited to 3 pages, 2 pages of
+<p>This part of the proposal is strictly limited to 3 pages, 2 pages of
 text and 1 page of figures and tables. One way to enter this
 information is to type or paste LaTex into the Scientific
 Justification and Technical Justification sections. The 
-<a href="http://www.journals.uchicago.edu/AAS/AASTeX/">AASTeX<a> system
+<a href="http://www.journals.uchicago.edu/AAS/AASTeX/">AASTeX</a> system
 is fully supported. Postscript figures may be uploaded for inclusion
 using standard LaTex figure conventions. When you submit, the proposal
 system will compile your LaTex and display a PDF file on your screen
 for you to check (make sure the total justification is no more than 3
-pages).
-<br>
-<br>
+pages).</p>
 
-If you wish to have more control over your justification section, you
+<p>If you wish to have more control over your justification section, you
 may upload a completed LaTeX file. You are required to use our <a
 href="static/justification.tar.gz"> template</a>. Please follow the
 guidelines listed below for the justification sections. Non-compliant
-proposals will not be forwarded to the TAC.  
+proposals will not be forwarded to the TAC.  </p>
 
 <ul>
   <li>
@@ -73,7 +62,7 @@ proposals will not be forwarded to the TAC.
 
 <h3>Key Projects</h3>
 
-If you are submitting a proposal for a Key Project, the justification
+<p>If you are submitting a proposal for a Key Project, the justification
 requirements are different. <b>Make sure you select the 'Key Project'
 option listed in the 'General Proposal Information' section. Adjustments
 to the length of key projects are listed below.</b> For more information
@@ -83,7 +72,7 @@ Project</a> page. For the Key Project justification, you must upload a
 LaTeX file containing the content. We provide a <a
 href="static/justification_key.tar.gz">template</a> that you must
 adhere to in order for your proposal to be considered (this template
-is slightly different that the one for standard proposals).
+is slightly different that the one for standard proposals).</p>
 
 <ul>
   <li>
@@ -116,8 +105,8 @@ is slightly different that the one for standard proposals).
   </li>
 </ul>
 
-If your proposal is accepted and observations are successful, we ask
+<p>If your proposal is accepted and observations are successful, we ask
 that you acknowledge CARMA in relevant publications and lectures. The
 form for acknowledgement in papers is on the CARMA website. Please
 also advise Mary Daniel (mary @ mmarray.org) of any publications that
-use CARMA data.
+use CARMA data.</p>

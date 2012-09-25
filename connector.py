@@ -249,6 +249,10 @@ class Connector:
                              'opt'  : 1,
                              'func' : self.submit,
                              },
+            'ddt'        : { 'perm' : None,
+                             'opt'  : 0,
+                             'func' : self.ddt,
+                             },
             }
         
         # Logged in permission must also check that user is activated. 
@@ -704,6 +708,17 @@ class Connector:
                 cpss.db.proposal_submit(proposalid)
                 cpss.w(cpss.text.submit_success)
         self.do_footer()
+
+    def ddt(self):
+        self.do_header()
+        cpss.w(cpss.text.page_ddt)
+
+        if cpss.session['authenticated'] == False:
+            cpss.page.logon(redir='ddt')
+        elif cpss.session['authenticated'] == True:
+            cpss.w(cpss.text.page_ddt_disclaimer)
+
+        self.do_footer()
                 
     def Root(self):
         self.do_header()
@@ -817,7 +832,7 @@ class Connector:
         else:
             self.do_footer()
 
-    def Login(self):
+    def Login(self, redir='list'):
         Error = ""
         if (self.fields.getfirst('forgotpw') == 'Password Reset'):
             username = self.fields.getfirst('user')
@@ -838,7 +853,7 @@ class Connector:
         if (self.fields.getfirst('submit') == 'Submit'):
             username = self.fields.getfirst('user')
             password = self.fields.getfirst('pass')
-
+            redir = self.fields.getfirst('redir')
             # Fix for blank field == None issue
             if username == None:
                 username = ''
@@ -853,9 +868,7 @@ class Connector:
                     user = cpss.db.get_user(username[6:])
                     if user == None:
                         Error = """The user does not exist."""
-                        self.do_header(logon=True)
                         cpss.page.logon(Error=Error)
-                        self.do_footer()
                         return
                     cpss.session['authenticated'] = True
                     cpss.session['username'] = user['email']
@@ -863,12 +876,13 @@ class Connector:
                     cpss.session['activated'] = '0'
                     cpss.session['admin'] = True
                     cpss.session.save()
-                    self.forward('list')
+                    self.forward(redir)
                 else:
                     Error = """The username and password you have supplied 
                                are not valid. Please try again."""
-                    self.do_header(logon=True)
-                    cpss.page.logon(Error=Error, Username=username)
+                    self.do_header()
+                    cpss.page.logon(Error=Error, Username=username, 
+                                    redir=redir)
                     self.do_footer()
                 return
 
@@ -881,8 +895,8 @@ class Connector:
             if (authenticate == False):
                 Error = """The username and password you have supplied are 
                            not valid. Please try again."""
-                self.do_header(logon=True)
-                cpss.page.logon(Error=Error, Username=username)
+                self.do_header()
+                cpss.page.logon(Error=Error, Username=username, redir=redir)
                 self.do_footer()
             if (authenticate == True):
                 cpss.session['authenticated'] = True
@@ -890,10 +904,10 @@ class Connector:
                 cpss.session['name'] = user['name']
                 cpss.session['activated'] = user['activated']
                 cpss.session.save()
-                self.forward('list')
+                self.forward(redir)
         else:
-            self.do_header(logon=True)
-            cpss.page.logon(Error=Error)
+            self.do_header()
+            cpss.page.logon(Error=Error, redir=redir)
             self.do_footer()
 
     def Logout(self):

@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 
 <html>
 <head>
@@ -8,30 +8,24 @@
    <link rel="stylesheet" href="static/cpss.css" type="text/css">
 </head>
 
-<body onLoad="%s">
+<body>
 %s
 
 <noscript>
-   <div class="browser_error">
-      You do not have javascript enabled. Javascript is 
-      required for this site to work properly. Please 
-      enable javascript and refresh the page to continue.
+   <div id="nojs">
+   </div>
+   <div id="nojs_message">
+     <img src="static/exclaimation.png">
+     <span>Your browser currently has javascript disabled. The CARMA Proposal
+     System requires javascript.</span>
    </div>
 </noscript>
                        
-<div class="container">
-   <div class="top">
-      <table>
-        <tr>
-          <td>
-            <a href="%s"><img src="static/carmasmall.jpg"></img></a>
-          </td>
-          <td>
+<div id="container" class="nojs">
+   <p id="logo">
+            <a href="%s"><img src="static/carmasmall.jpg"/></a>
             CARMA Proposal Submission System
-          </td>
-        </tr>
-      </table>
-   </div>
+   </p>
    <div class="navbar">
       <ul id="navlist">
 

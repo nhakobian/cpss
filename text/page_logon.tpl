@@ -1,4 +1,4 @@
-<div class="login" id="login" style="visibility:hidden;width:500px;margin:0 auto 0 auto">
+<div class="login" id="login" style="width:500px;margin:0 auto 0 auto">
 <center>
   Please enter your information to login. If you do not have a
   username or password, <a href="create">create one</a>. Your
@@ -27,6 +27,7 @@
          </td>
          <td>
            <input type="password" name="pass">
+	   <input type="hidden" name="redir" value="%s">
          </td>
        </tr>
        <tr>

@@ -104,7 +104,7 @@ def handler(request):
     global connector
     connector = _connector.Connector()
 
-    if (session['admin'] == False):
+    if (session['admin'] == False) and (config['debug'] == False):
         try:
             result = connector.Dispatch(pathstr)
         except apache.SERVER_RETURN:

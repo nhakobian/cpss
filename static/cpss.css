@@ -5,6 +5,12 @@ body {
 	font-family : arial, sans-serif;
      }
 
+.center {
+    text-align : center;
+}
+
+a { display: inline-block; }
+
 div.maintenance, div.browser_error {
 	background : red;
 	color: white;
@@ -15,6 +21,58 @@ div.maintenance, div.browser_error {
 	text-align : center;
 	font-weight : bold;
 	padding : 5px;
+}
+
+div.warn {
+    width : 60%;
+    border : 1px solid black;
+    background : lightgray;
+    padding : 10px;
+    border-radius : 10px;
+    margin : 0 auto;
+    text-align : center;
+}
+
+div.warn img {
+    float : left;
+}
+
+div#nojs {
+    width : 100%;
+    min-height : 100%;
+    opacity : 0.9;
+    position : fixed;
+    top : 0;
+    left : 0;
+    background : #000000;
+    padding : 0;
+    margin : 0;
+    z-index : 100;
+}
+
+div#nojs_message {
+    width : 300px;
+    height : 90px;
+    margin : 0 auto;
+    margin-left : -150px;
+    margin-top : -50px;
+    z-index : 101;
+    position : fixed;
+    top : 50%;
+    left : 50%;
+    background : black;
+    color : white;
+    border-radius : 10px;
+    padding : 10px;
+    border : 1px solid red;
+}
+
+div#nojs_message img {
+    float : left;
+    width : auto;
+    height : auto;
+    vertical-align : middle;
+    padding-right : 10px;
 }
 
 div.submitted {
@@ -28,22 +86,23 @@ div.submitted {
 	font-weight : bold;
 }
 
-div.container {
+div#container {
 	background : white;
 	width : 950px;
 	border: 1px solid black;
 	margin : 1em auto 1em auto;
 	border-radius : 10px 10px 10px 10px;
-     }
+}
 
-div.top table {
-	margin : 0 auto 0 auto;
-	font-size : 24pt;
-	font-weight : bold;
-     }
+p#logo {
+    font-size : 24pt;
+    font-weight : bold;
+    text-align : center;
+    margin : 0px;
+}
 
-div.top table tr td a img {
-	border : 0;
+p#logo img {
+    vertical-align : middle;
 }
 
 div.content { 
@@ -53,16 +112,19 @@ div.content {
 
 div.navbar {
 	text-align : center;
-	padding : 0 0 3px 0;
+	padding : 0 6px;
 	margin : 0 0 0 0;
 	border-bottom: 1px solid #778;
+/*	border-top: 1px solid #778;*/
+
      }
 
 div.propheader {
 	text-align : center;
-	padding: 3px 0 0 0 ;
+	padding: 0;
 	margin: -14px 0 15px 0;
 	border-top: 1px solid #778;
+
 }
 
 .propheader #navlist { border : 0 0 0 0; }
@@ -74,18 +136,24 @@ div.propheader {
 
 #navlist li {
 	list-style : none;
-	margin : 3px;
+	margin : 0px;
 	padding : 0;
 	display : inline;
      }
 
 #navlist li a {
-	padding : 3px 0.5em 3px .5em;
-	margin : 3px;
+	padding : 3px 6px;
+	margin : 0 3px;
 	border : 1px solid #778;
+	border-bottom : none;
 	background : #DDE;
 	text-decoration : none;
      }
+
+.propheader #navlist li a {
+    border-top : none;
+    border-bottom : 1px solid #778;
+}
 
 #navlist li a:link { color: #448 }
 
@@ -376,7 +444,7 @@ div.helptext {
 	
 }
 
-.copyright {
+#copyright {
     padding : 0;
     font-size: 10pt;
     font-weight: bold;
@@ -410,7 +478,6 @@ table.stats tr:nth-child(even) {
 table.stats tr:hover {
     background : burlywood;
 }
-
 
 .stats .carma-id {
     width : 4%;

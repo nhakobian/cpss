@@ -9,7 +9,7 @@ def forward(url, local=True):
     cpss.req.status = apache.HTTP_MOVED_TEMPORARILY
     raise apache.SERVER_RETURN, apache.OK
 
-def header(login=False, logon=False):
+def header(login=False):
     logout_bar = [["Login", "login"], ["Help","help"], 
                   ["Create Account","create"]]
     login_bar =  [["Proposals", "list"], ["User Info","user"],
@@ -29,12 +29,7 @@ def header(login=False, logon=False):
           (cpss.session['maint_allow'] == True)):
         maintain = """<div class="maintenance">A maintenance or debugging cycle is currently in effect. Beware that some features currently are not working as intended. To see the maintenance page that is shown to people who do not have access during a maintenance cycle, please click <a href='invalidate/'>here</a>. This will log out out if you are currently logged in.</div>"""
 
-    if (logon==True):
-        onLoad = "document.getElementById('login').style.visibility='visible';"
-    else:
-        onLoad = ""
-            
-    cpss.w(cpss.text.page_header % (cpss.config['html_base'], onLoad, 
+    cpss.w(cpss.text.page_header % (cpss.config['html_base'],
                                     maintain, cpss.config['html_base']))
 
     if (login == False):
@@ -55,8 +50,8 @@ def footer():
 def do_404():
     cpss.w("<center>This page cannot be found</center>")
         
-def logon(Error='', Username=''):
-    cpss.w(cpss.text.page_logon % (Error, Username))
+def logon(Error='', Username='', redir='list'):
+    cpss.w(cpss.text.page_logon % (Error, Username, redir))
 
 def user_create(Name="", Email="", Error="", random=""):
     buffer = ("""
