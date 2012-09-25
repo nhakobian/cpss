@@ -6,6 +6,8 @@
    <base href="%s" />
    <script type="text/javascript" src="static/cpss.js"></script>
    <link rel="stylesheet" href="static/cpss.css" type="text/css">
+   <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+   <link rel="shortcut icon" href="/favicon.ico" />
 </head>
 
 <body>

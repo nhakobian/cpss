@@ -83,7 +83,7 @@ class Connector:
 
         def login(params, kwparams):
             if cpss.session['authenticated'] != True:
-                self.forward('login/?redir=' + cpss.req.path_info)
+                self.forward('login?redir=' + cpss.req.path_info[1:])
                 return None
             if cpss.session['activated'] != '0':
                 self.Activate()
@@ -833,6 +833,9 @@ class Connector:
             self.do_footer()
 
     def Login(self, redir='list'):
+        if 'redir' in self.fields:
+            redir = self.fields['redir']
+
         Error = ""
         if (self.fields.getfirst('forgotpw') == 'Password Reset'):
             username = self.fields.getfirst('user')

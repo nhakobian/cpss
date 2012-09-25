@@ -8,5 +8,11 @@ RewriteEngine on
 RewriteCond %{REQUEST_URI} "static/"
 RewriteRule (.*) $1 [L]
 
+RewriteCond %{REQUEST_URI} "robots.txt"
+RewriteRule (.*) $1 [L]
+
+RewriteCond %{REQUEST_URI} "favicon.ico"
+RewriteRule (.*) $1 [L]
+
 RewriteRule ^cpss(.*) - [L]
 RewriteRule ^(.*) ./cpss.py/$1 [L,QSA]
