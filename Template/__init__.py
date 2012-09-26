@@ -427,7 +427,10 @@ class Template:
                               <textarea cols=100 rows=15 readonly>%(prop)s
                               </textarea></div><br>""" % {'prop': data})
 
-        #cpss.w("</div>")
+        # This if does fix some errors, but not quite sure why its needed.
+        # It means there is a bug somewhere else.
+        if not unlocked:
+            cpss.w("</div>")
 
     def make_html(self, section_choose=False, id=False):
         #Validate section
