@@ -239,22 +239,22 @@ class Template:
         unlocked = self.unlocked()
 
         all_head = (
-            """<div id="editlist"><p><a name="%(section)s"></a>%(name)s &nbsp;
+            """<div id="editlist"><p><a name="%(section)s"></a>%(name)s
                <a href="help_small/%(section)s" 
                onClick="return popup(this, 'help')">
-               [?]</a>""")
+               <img src="static/help.png" alt="Help"></a>""")
         general_edit = (
             """<a href="edit/%(propid)s/%(section)s">
-               <image src="static/page_white_edit.png"></a></p>""")
+               <img src="static/page_white_edit.png" alt="Edit"></a></p>""")
         repeat_add = (
             """<a href=
                "multi_add/%(propid)s/%(section)s">
-               <image src="static/add.png"></a></p>""")
+               <img src="static/add.png" alt="Add"></a></p>""")
         repeat_eddel = (
             """<a href="edit/%(propid)s/%(section)s/%(id)s">
-                 <image src="static/page_white_edit.png"></a>
+                 <img src="static/page_white_edit.png" alt="Edit"></a>
                <a href="multi_del/%(propid)s/%(section)s/%(id)s">
-                 <image src="static/delete.png"></a>""")
+                 <img src="static/delete.png" alt="Delete"></a>""")
 
         post_author = (
             """<div id="editlist">
@@ -290,10 +290,10 @@ class Template:
             """<div id="editlist"><p><a name="image"></a>Image Attachments
                  <a href="help_small/%(section)s" 
                     onClick="return popup(this, 'help')">
-                    [?]</a>""")
+                    <img src="static/help.png" alt="Help"></a>""")
         edit_image = (
             """<a href="multi_add/%(propid)s/image">
-                 <image src="static/add.png"></a>""") 
+                 <img src="static/add.png" alt="Add"></a>""") 
 
         for section in self.sections:
             if (self.justification == True):
@@ -394,8 +394,8 @@ class Template:
                 nodata = ("""<br><form enctype="multipart/form-data" 
                                        method="post" action="save/%s">
                                  <input type="hidden" name="section" 
-                                        value="justification"></input>
-                                 <input type="file" name="file"></input>
+                                        value="justification">
+                                 <input type="file" name="file">
                                  <input type="submit" name="update" 
                                         value="Submit"/>
                                  </form>""" % str(self.propid))
@@ -427,7 +427,7 @@ class Template:
                               <textarea cols=100 rows=15 readonly>%(prop)s
                               </textarea></div><br>""" % {'prop': data})
 
-        cpss.w("</div>")
+        #cpss.w("</div>")
 
     def make_html(self, section_choose=False, id=False):
         #Validate section
@@ -632,10 +632,10 @@ class Template:
                                action='save/%s' method='post' name="form">""" %
                str(propid))
 
-        cpss.w("""<input type="hidden" name="section" value="%s"></input>""" %
+        cpss.w("""<input type="hidden" name="section" value="%s">""" %
                groups[0][keys[0]][0]['section'])
         if (id != False):
-            cpss.w("""<input type="hidden" name="id" value="%s"></input>""" %
+            cpss.w("""<input type="hidden" name="id" value="%s">""" %
                    str(id))
 
         for line in keys:
@@ -678,12 +678,13 @@ class Template:
             cpss.w("""
                 <tr><form enctype="multipart/form-data" action="save/%(prop)s"
                              method="post">
-                <td><input type="hidden" name="section" value="image"></input>
-                    <input type="hidden" name="id" value="%(id)s"></input>
-                    <input type="file" name="file"></input>
+                <td><input type="hidden" name="section" value="image">
+                    <input type="hidden" name="id" value="%(id)s">
+                    <input type="file" name="file">
                     <input type="submit" name="update" value="Submit"/>
                 </td><td></td><td>
-                <a href="multi_del/%(prop)s/image/%(id)s">Delete</a>
+                <a href="multi_del/%(prop)s/image/%(id)s">
+                <img src="static/delete.png" alt="Delete"></a>
                 </td></tr></form>""" % {'prop' : str(propid),
                                         'id'   : image['numb']})
         else:

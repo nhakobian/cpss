@@ -147,14 +147,14 @@ def proposal_list(list, name):
             if (entry['status'] == 0):
                 carmaid = '--'
                 status = "Unsubmitted"
-                pdf = ("""<a href="delete/%s"><image 
+                pdf = ("""<a href="delete/%s"><img 
                            src="static/delete.png"></a>""" %
                        entry['proposalid'])
                 password = ""
             else:
                 carmaid = str(entry['carmaid'])
                 status = 'Submitted'
-                pdf =  ("""<a href="finalpdf/%s"><image 
+                pdf =  ("""<a href="finalpdf/%s"><img 
                             src="static/page_white_acrobat.png"></a>"""
                         % entry['proposalid'])
                 password = str(entry['carmapw'])
@@ -163,7 +163,7 @@ def proposal_list(list, name):
                 ((entry['create'] == 0) and entry['lock'] == None)):
                 edit = ''
             else:
-                edit = ("""<a href="view/%s"><image 
+                edit = ("""<a href="view/%s"><img 
                             src="static/page_white_edit.png"></a>""" %
                         entry['proposalid'])
 

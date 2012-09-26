@@ -408,7 +408,7 @@ help_tothours=r"""
 """
 
 html_just_key=r"""<div id="editlist">
-  <a name="type"></a><p>Justification Type</p>
+  <p><a name="type"></a>Justification Type</p>
 
   <table>
     <tr>
@@ -430,7 +430,7 @@ html_just_key=r"""<div id="editlist">
 </div>"""
 
 html_just_normal=r"""<div id="editlist">
-  <a name="type"></a><p>Justification Type</p>
+  <p><a name="type"></a>Justification Type</p>
 
   <table>
     <tr>
@@ -448,7 +448,7 @@ html_just_normal=r"""<div id="editlist">
             <option value="Website Justification" %s>Website Justification
             <option value="LaTeX Template" %s>LaTeX Template
           </select>
-          <input type="submit" value="Select Choice" name="submit"></input>
+          <input type="submit" value="Select Choice" name="submit">
         </form>
 	%s
       </td>
