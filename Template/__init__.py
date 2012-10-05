@@ -1260,6 +1260,24 @@ class Template:
         at = os.popen("""cd %s; dvips -t letter -o - %slatex.dvi | ps2pdf14 - %slatex.pdf""" % (prop_dir, prop_dir, prop_dir))
         at.close()
 
+
+        if self.cycleinfo['type'] in ['fast', 'cs']:
+            # If the proposal type doesnt have a justification, dump out file
+            # and skip the rest of the routine.
+            if ((os.path.isfile(prop_dir + 'latex.pdf') == True) and
+                (file_send == True)):
+                pdf = open(prop_dir + 'latex.pdf', 'r')
+                data = pdf.read()
+                pdf.close()
+                self.req.headers_out.add('Content-Disposition',
+                                         'attachment; filename=%s.pdf' % 
+                                         (propid)) 
+                self.req.headers_out.add('Content-Length', str(len(data)))
+                self.req.content_type='application/pdf'
+                self.req.write(data)
+                
+            return 0
+
         result = cpss.db.images_list(self.propid)
         if (len(result) != 0):
             for image in result:
