@@ -24,6 +24,7 @@ template_list = [ 'main_10',
                   'cs_10',
                   'cs_2011',
                   'cs_2012',
+                  'fast_2012b',
                   ]
 
 templates = {}
@@ -264,6 +265,7 @@ class Template:
                      checked. See Instructions.</td>
                  </tr></table>
                </div>""")
+
         post_source = (
             """<div id="editlist">
                  <table>
@@ -284,6 +286,21 @@ class Template:
                      target="_blank"> instrument description</a> for more
                      details.
                    </td></tr>
+                 </table>
+               </div>""")
+
+        post_source_fast = (
+            """<div id="editlist">
+                 <table>
+                   <tr>
+                     <th style="width:50%%;text-align:center;
+                                font-weight:bold;">
+                       Total Hours: %(hours)s
+                       <i><a href="help_small/tot_hours" 
+                             onClick="return popup(this, 'help')">
+                          (Why is this number large?)</a></i>
+                     </th>
+                   </tr>
                  </table>
                </div>""")
         pre_image = (
@@ -332,8 +349,13 @@ class Template:
                                    'section' : section['section']})
 
                 if unlocked:
-                    cpss.w(repeat_add % { 'propid'  : self.propid, 
-                                          'section' : section['section']})
+                    # Make sure that the add more source lines option isnt
+                    # available for fast mode proposals since they can have 
+                    # only one source line.
+                    if ((self.cycleinfo['type'] != 'fast') and 
+                        (section['section'] != 'source')):
+                        cpss.w(repeat_add % { 'propid'  : self.propid, 
+                                              'section' : section['section']})
                 for lines in groups:
                     if unlocked == False:
                         break
@@ -356,7 +378,13 @@ class Template:
                     hours = self.calc_hours()
                     if hours == -1:
                         hours = "N/A"
-                    cpss.w(post_source % {'hours' : hours})
+
+                    if self.cycleinfo['type'] == 'fast':
+                        # Remove the 'request for a/b array time...' note
+                        # when working on a fast mode proposal.
+                        cpss.w(post_source_fast % {'hours' : hours})
+                    else:
+                        cpss.w(post_source % {'hours' : hours})
 
             elif (section['type'] == 'image'):
                 cpss.w(pre_image % { 'section' : section['section'] })

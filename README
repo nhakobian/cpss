@@ -27,3 +27,51 @@ POSSIBLE RACE CONDITIONS - do we need to add table locking for these
 TODO FIX
   proposal_add - on successful proposal add, refresh to the proposal edit page
   edit_entry - make sure id is valid for repeat section types.
+
+FAST MODES
+
+  The following modes in the fast system exist:
+
+  The Format for these modes are:
+  SUBARRAY_BAND_POL_CORRCONF
+
+    SUBARRAY can be: SCI1 , SCI2
+    BAND     can be: 1CM, 3MM, 1MM
+    POL      can be: SP (singlepol), DP (dualpol), FP (fullpol), C23 (Carma23), MAX (MAXSENS mode)
+    CORRCONF can be: WB, SL, CO, HCO+
+      WB is all wideband at specified frequency
+      SL is 7 (or 3) wideband and 1 user specified spectral line freq and bw
+      CO is 5 (or 1) wideband and 3 spectral line in 3mm or 1mm band (12CO, 13CO, C18O) with a custom bandwidth
+      HCO+ is 1 wideband and 7 (or 3) spectral line in 3mm band with a custom bandwidth:
+              for singlepol - (N2H+, HCN, HCO+, NH2D, CS H13CO+, H13CN)
+              for carma23   - (N2H+, HCN, HCO+)
+
+
+  SCI1_3MM_SP_WB
+  SCI1_3MM_SP_SL
+  SCI1_3MM_SP_CO
+  SCI1_3MM_SP_HCO+
+
+  SCI1_3MM_C23_WB
+  SCI1_3MM_C23_SL
+  SCI1_3MM_C23_CO
+  SCI1_3MM_C23_HCO+
+
+  SCI1_1MM_SP_WB
+  SCI1_1MM_SP_SL
+  SCI1_1MM_SP_CO
+
+  SCI1_1MM_DP_WB
+  SCI1_1MM_DP_SL
+  SCI1_1MM_DP_CO
+
+  SCI1_1MM_FP_WB
+  SCI1_1MM_FP_SL
+  SCI1_1MM_FP_CO
+
+  SCI1_1MM_C23_WB
+  SCI1_1MM_C23_SL
+  SCI1_1MM_C23_CO
+
+  SCI2_1CM_SP_WB
+  SCI2_3MM_SP_WB

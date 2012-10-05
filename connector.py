@@ -432,6 +432,12 @@ class Connector:
             raise CpssUserErr("""This section does not exist or cannot carry 
                                  any more rows of data.""")
 
+        if ((proposal['type'] == 'fast') and (section == 'source')):
+            # Fast mode proposals can't have more than one source line. Make
+            # sure that its impossible to add an additional one.
+            raise CpssUserErr("""Fast mode proposals have a limit of one 
+                                 source per proposal.""")
+
         if (section == 'image'):
             id = cpss.db.images_add(proposalid)
             self.forward('view/' + proposalid + '#image')
