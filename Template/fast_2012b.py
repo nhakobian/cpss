@@ -109,12 +109,12 @@ class template:
                      'section':'special_requirements',
                      'check':[]},]
 
-        fast_modes = {
+        self.fast_modes = {
             'SCI1_3MM_SP_WB' : {
-                restFreq = True,
-                userWB = False,
-                userFreq = False,
-                config = (
+                'userBW' : False,
+                'userFreq' : True,
+                'freqRange' : [80.0, 116.0],
+                'config' : (
 """
 tuning = {
     'restfreq' : %s # [GHz] Line rest frequency
@@ -127,7 +127,10 @@ def setCorrelator(tuning):
 """)
                 },
             'SCI1_3MM_SP_SL' : {
-                config = (
+                'userBW' : True,
+                'userFreq' : True,
+                'freqRange' : [80.0, 116.0],
+                'config' : (
 """
 tuning = {
     'restfreq' : %s # [GHz] Line rest frequency
@@ -142,11 +145,13 @@ def setCorrelator(tuning):
         slband = 7
 
     configwideastroband('LL')
-    configastroband(slband, "LL", %s, AUTO, %s, 'none', bits=CORR_2BIT) # Custom Spectral Line
+    configastroband(slband, "LL", %(userBW)s, AUTO, %s, 'none', bits=CORR_2BIT) # Custom Spectral Line
 """)
                 },
             'SCI1_3MM_SP_CO' : { 
-                config = (
+                'userBW' : True,
+                'userFreq' : False,
+                'config' : (
 """
 tuning = {
     'restfreq' : 110.556042,  # [GHz] Line rest frequency
@@ -155,18 +160,20 @@ tuning = {
 }
 def setCorrelator(tuning):
 #    lo1 = 108.021042
-    configastroband(1, "LL", BW31, 109.78216, AUTO, 109.78216, 'none', bits=CORR_2BIT) # C18O (USB)
-    configastroband(2, "LL", BW31, 110.201353, AUTO, 110.201353, 'none', bits=CORR_2BIT) # 13CO (USB)
+    configastroband(1, "LL", %(userBW)s, 109.78216, AUTO, 109.78216, 'none', bits=CORR_2BIT) # C18O (USB)
+    configastroband(2, "LL", %(userBW)s, 110.201353, AUTO, 110.201353, 'none', bits=CORR_2BIT) # 13CO (USB)
     configastroband(3, "LL", BW500, 102.560475, AUTO, 'none', 'none', bits=CORR_2BIT)
     configastroband(4, "LL", BW500, 104.254851, AUTO, 'none', 'none', bits=CORR_2BIT)
     configastroband(5, "LL", BW500, 103.615539, AUTO, 'none', 'none', bits=CORR_2BIT)
     configastroband(6, "LL", BW500, 101.906132, AUTO, 'none', 'none', bits=CORR_2BIT)
     configastroband(7, "LL", BW500, 101.201919, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(8, "LL", BW31, 115.271204, AUTO, 115.271204, 'none', bits=CORR_2BIT) # 12CO (USB)
+    configastroband(8, "LL", %(userBW)s, 115.271204, AUTO, 115.271204, 'none', bits=CORR_2BIT) # 12CO (USB)
 """)
                 },
             'SCI1_3MM_SP_HCO+' : {
-                config = (
+                'userBW' : True,
+                'userFreq' : False,
+                'config' : (
 """
 tuning = {
     'restfreq' : 93.0699,  # [GHz] Line rest frequency
@@ -175,21 +182,31 @@ tuning = {
 }
 def setCorrelator(tuning):
 #    lo1 = 91.0199
-    configastroband(1, "LL", BW8, 93.173505, AUTO, 93.173505, 'none', bits=CORR_2BIT) # N2H+ (USB)
-    configastroband(2, "LL", BW8, 88.631847, AUTO, 88.631847, 'none', bits=CORR_2BIT) # HCN (LSB)
-    configastroband(3, "LL", BW8, 89.188518, AUTO, 89.188518, 'none', bits=CORR_2BIT) # HCO+ (LSB)
-    configastroband(4, "LL", BW8, 85.925684, AUTO, 85.925684, 'none', bits=CORR_2BIT) # NH2D (LSB)
-    configastroband(5, "LL", BW8, 86.754288, AUTO, 86.754288, 'none', bits=CORR_2BIT) # H13CO+ (LSB)
-    configastroband(6, "LL", BW8, 86.340176, AUTO, 86.340176, 'none', bits=CORR_2BIT) # H13CN (LSB)
-    configastroband(7, "LL", BW8, 97.980968, AUTO, 97.980968, 'none', bits=CORR_2BIT) # CS (USB)
+    configastroband(1, "LL", %(userBW)s, 93.173505, AUTO, 93.173505, 'none', bits=CORR_2BIT) # N2H+ (USB)
+    configastroband(2, "LL", %(userBW)s, 88.631847, AUTO, 88.631847, 'none', bits=CORR_2BIT) # HCN (LSB)
+    configastroband(3, "LL", %(userBW)s, 89.188518, AUTO, 89.188518, 'none', bits=CORR_2BIT) # HCO+ (LSB)
+    configastroband(4, "LL", %(userBW)s, 85.925684, AUTO, 85.925684, 'none', bits=CORR_2BIT) # NH2D (LSB)
+    configastroband(5, "LL", %(userBW)s, 86.754288, AUTO, 86.754288, 'none', bits=CORR_2BIT) # H13CO+ (LSB)
+    configastroband(6, "LL", %(userBW)s, 86.340176, AUTO, 86.340176, 'none', bits=CORR_2BIT) # H13CN (LSB)
+    configastroband(7, "LL", %(userBW)s, 97.980968, AUTO, 97.980968, 'none', bits=CORR_2BIT) # CS (USB)
     configastroband(8, "LL", BW500, 88.002153, AUTO, 'none', 'none', bits=CORR_2BIT)
 """)
                 },
             
-            'SCI1_3MM_C23_WB' : { },
-            'SCI1_3MM_C23_SL' : { },
+            'SCI1_3MM_C23_WB' : {
+                'userBW' : False,
+                'userFreq' : True,
+                'freqRange' : [80.0, 116.0],
+                },
+            'SCI1_3MM_C23_SL' : {
+                'userBW' : True,
+                'userFreq' : True,
+                'freqRange' : [80.0, 116.0],
+                },
             'SCI1_3MM_C23_CO' : { 
-                    config = (
+                'userBW' : True,
+                'userFreq' : False,
+                'config' : (
 """
 tuning = {
     'restfreq' : 110.556042,  # [GHz] Line rest frequency
@@ -200,13 +217,15 @@ def setCorrelator(tuning):
 #    lo1 = 108.021042
     configwideastroband(conf="MAXSENS_CARMA23")
     configastroband(1, "CARMA23", BW500, 101.201919, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(3, "CARMA23", BW31, 109.78216, AUTO, 109.78216, 'none', bits=CORR_2BIT) # C18O (USB)
-    configastroband(5, "CARMA23", BW31, 110.201353, AUTO, 110.201353, 'none', bits=CORR_2BIT) # 13CO (USB)
-    configastroband(7, "CARMA23", BW31, 115.271204, AUTO, 115.271204, 'none', bits=CORR_2BIT) # 12CO (USB)
+    configastroband(3, "CARMA23", %(userBW)s, 109.78216, AUTO, 109.78216, 'none', bits=CORR_2BIT) # C18O (USB)
+    configastroband(5, "CARMA23", %(userBW)s, 110.201353, AUTO, 110.201353, 'none', bits=CORR_2BIT) # 13CO (USB)
+    configastroband(7, "CARMA23", %(userBW)s, 115.271204, AUTO, 115.271204, 'none', bits=CORR_2BIT) # 12CO (USB)
 """)
-                    },
+                },
             'SCI1_3MM_C23_HCO+' : {
-                config = (
+                'userBW' : True,
+                'userFreq' : False,
+                'config' : (
 """
 tuning = {
     'restfreq' : 87.5,  # [GHz] Line rest frequency
@@ -217,16 +236,26 @@ def setCorrelator(tuning):
 #    lo1 = 85
     configwideastroband(conf="MAXSENS_CARMA23")
     configastroband(1, "CARMA23", BW500, 88.25, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(3, "CARMA23", BW31, 88.631847, AUTO, 88.631847, 'none', bits=CORR_2BIT) # HCN
-    configastroband(5, "CARMA23", BW31, 89.188518, AUTO, 89.188518, 'none', bits=CORR_2BIT) # HCO+
-    configastroband(7, "CARMA23", BW31, 93.173505, AUTO, 93.173505, 'none', bits=CORR_2BIT) # N2H+
+    configastroband(3, "CARMA23", %(userBW)s, 88.631847, AUTO, 88.631847, 'none', bits=CORR_2BIT) # HCN
+    configastroband(5, "CARMA23", %(userBW)s, 89.188518, AUTO, 89.188518, 'none', bits=CORR_2BIT) # HCO+
+    configastroband(7, "CARMA23", %(userBW)s, 93.173505, AUTO, 93.173505, 'none', bits=CORR_2BIT) # N2H+
 """)
                 },
             
-            'SCI1_1MM_SP_WB' : { },
-            'SCI1_1MM_SP_SL' : { },
+            'SCI1_1MM_SP_WB' : {
+                'userBW' : False,
+                'userFreq' : True,
+                'freqRange' : [215.0, 270.0],
+                },
+            'SCI1_1MM_SP_SL' : { 
+                'userBW' : True,
+                'userFreq' : True,
+                'freqRange' : [215.0, 270.0],
+                },
             'SCI1_1MM_SP_CO' : {
-                    config = (
+                'userBW' : True,
+                'userFreq' : False,
+                'config' : (
 """
 tuning = {
     'restfreq' : 225,  # [GHz] Line rest frequency
@@ -236,21 +265,30 @@ tuning = {
 def setCorrelator(tuning):
 #    lo1 = 222.25
     configastroband(1, "LL", BW500, 221.00, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(2, "LL", BW31, 219.560319, AUTO, 219.560319, 'none', bits=CORR_2BIT) # C18O (LSB)
-    configastroband(3, "LL", BW31, 220.398686, AUTO, 220.398686, 'none', bits=CORR_2BIT) # 13CO (LSB)
-    configastroband(4, "LL", BW31, 230.538, AUTO, 230.538, 'none', bits=CORR_2BIT) # 12CO (USB)
+    configastroband(2, "LL", %(userBW)s, 219.560319, AUTO, 219.560319, 'none', bits=CORR_2BIT) # C18O (LSB)
+    configastroband(3, "LL", %(userBW)s, 220.398686, AUTO, 220.398686, 'none', bits=CORR_2BIT) # 13CO (LSB)
+    configastroband(4, "LL", %(userBW)s, 230.538, AUTO, 230.538, 'none', bits=CORR_2BIT) # 12CO (USB)
     configastroband(5, "LL", BW500, 217.56, AUTO, 'none', 'none', bits=CORR_2BIT)
     configastroband(6, "LL", BW500, 216.25, AUTO, 'none', 'none', bits=CORR_2BIT)
     configastroband(7, "LL", BW500, 219.25, AUTO, 'none', 'none', bits=CORR_2BIT)
     configastroband(8, "LL", BW500, 218.45, AUTO, 'none', 'none', bits=CORR_2BIT)
 """)
-                    
-                    },
+                },
             
-            'SCI1_1MM_DP_WB' : { },
-            'SCI1_1MM_DP_SL' : { },
+            'SCI1_1MM_DP_WB' : { 
+                'userBW' : False,
+                'userFreq' : True,
+                'freqRange' : [215.0, 270.0],
+                },
+            'SCI1_1MM_DP_SL' : { 
+                'userBW' : True,
+                'userFreq' : True,
+                'freqRange' : [215.0, 270.0],
+                },
             'SCI1_1MM_DP_CO' : {
-                    config = (
+                'userBW' : True,
+                'userFreq' : False,
+                'config' : (
 """
 tuning = {
     'restfreq' : 225,  # [GHz] Line rest frequency
@@ -260,16 +298,26 @@ tuning = {
 def setCorrelator(tuning):
 #    lo1 = 222.25
     configastroband(1, "DUALPOL", BW500, 221.00, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(3, "DUALPOL", BW31, 219.560319, AUTO, 219.560319, 'none', bits=CORR_2BIT) # C18O (LSB)
-    configastroband(5, "DUALPOL", BW31, 220.398686, AUTO, 220.398686, 'none', bits=CORR_2BIT) # 13CO (LSB)
-    configastroband(7, "DUALPOL", BW31, 230.538, AUTO, 230.538, 'none', bits=CORR_2BIT) # 12CO (USB)
+    configastroband(3, "DUALPOL", %(userBW)s, 219.560319, AUTO, 219.560319, 'none', bits=CORR_2BIT) # C18O (LSB)
+    configastroband(5, "DUALPOL", %(userBW)s, 220.398686, AUTO, 220.398686, 'none', bits=CORR_2BIT) # 13CO (LSB)
+    configastroband(7, "DUALPOL", %(userBW)s, 230.538, AUTO, 230.538, 'none', bits=CORR_2BIT) # 12CO (USB)
 """)
-                    },
+                },
             
-            'SCI1_1MM_FP_WB' : { },
-            'SCI1_1MM_FP_SL' : { },
+            'SCI1_1MM_FP_WB' : {
+                'userBW' : False,
+                'userFreq' : True,
+                'freqRange' : [215.0, 270.0],
+                },
+            'SCI1_1MM_FP_SL' : {
+                'userBW' : True,
+                'userFreq' : True,
+                'freqRange' : [215.0, 270.0],
+                },
             'SCI1_1MM_FP_CO' : {
-                    config = (
+                'userBW' : True,
+                'userFreq' : False,
+                'config' : (
 """
 tuning = {
     'restfreq' : 225,  # [GHz] Line rest frequency
@@ -279,14 +327,20 @@ tuning = {
 def setCorrelator(tuning):
 #    lo1 = 222.25
     configastroband(1, "FULLSTOKES", BW500, 221.00, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(3, "FULLSTOKES", BW31, 219.560319, AUTO, 219.560319, 'none', bits=CORR_2BIT) # C18O (LSB)
-    configastroband(5, "FULLSTOKES", BW31, 220.398686, AUTO, 220.398686, 'none', bits=CORR_2BIT) # 13CO (LSB)
-    configastroband(7, "FULLSTOKES", BW31, 230.538, AUTO, 230.538, 'none', bits=CORR_2BIT) # 12CO (USB)
+    configastroband(3, "FULLSTOKES", %(userBW)s, 219.560319, AUTO, 219.560319, 'none', bits=CORR_2BIT) # C18O (LSB)
+    configastroband(5, "FULLSTOKES", %(userBW)s, 220.398686, AUTO, 220.398686, 'none', bits=CORR_2BIT) # 13CO (LSB)
+    configastroband(7, "FULLSTOKES", %(userBW)s, 230.538, AUTO, 230.538, 'none', bits=CORR_2BIT) # 12CO (USB)
 """)
                     },
             
-            'SCI2_1CM_SP_WB' : { },
-            'SCI2_3MM_SP_WB' : { },
+            'SCI2_1CM_SP_WB' : {
+                'userBW' : False,
+                'userFreq' : False,
+                },
+            'SCI2_3MM_SP_WB' : { 
+                'userBW' : False,
+                'userFreq' : False,
+                },
             }
 
         source = [
@@ -340,7 +394,7 @@ def setCorrelator(tuning):
                 'section' : 'source',
                 'line' : 1,
                 #'info' : '',
-                #'check' : [],
+                'check' : ['NoNull', 'Numeric'],
                 },
             {
                 'name':'Track Length',
@@ -350,47 +404,37 @@ def setCorrelator(tuning):
                 'section' : 'source',
                 'line' : 1,
                 #'info' : '',
-                #'check' : [],
+                'check' : ['NoNull', 'Numeric', 'FastTrackLength'],
                 },
             {
                 'name':'Correlator Mode',
                 'shortname':'Mode',
                 'fieldname' : 'f_corrconfig',
-                'fieldtype' : fast_modes,
+                'fieldtype' : sorted(self.fast_modes.keys()),
                 'section' : 'source',
                 'line' : 1,
                 #'info' : '',
-                #'check' : [],
+                'check' : ['NoNull'],
                 },
             {
                 'name':'Frequency',
                 'shortname':'Freq',
-                'fieldname' : 'f_bfreq',
+                'fieldname' : 'f_freq',
                 'fieldtype' : 'text',
                 'section' : 'source',
                 'line' : 1,
                 #'info' : '',
-                #'check' : [],
-                },
-            {
-                'name':'Spectral Line Frequency',
-                'shortname':'Line Freq',
-                'fieldname' : 'f_slfreq',
-                'fieldtype' : 'text',
-                'section' : 'source',
-                'line' : 1,
-                #'info' : '',
-                #'check' : [],
+                'check' : ['FastFreqCheck'],
                 },
             {
                 'name':'Spectral Line Bandwidth',
                 'shortname':'BW',
                 'fieldname' : 'f_slbw',
-                'fieldtype' : ['62 MHz', '31 MHz', '8 MHz', '2 MHz'],
+                'fieldtype' : ['BW62', 'BW31', 'BW8', 'BW2'],
                 'section' : 'source',
                 'line' : 1,
                 #'info' : '',
-                #'check' : [],
+                'check' : ['FastBWCheck'],
                 },
             {
                 'name':'Mosaic',

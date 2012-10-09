@@ -170,6 +170,8 @@ class Template:
                         self.tmpLinescan['observation_type'] = dataline['observation_type']
                     if entry['fieldname'] == 'corr_frequency':
                         self.tmpLinescan['corr_frequency'] = dataline['corr_frequency']
+                    if entry['fieldname'] == 'f_corrconfig':
+                        self.tmpLinescan['f_corrconfig'] = dataline['f_corrconfig']
                     # If more pre-scan values are needed add them here...
                 # End pre-scan for loop, below continues normal processing.
 
@@ -1085,10 +1087,10 @@ class Template:
                 element['error'] = None
             else:
                 a = ErrorCheck(element['data'], element['check'], 
-                               self.tmpLinescan)
+                               self)
                 element['error'] = a.GetError()
         else:
-            a = ErrorCheck(element['data'], ['NoNull'], self.tmpLinescan)
+            a = ErrorCheck(element['data'], ['NoNull'], self)
             element['error'] = a.GetError()
 
         if (element['error'] != None):
@@ -1379,9 +1381,11 @@ class Template:
             file.close()
 
 class ErrorCheck:
-    def __init__(self, value, error_list, tmpLinescan):
-        self.tmpLinescan = tmpLinescan # Used in enchanced error checking; can be
+    def __init__(self, value, error_list, template):
+        self.tmpLinescan = template.tmpLinescan # Used in enchanced error checking; can be
                                        # optional.
+        self.tempclass = template.tempclass
+
         self.error = ''
         self.order = ['NoNull',
                       'NoSpaces',
@@ -1404,7 +1408,10 @@ class ErrorCheck:
                       'decCheck',
                       'obsblockCheck',
                       'timeCheck',
-                      'antCheck']
+                      'antCheck',
+                      'FastBWCheck',
+                      'FastFreqCheck',
+                      'FastTrackLength',]
         for error in self.order:
             if (error_list.__contains__(error) == True):
                 self.__class__.__dict__[error](self, value)
@@ -1656,3 +1663,66 @@ class ErrorCheck:
         ant = float(numant)
         if ((ant < 1) or (ant > 15)):
             self.AddError("The range of values must be between 1 and 15.")
+
+    def FastBWCheck(self, bw):
+        if 'f_corrconfig' not in self.tmpLinescan:
+            self.AddError("Invalid Mode Template")
+            return # Check to make sure that the following lines dont fail.
+        
+        if not hasattr(self.tempclass, 'fast_modes'):
+            self.AddError("Invalid Mode Template.")
+            return
+        
+        mode = self.tmpLinescan['f_corrconfig']
+        if mode == None:
+            self.AddError("A correlator mode must be selected.")
+            return
+
+        userBW = self.tempclass.fast_modes[mode]['userBW']
+        if (userBW == False) and (bw != None):
+            self.AddError("Selected Mode does not allow for a user selected bandwidth.")
+            
+        if (userBW == True) and (bw == None):
+            self.AddError("Selected Mode requires a user selected bandwidth for spectral line bands.")
+
+    def FastFreqCheck(self, freq):
+        if 'f_corrconfig' not in self.tmpLinescan:
+            self.AddError("Invalid Mode Template")
+            return # Check to make sure that the following lines dont fail.
+        
+        if not hasattr(self.tempclass, 'fast_modes'):
+            self.AddError("Invalid Mode Template.")
+            return
+        
+        mode = self.tmpLinescan['f_corrconfig']
+        if mode == None:
+            self.AddError("A correlator mode must be selected.")
+            return
+
+        userFreq = self.tempclass.fast_modes[mode]['userFreq']
+        if (userFreq == False) and (freq != None):
+            self.AddError("Selected Mode does not allow for a user selected frequency.")
+
+        if (userFreq == True) and (freq == None):
+            self.AddError("Selected Mode requires a user selected frequency.")
+        else:
+            if 'freqRange' in self.tempclass.fast_modes[mode]:
+                freqRange = self.tempclass.fast_modes[mode]['freqRange']
+            else:
+                return
+            lo = freqRange[0]
+            hi = freqRange[1]
+            
+            try:
+                float(freq)
+            except:
+                self.AddError("Frequency field must be blank or a number.")
+                return
+
+            if (float(freq) < lo) or (float(freq) > hi):
+                self.AddError("Selected mode has a frequency range of %s GHz to %s GHz." % 
+                              (str(lo), str(hi)))
+            
+    def FastTrackLength(self, value):
+        if (float(value) < 1.) or (float(value) > 3.):
+            self.AddError("Requested track length must be between 1 and 3 hours.")
