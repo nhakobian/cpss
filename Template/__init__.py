@@ -291,20 +291,6 @@ class Template:
                  </table>
                </div>""")
 
-        post_source_fast = (
-            """<div id="editlist">
-                 <table>
-                   <tr>
-                     <th style="width:50%%;text-align:center;
-                                font-weight:bold;">
-                       Total Hours: %(hours)s
-                       <i><a href="help_small/tot_hours" 
-                             onClick="return popup(this, 'help')">
-                          (Why is this number large?)</a></i>
-                     </th>
-                   </tr>
-                 </table>
-               </div>""")
         pre_image = (
             """<div id="editlist"><p><a name="image"></a>Image Attachments
                  <a href="help_small/%(section)s" 
@@ -381,11 +367,7 @@ class Template:
                     if hours == -1:
                         hours = "N/A"
 
-                    if self.cycleinfo['type'] == 'fast':
-                        # Remove the 'request for a/b array time...' note
-                        # when working on a fast mode proposal.
-                        cpss.w(post_source_fast % {'hours' : hours})
-                    else:
+                    if self.cycleinfo['type'] != 'fast':
                         cpss.w(post_source % {'hours' : hours})
 
             elif (section['type'] == 'image'):
@@ -832,7 +814,18 @@ class Template:
             element['html'] = element['data']
             return element
 
-        #self.req.write(str(element['fieldtype']))
+        ##Begin Error Checking##
+        if (element.__contains__('check') == True):
+            if (element['check'] == []):
+                element['error'] = None
+            else:
+                a = ErrorCheck(element['data'], element['check'], 
+                               self)
+                element['error'] = a.GetError()
+        else:
+            a = ErrorCheck(element['data'], ['NoNull'], self)
+            element['error'] = a.GetError()
+
         #######################################################################
         if (element['fieldtype'] == 'array'):
             element['sqltype'] = """SET('A','B','C','D','E')"""
@@ -890,6 +883,8 @@ class Template:
                 element['html'] += """</select>"""
             if (view == True):
                 element['html'] = element['data']
+                if element['error'] != None:
+                    element['text'] = ("{\cellcolor{red!45}%s}" % element['data'])
         #######################################################################
         elif (element['fieldtype'] == 'institution'):
             element['sqltype'] = 'text'
@@ -1012,9 +1007,14 @@ class Template:
                     back = ''
                 if (element['data'] == None):
                     element['html'] = element['data']
-                    element['text'] = "{\cellcolor{red!45}$\Box$}"
+                    if element['error'] == None:
+                        element['text'] = ''
+                    else:
+                        element['text'] = "{\cellcolor{red!45}$\Box$}"
                 else:
                     element['html'] = front + element['data'].replace('&', '&#38;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&#34;') + back
+                    if element['error'] != None:
+                        element['text'] = ("{\cellcolor{red!45}%s}" % element['data'])
                     if element['fieldname'] == "email":
                         element['text'] = "\\url{" + element['data'] + "}"
 
@@ -1080,18 +1080,6 @@ class Template:
                 element['html'] = data
         else:
             element['html'] = element['data']
-
-        ##Begin Error Checking##
-        if (element.__contains__('check') == True):
-            if (element['check'] == []):
-                element['error'] = None
-            else:
-                a = ErrorCheck(element['data'], element['check'], 
-                               self)
-                element['error'] = a.GetError()
-        else:
-            a = ErrorCheck(element['data'], ['NoNull'], self)
-            element['error'] = a.GetError()
 
         if (element['error'] != None):
             if (view == True):
@@ -1405,7 +1393,9 @@ class ErrorCheck:
                       'Integer',
                       'NoZero',
                       'raCheck',
+                      'FastraCheck',
                       'decCheck',
+                      'FastdecCheck',
                       'obsblockCheck',
                       'timeCheck',
                       'antCheck',
@@ -1726,3 +1716,67 @@ class ErrorCheck:
     def FastTrackLength(self, value):
         if (float(value) < 1.) or (float(value) > 3.):
             self.AddError("Requested track length must be between 1 and 3 hours.")
+
+    def FastraCheck(self, RA):
+        ra = RA.split(':')
+        if len(ra) != 3:
+            self.AddError("Invalid format: must be HH:MM:SS.SS")
+            return
+
+        hours = ra[0]
+        minutes = ra[1]
+        seconds = ra[2]
+
+        try:
+            if "{0:02d}".format(int(hours)) == hours:
+                if (int(hours) < 0) or (int(hours) > 23):
+                    raise ValueError
+            else:
+                raise ValueError
+
+            if "{0:02d}".format(int(minutes)) == minutes:
+                if (int(minutes) < 0) or (int(minutes) > 59):
+                    raise ValueError
+            else:
+                raise ValueError
+
+            if "{0:05.2f}".format(float(seconds)) == seconds:
+                if (float(seconds) < 0) or (float(seconds) > 59.99):
+                    raise ValueError
+            else:
+                raise ValueError
+        except:
+            self.AddError("Invalid format: must be HH:MM:SS.SS")
+
+    def FastdecCheck(self, DEC):
+        dec = DEC.split(':')
+        if len(dec) != 3:
+            self.AddError("Invalid format: must be (+/-) DD:MM:SS.SS")
+            return
+
+        degrees = dec[0]
+        minutes = dec[1]
+        seconds = dec[2]
+
+        try:
+            if "{0:+03d}".format(int(degrees)) == degrees:
+                if (int(degrees) < -40) or (int(degrees) > 60):
+                    self.AddError("""Invalid degrees value: must be -40 < DD <= 90""")
+                    raise ValueError
+            else:
+                raise ValueError
+
+            if "{0:02d}".format(int(minutes)) == minutes:
+                if (int(minutes) < 0) or (int(minutes) > 59):
+                    raise ValueError
+            else:
+                raise ValueError
+
+            if "{0:05.2f}".format(float(seconds)) == seconds:
+                if (float(seconds) < 0) or (float(seconds) > 59.99):
+                    raise ValueError
+            else:
+                raise ValueError
+        except:
+            self.AddError("Invalid format: must be (+/-) DD:MM:SS.SS")
+

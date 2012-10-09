@@ -374,7 +374,7 @@ def setCorrelator(tuning):
                 'section':'source',
                 'line' : 1,
                 'info' : 'J2000',
-                'check' : ['NoNull', 'NoSpaces', 'raCheck']
+                'check' : ['NoNull', 'NoSpaces', 'FastraCheck']
                 },
             {
                 'name':'Declination',
@@ -384,7 +384,7 @@ def setCorrelator(tuning):
                 'section':'source',
                 'line' : 1,
                 'info' : 'J2000',
-                'check' : ['NoNull', 'NoSpaces', 'decCheck']
+                'check' : ['NoNull', 'NoSpaces', 'FastdecCheck']
                 },
             {
                 'name':'LSR Velocity',
@@ -440,11 +440,11 @@ def setCorrelator(tuning):
                 'name':'Mosaic',
                 'shortname':'Mosaic',
                 'fieldname' : 'f_mosaic',
-                'fieldtype' : ['test'],
+                'fieldtype' : ['7 Point'],
                 'section' : 'source',
                 'line' : 1,
                 #'info' : '',
-                #'check' : [],
+                'check' : [],
                 },
             
             ]
@@ -457,10 +457,9 @@ def setCorrelator(tuning):
             5 : 'f_vlsr',
             6 : 'f_time',
             7 : 'f_corrconfig',
-            8 : 'f_bfreq',
-            9 : 'f_slfreq',
-            10: 'f_slbw',
-            11: 'f_mosaic',
+            8 : 'f_freq',
+            9 : 'f_slbw',
+            10: 'f_mosaic',
             }
                               
        

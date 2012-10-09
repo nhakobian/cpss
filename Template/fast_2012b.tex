@@ -99,8 +99,8 @@
   \multicolumn{4}{>{\hsize=5.089\hsize}Z}{\cellcolor{gray!20} ${title}} &
   \multicolumn{3}{>{\hsize=2.8265\hsize}Z}{\cellcolor{gray!20} ${scientific_category}}\\
   \rowcolor{gray!45}
-  \textbf{Date} & \textbf{TOO/Time Critical} & \textbf{Level of Help Required} & \textbf{1cm Project} & \textbf{3mm Project}& \textbf{1mm Project}\\
-  ${date} & ${toe} & ${help_required} & ${1cm} & ${3mm} & ${1mm}\\
+  \textbf{Date} & & \textbf{TOO/Time Critical} & \textbf{Level of Help Required} & \textbf{1cm Project} & \textbf{3mm Project}& \textbf{1mm Project}\\
+  ${date} & & ${toe} & ${help_required} & ${1cm} & ${3mm} & ${1mm}\\
   \hhline{-------}
 \end{tabularx}
 
@@ -130,16 +130,26 @@ ${abstract}
 \setlength{\tabcolsep}{2pt}
 \sectitle{Source Information}\vskip -0.65cm
 \begin{filecontents*}{source.tex}
-\begin{longtable}{ZZZZZZZZZZZ}
-  \hhline{-----------}
+\begin{longtable}{
+>{\hsize=0.1\hsize}Z % id
+>{\hsize=1.5\hsize}Z % Source
+>{\hsize=1.1\hsize}Z % RA
+>{\hsize=1.1\hsize}Z % DEC
+>{\hsize=0.8\hsize}Z % Vlsr
+>{\hsize=0.8\hsize}Z % Length
+>{\hsize=1.9\hsize}Z % Mode
+>{\hsize=1.1\hsize}Z % Freq
+>{\hsize=0.8\hsize}Z % bw
+>{\hsize=0.8\hsize}Z % mosaic
+}
+  \hhline{----------}
   \rowcolor{gray!45}
   \textbf{\#} & \textbf{Source} & \textbf{RA} & \textbf{DEC} & 
   \textbf{V$_{LSR}$} & \textbf{Length} & \textbf{Mode} & \textbf{Freq} & 
-  \textbf{Line Freq} & \textbf{BW} & \textbf{Mosaic}\endhead
-  \multicolumn{11}{c}{\cellcolor{gray!37}\footnotesize Continued on next page. \normalsize } \\
-  \hhline{-----------}\endfoot
-\multicolumn{11}{c}{\cellcolor{gray!37}\textbf{Total Hours: ${total_time}}}\\
-  \hhline{-----------}\endlastfoot
+  \textbf{BW} & \textbf{Mosaic}\endhead
+  \multicolumn{10}{c}{\cellcolor{gray!37}\footnotesize Continued on next page. \normalsize } \\
+  \hhline{----------}\endfoot
+  \hhline{----------}\endlastfoot
 ${source_data}
 \end{longtable}
 \end{filecontents*}
