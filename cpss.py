@@ -33,6 +33,12 @@ def w(string):
         req.write(string)
     return
 
+def dbg(string):
+    if session['admin'] == True:
+        debug = open(config['base_directory'] + config['files_directory'] + 'debug.txt', 'a')
+        debug.write(string + '\n')
+        debug.close()
+
 def print_exc_plus(skip=None):
     """
     Print the usual traceback information, followed by a listing of all the
