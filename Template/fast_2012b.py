@@ -430,7 +430,7 @@ def setCorrelator(tuning):
                 'name':'Spectral Line Bandwidth',
                 'shortname':'BW',
                 'fieldname' : 'f_slbw',
-                'fieldtype' : ['BW62', 'BW31', 'BW8', 'BW2'],
+                'fieldtype' : ['BW250', 'BW125', 'BW62', 'BW31', 'BW8', 'BW2'],
                 'section' : 'source',
                 'line' : 1,
                 #'info' : '',
