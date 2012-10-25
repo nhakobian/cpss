@@ -344,7 +344,8 @@ class Connector:
         if cpss.options['cycle_' + prop_type] != '':
             cycle = cpss.db.cycle_info(cpss.options['cycle_' + prop_type])
             if cycle['create'] != 1:
-                self.forward('list')
+                raise CpssUserErr("""No %s proposals are being accepted at
+                                     this time.""" % prop_type)
                 return
 
             template = cpss.Template.Template(cycle, None, True, Fetch=False)
