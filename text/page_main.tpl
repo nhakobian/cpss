@@ -1,5 +1,5 @@
   <h2 class="center">
-    Semester 2012b: Deadline 14 May 2012 5PM CDT
+    Semester 2013a: Deadline 05 December 2012 5PM CST (UTC-6)
   </h2>
 
 
