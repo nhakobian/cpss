@@ -149,7 +149,7 @@ class Connector:
                     return False
         unlocked.error_string = """The proposal you are editing has been set
           as uneditable. This usually occurs when your proposal has been 
-          submitted."""
+          submitted, or after a proposal call has ended."""
 
         # The dispatcher works by splitting the path string in pieces by the
         # directory dilemiter '/', testing permissions, then if permissions 
