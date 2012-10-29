@@ -1351,6 +1351,7 @@ class ErrorCheck:
                                       # that the value is already a number.
                       'Only1cm3mmInC23',
                       'CARMAFreq',
+                      'CARMAFreqWith1cm',
                       'SZAFreq',
                       'PolFreq',
                       'Integer',
@@ -1445,6 +1446,26 @@ class ErrorCheck:
                 if (float(freq) <= 116.0) and (float(freq) >= 80.0):
                     return
                 elif (float(freq) <= 270.0) and (float(freq) >= 215.0):
+                    return
+                else:
+                    self.AddError("Frequency must lie in the 3mm or 1mm bands.")
+            except TypeError:
+                self.AddError("Frequency must lie in the 3mm or 1mm bands.")
+            except ValueError:
+                self.AddError("Invalid frequency specified in frequency field.")
+
+    def CARMAFreqWith1cm(self, value):
+        if self.tmpLinescan.__contains__('corr_frequency') == False:
+            return
+    
+        if (value != '0') and (value != None):
+            try:
+                freq = self.tmpLinescan['corr_frequency']
+                if (float(freq) <= 116.0) and (float(freq) >= 80.0):
+                    return
+                elif (float(freq) <= 270.0) and (float(freq) >= 215.0):
+                    return
+                elif (float(freq) <= 36.0) and (float(freq) >= 26.0):
                     return
                 else:
                     self.AddError("Frequency must lie in the 3mm or 1mm bands.")
