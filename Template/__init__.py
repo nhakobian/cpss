@@ -291,6 +291,12 @@ class Template:
                  </table>
                </div>""")
 
+        post_fast_source = (
+            """<div id="editlist">
+                 <pre>%s</pre>                 
+               </div>
+""")
+
         pre_image = (
             """<div id="editlist"><p><a name="image"></a>Image Attachments
                  <a href="help_small/%(section)s" 
@@ -367,7 +373,9 @@ class Template:
                     if hours == -1:
                         hours = "N/A"
 
-                    if self.cycleinfo['type'] != 'fast':
+                    if self.cycleinfo['type'] == 'fast':
+                        cpss.w(post_fast_source % self.fast_corrconfig())
+                    else:
                         cpss.w(post_source % {'hours' : hours})
 
             elif (section['type'] == 'image'):
@@ -443,6 +451,9 @@ class Template:
         # It means there is a bug somewhere else.
         if not unlocked:
             cpss.w("</div>")
+
+    def fast_corrconfig(self):
+        return 'BLANK TEST'
 
     def make_html(self, section_choose=False, id=False):
         #Validate section
