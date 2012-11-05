@@ -117,12 +117,12 @@ class template:
                 'config' : (
 """
 tuning = {
-    'restfreq' : %s # [GHz] Line rest frequency
+    'restfreq' : %(freq)s # [GHz] Line rest frequency
     'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
 
 def setCorrelator(tuning):
-#    lo1 = %s - 2.5 = %s
+#    lo1 = %(freq)s - 2.5
     configwideastroband('LL', bits=CORR_2BIT)
 """)
                 },
@@ -133,12 +133,12 @@ def setCorrelator(tuning):
                 'config' : (
 """
 tuning = {
-    'restfreq' : %s # [GHz] Line rest frequency
+    'restfreq' : %(freq)s # [GHz] Line rest frequency
     'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
 
 def setCorrelator(tuning):
-#    lo1 = %s - 2.5 = %s
+#    lo1 = %(freq)s - 2.5
     if (tuning['restfreq'] > 92.0) and (tuning['restfreq'] < 113.0):
         slband = 2
     else:

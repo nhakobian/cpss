@@ -292,10 +292,13 @@ class Template:
                </div>""")
 
         post_fast_source = (
-            """<div id="editlist">
-                 <pre>%s</pre>                 
-               </div>
-""")
+            """<table>
+                 <tr><td style="text-align:left;border-top:1px solid black;">
+                   <div style="overflow:scroll;width:800px;font-size:small;">
+                     <pre>%s</pre>
+                   </div>
+                 </td></tr>
+               </table>""")
 
         pre_image = (
             """<div id="editlist"><p><a name="image"></a>Image Attachments
@@ -374,7 +377,9 @@ class Template:
                         hours = "N/A"
 
                     if self.cycleinfo['type'] == 'fast':
-                        cpss.w(post_fast_source % self.fast_corrconfig())
+                        fast_corr = self.fast_corrconfig()
+                        if fast_corr != '':
+                            cpss.w(post_fast_source % fast_corr)
                     else:
                         cpss.w(post_source % {'hours' : hours})
 
@@ -453,7 +458,30 @@ class Template:
             cpss.w("</div>")
 
     def fast_corrconfig(self):
-        return 'BLANK TEST'
+        for section in self.sections:
+            if section['section'] == 'source':
+                source = section['data'][0][1]
+
+        for element in source:
+            if element['fieldname'] == 'f_corrconfig':
+                mode = element
+            elif element['fieldname'] == 'f_freq':
+                freq = element
+            elif element['fieldname'] == 'f_slbw':
+                slbw = element
+
+        cpss.dbg(str(mode))
+
+        if mode['error'] != '':
+            return ''
+        if freq['error'] != '':
+            return ''
+        if slbw['error'] != '':
+            return ''
+
+        buf = (self.tempclass.fast_modes[mode['data']]['config'] % { 'userBW' : slbw['data'],
+                                                                    'freq' : freq['data']})
+        return buf
 
     def make_html(self, section_choose=False, id=False):
         #Validate section
