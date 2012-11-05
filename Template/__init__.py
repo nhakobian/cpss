@@ -470,8 +470,6 @@ class Template:
             elif element['fieldname'] == 'f_slbw':
                 slbw = element
 
-        cpss.dbg(str(mode))
-
         if mode['error'] != '':
             return ''
         if freq['error'] != '':
@@ -480,7 +478,7 @@ class Template:
             return ''
 
         buf = (self.tempclass.fast_modes[mode['data']]['config'] % { 'userBW' : slbw['data'],
-                                                                    'freq' : freq['data']})
+                                                                     'freq' : freq['data']})
         return buf
 
     def make_html(self, section_choose=False, id=False):
