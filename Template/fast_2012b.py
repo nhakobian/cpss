@@ -1,5 +1,9 @@
+from mod_python import apache
+export = apache.import_module("fast_2012b_export")
+
 class template:
     def __init__(self):
+        self.export = export
         author = [{'name':'ProposalID',
                    'fieldname':'proposalid',
                    'fieldtype':'integer',
@@ -111,6 +115,7 @@ class template:
 
         self.fast_modes = {
             'SCI1_3MM_SP_WB' : {
+                'obsmode' : 'SINGLEPOL',
                 'userBW' : False,
                 'userFreq' : True,
                 'freqRange' : [80.0, 116.0],
@@ -127,6 +132,7 @@ def setCorrelator(tuning):
 """)
                 },
             'SCI1_3MM_SP_SL' : {
+                'obsmode' : 'SINGLEPOL',
                 'userBW' : True,
                 'userFreq' : True,
                 'freqRange' : [80.0, 116.0],
@@ -149,8 +155,10 @@ def setCorrelator(tuning):
 """)
                 },
             'SCI1_3MM_SP_CO' : { 
+                'obsmode' : 'SINGLEPOL',
                 'userBW' : True,
                 'userFreq' : False,
+                'freq' : '110.556042',
                 'config' : (
 """
 tuning = {
@@ -171,8 +179,10 @@ def setCorrelator(tuning):
 """)
                 },
             'SCI1_3MM_SP_HCO+' : {
+                'obsmode' : 'SINGLEPOL',
                 'userBW' : True,
                 'userFreq' : False,
+                'freq' : '93.0699',
                 'config' : (
 """
 tuning = {
@@ -194,18 +204,22 @@ def setCorrelator(tuning):
                 },
             
             'SCI1_3MM_C23_WB' : {
+                'obsmode' : 'CARMA23',
                 'userBW' : False,
                 'userFreq' : True,
                 'freqRange' : [80.0, 116.0],
                 },
             'SCI1_3MM_C23_SL' : {
+                'obsmode' : 'CARMA23',
                 'userBW' : True,
                 'userFreq' : True,
                 'freqRange' : [80.0, 116.0],
                 },
             'SCI1_3MM_C23_CO' : { 
+                'obsmode' : 'CARMA23',
                 'userBW' : True,
                 'userFreq' : False,
+                'freq' : '110.556042',
                 'config' : (
 """
 tuning = {
@@ -223,8 +237,10 @@ def setCorrelator(tuning):
 """)
                 },
             'SCI1_3MM_C23_HCO+' : {
+                'obsmode' : 'CARMA23',
                 'userBW' : True,
                 'userFreq' : False,
+                'freq' : '87.5',
                 'config' : (
 """
 tuning = {
@@ -243,18 +259,22 @@ def setCorrelator(tuning):
                 },
             
             'SCI1_1MM_SP_WB' : {
+                'obsmode' : 'SINGLEPOL',
                 'userBW' : False,
                 'userFreq' : True,
                 'freqRange' : [215.0, 270.0],
                 },
             'SCI1_1MM_SP_SL' : { 
+                'obsmode' : 'SINGLEPOL',
                 'userBW' : True,
                 'userFreq' : True,
                 'freqRange' : [215.0, 270.0],
                 },
             'SCI1_1MM_SP_CO' : {
+                'obsmode' : 'SINGLEPOL',
                 'userBW' : True,
                 'userFreq' : False,
+                'freq' : '225',
                 'config' : (
 """
 tuning = {
@@ -276,18 +296,22 @@ def setCorrelator(tuning):
                 },
             
             'SCI1_1MM_DP_WB' : { 
+                'obsmode' : 'DUALPOL',
                 'userBW' : False,
                 'userFreq' : True,
                 'freqRange' : [215.0, 270.0],
                 },
             'SCI1_1MM_DP_SL' : { 
+                'obsmode' : 'DUALPOL',
                 'userBW' : True,
                 'userFreq' : True,
                 'freqRange' : [215.0, 270.0],
                 },
             'SCI1_1MM_DP_CO' : {
+                'obsmode' : 'DUALPOL',
                 'userBW' : True,
                 'userFreq' : False,
+                'freq' : '225',
                 'config' : (
 """
 tuning = {
@@ -305,18 +329,22 @@ def setCorrelator(tuning):
                 },
             
             'SCI1_1MM_FP_WB' : {
+                'obsmode' : 'FULLPOL',
                 'userBW' : False,
                 'userFreq' : True,
                 'freqRange' : [215.0, 270.0],
                 },
             'SCI1_1MM_FP_SL' : {
+                'obsmode' : 'FULLPOL',
                 'userBW' : True,
                 'userFreq' : True,
                 'freqRange' : [215.0, 270.0],
                 },
             'SCI1_1MM_FP_CO' : {
+                'obsmode' : 'FULLPOL',
                 'userBW' : True,
                 'userFreq' : False,
+                'freq' : '225',
                 'config' : (
 """
 tuning = {
@@ -334,10 +362,12 @@ def setCorrelator(tuning):
                     },
             
             'SCI2_1CM_SP_WB' : {
+                'obsmode' : 'SINGLEPOL',
                 'userBW' : False,
                 'userFreq' : False,
                 },
             'SCI2_3MM_SP_WB' : { 
+                'obsmode' : 'SINGLEPOL',
                 'userBW' : False,
                 'userFreq' : False,
                 },

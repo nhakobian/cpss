@@ -701,9 +701,14 @@ class Connector:
         if (ret != 0):
             cpss.w(cpss.text.submit_failed_error % proposalid)
         else:
+            if proposal['type'] in ['fast', 'cs']:
+                pdfname = '/latex.pdf'
+            else:
+                pdfname = '/latex-final.pdf'
+
             pdf = open(cpss.config['base_directory'] + 
                        cpss.config['files_directory'] + '/' + proposalid + 
-                       '/latex-final.pdf', 'r')
+                       pdfname, 'r')
             pdf_data = pdf.read()
             pdf.close()
 
@@ -713,6 +718,13 @@ class Connector:
                 cpss.db.pdf_add_update(proposalid, pdf_data)
                 cpss.db.proposal_submit(proposalid)
                 cpss.w(cpss.text.submit_success)
+                #### Add fast specific submission info.
+                ## Generate the XML files
+                ## Format and send email.
+                ## Both these are actually called as functions in the 
+                ## template file.
+                template.tempclass.export.export_xml(proposal, template)
+
         self.do_footer()
 
     def ddt(self):
