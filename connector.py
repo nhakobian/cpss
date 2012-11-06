@@ -253,6 +253,10 @@ class Connector:
                              'opt'  : 0,
                              'func' : self.ddt,
                              },
+            'fast-track' : { 'perm' : None,
+                             'opt'  : 0,
+                             'func' : self.fasttrack,
+                             },
             }
         
         # Logged in permission must also check that user is activated. 
@@ -742,7 +746,18 @@ class Connector:
             cpss.w(cpss.text.page_ddt_disclaimer)
 
         self.do_footer()
-                
+           
+    def fasttrack(self):
+        self.do_header()
+        cpss.w(cpss.text.page_fasttrack)
+
+        if cpss.session['authenticated'] == False:
+            cpss.page.logon(redir='fast-track')
+        elif cpss.session['authenticated'] == True:
+            cpss.w(cpss.text.page_fasttrack_disclaimer)
+
+        self.do_footer()
+     
     def Root(self):
         self.do_header()
         cpss.page.main()
