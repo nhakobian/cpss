@@ -171,7 +171,7 @@ class Backend:
             """SELECT * FROM `proposals`, `cycles`
                WHERE `proposals`.`user`=%(user)s 
                      AND `cycles`.`cyclename`=`proposals`.`cyclename`
-               ORDER BY `final_date` DESC, 
+               ORDER BY `status`, `final_date` DESC, 
                         `proposals`.`carmaid` DESC, 
                         `proposals`.`proposalid`""" %
             {'user'   : self.literal(user)})
