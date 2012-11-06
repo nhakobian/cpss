@@ -5,6 +5,11 @@ import datetime
 import smtplib
 import os
 import string
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import smtplib
 from random import choice
 
 cpss = apache.import_module("cpss")
@@ -738,7 +743,63 @@ class Connector:
                     template.tempclass.export.export_xml(proposal, template)
                     template.tempclass.export.fast_email(carmaid)
 
+                # Email notification of DDT and Fast-track proposal submissions.
+                if proposal['type'] in ['fast', 'ddt']:
+                    self.email_notify(proposal)
+
         self.do_footer()
+
+    def email_notify(self, proposal):
+        # Email notification of proposal submission
+        carmaid = proposal['carmaid']
+
+        message_text = ("""This is notification that the %(type)s proposal:
+
+%(carmaid)s - %(title)s
+
+has been submitted to the CARMA Proposal System. The proposal is located in a
+file attachment to this email. For Fast-track proposals, this email additionally
+serves as notification that the proposal has been sent to the high site for
+submission into the CARMA Project Database.
+
+** This email was sent by an automated system. Do not reply to this email.
+** For any questions contact proposal-help <proposal-help@astro.illinois.edu>
+""")
+
+        propinfo = cpss.db.proposal_get_propinfo(proposal['proposalid'], 
+                                                 proposal['proposal'])
+        title = propinfo['title']
+
+        if proposal['type'] == 'ddt':
+            type_string = 'DDT'
+        elif proposal['type'] == 'fast':
+            type_string = 'Fast-track'
+        else:
+            return
+
+        mail = MIMEMultipart()
+        mail['Subject'] = '[Prop-Notify] %s - %s Proposal Submitted' % (carmaid, type_string)
+        mail['From'] = "CARMA Proposal System <no-reply@carma-prop.astro.illinois.edu>"
+        mail['To'] = cpss.config['submit_notify']
+        
+        pdf = open(cpss.config['data_directory'] + 'pdf/' + str(proposal['proposalid'])
+                   + '.pdf')
+        attach = MIMEBase('application', 'pdf')
+        attach.set_payload(pdf.read())
+        pdf.close()
+        encoders.encode_base64(attach)
+        attach.add_header('Content-Disposition', 'attachment', filename=(carmaid + '.pdf'))
+
+        message = MIMEText(message_text % { 'type' : type_string, 'carmaid' : carmaid,
+                                            'title' : title})
+        
+        mail.attach(message)
+        mail.attach(attach)
+
+        mailer = smtplib.SMTP()
+        mailer.connect()
+        mailer.sendmail(mail['From'], mail['To'], mail.as_string())
+        mailer.quit()
 
     def ddt(self):
         self.do_header()
