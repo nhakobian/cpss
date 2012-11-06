@@ -365,11 +365,33 @@ def setCorrelator(tuning):
                 'obsmode' : 'SINGLEPOL',
                 'userBW' : False,
                 'userFreq' : False,
+                'freq' : '35.938',
+                'config' : (
+"""
+tuning = {
+    'restfreq' : 35.938 # [GHz] Line rest frequency
+    'sideband' : 'LSB',  # Sideband for first LO (LSB or USB)
+    'IFfreq'   : 0, # [GHz] IF frequency
+
+def setCorrelator(tuning):
+    configwideastroband('LL', bits=CORR_2BIT)
+""")
                 },
             'SCI2_3MM_SP_WB' : { 
                 'obsmode' : 'SINGLEPOL',
                 'userBW' : False,
-                'userFreq' : False,
+                'userFreq' : True,
+                'freqRange' : [85.0, 105.0],
+                'config' : (
+"""
+tuning = {
+    'restfreq' : %(freq)s # [GHz] Line rest frequency
+    'sideband' : 'LSB',  # Sideband for first LO (LSB or USB)
+    'IFfreq'   : 0, # [GHz] IF frequency
+
+def setCorrelator(tuning):
+    configwideastroband('LL', bits=CORR_2BIT)
+""")
                 },
             }
 
