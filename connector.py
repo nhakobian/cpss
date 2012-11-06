@@ -718,13 +718,17 @@ class Connector:
                 cpss.db.pdf_add_update(proposalid, pdf_data)
                 cpss.db.proposal_submit(proposalid)
                 cpss.w(cpss.text.submit_success)
-                #### Add fast specific submission info.
-                ## Generate the XML files
-                ## Format and send email.
-                ## Both these are actually called as functions in the 
-                ## template file.
-                template.tempclass.export.export_xml(proposal, template)
-                template.tempclass.export.fast_email(carmaid)
+                # Fast proposal system integration. This is a three part procedure.
+                # It locks the proposal for further editing, this is done since the
+                # output is sent directly to the CARMA RTS. If the proposer were to
+                # make a change and resubmit, the RTS would receive an updated proposal.
+                # Therefore this is disallowed. Next is creating the two XML files
+                # (stored locally in case of email failure). Then is sending the
+                # email itself.
+                if proposal['type'] == 'fast':
+                    cpss.db.proposal_lock(proposalid)
+                    template.tempclass.export.export_xml(proposal, template)
+                    template.tempclass.export.fast_email(carmaid)
 
         self.do_footer()
 

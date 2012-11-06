@@ -619,3 +619,12 @@ class Backend:
                 return False
         else:
             return False
+
+    def proposal_lock(self, proposalid):
+        # This function locks a proposal to prevent further editing.
+        cursor = self.Database.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        cursor.execute("""UPDATE `proposals`
+                          SET `lock`='1'
+                          WHERE `proposalid`='%(propid)s'""" % ( {'propid' : proposalid}))
+        cursor.close()
+
