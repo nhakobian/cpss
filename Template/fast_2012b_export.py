@@ -568,3 +568,40 @@ def export_xml(propinfo, template):
     cursor.close()
     file_strip.close()
     script_file.close()
+
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+def fast_email(carmaid):
+    fast_dir = cpss.config['data_directory'] + 'fast/'
+    from_email = "Fast-track Robot <no-reply@carma-prop.astro.illinois.edu>"
+
+    mail = MIMEMultipart()
+    mail['Subject'] = "[FAST-TRACK] " + carmaid
+    mail['To'] = cpss.config['fast_email']
+    mail['From'] = from_email
+
+    export_name = carmaid + '_export.xml'
+    export_file = open(fast_dir + export_name, 'r')
+    export = MIMEText(export_file.read(), _subtype='plain')
+    export_file.close()
+    export.add_header('Content-Disposition', 'attachment', filename=export_name)
+
+    script_name = carmaid + '_script.xml'
+    script_file = open(fast_dir + script_name, 'r')
+    script = MIMEText(script_file.read(), _subtype='plain')
+    script_file.close()
+    script.add_header('Content-Disposition', 'attachment', filename=script_name)
+
+    mail.attach(export)
+    mail.attach(script)
+
+    sender = smtplib.SMTP()
+    sender.connect()
+    sender.sendmail(from_email, cpss.config['fast_email'], mail.as_string())
+    sender.quit()
+
+    debug = open(fast_dir + carmaid + '_email.txt', 'w')
+    debug.write(mail.as_string())
+    debug.close()

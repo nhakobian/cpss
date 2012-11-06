@@ -724,6 +724,7 @@ class Connector:
                 ## Both these are actually called as functions in the 
                 ## template file.
                 template.tempclass.export.export_xml(proposal, template)
+                template.tempclass.export.fast_email(carmaid)
 
         self.do_footer()
 
