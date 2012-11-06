@@ -686,6 +686,10 @@ class Connector:
             cpss.db.set_next_propno(int(next_propno) + 1, proposal['type'])
             cpss.db.pw_generate(proposalid)
             cpss.db.proposal_setcarmaid(proposalid, carmaid)
+            # Since we've changed fundamental data in the db, re-read that
+            # db entry so things below do not fail.
+            proposal = cpss.db.proposal_fetch(cpss.session['username'],
+                                              proposalid)
         else:
             carmaid = proposal['carmaid']
 
