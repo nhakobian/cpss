@@ -578,7 +578,7 @@ def fast_email(carmaid):
     from_email = "Fast-track Robot <no-reply@carma-prop.astro.illinois.edu>"
 
     mail = MIMEMultipart()
-    mail['Subject'] = "[FAST-TRACK] " + carmaid
+    mail['Subject'] = carmaid
     mail['To'] = cpss.config['fast_email']
     mail['From'] = from_email
 
@@ -586,13 +586,13 @@ def fast_email(carmaid):
     export_file = open(fast_dir + export_name, 'r')
     export = MIMEText(export_file.read(), _subtype='plain')
     export_file.close()
-    export.add_header('Content-Disposition', 'attachment', filename=export_name)
+    export.add_header('Content-Disposition', 'attachment', filename='export.xml')
 
     script_name = carmaid + '_script.xml'
     script_file = open(fast_dir + script_name, 'r')
     script = MIMEText(script_file.read(), _subtype='plain')
     script_file.close()
-    script.add_header('Content-Disposition', 'attachment', filename=script_name)
+    script.add_header('Content-Disposition', 'attachment', filename='script.xml')
 
     mail.attach(export)
     mail.attach(script)
