@@ -154,7 +154,7 @@ class Connector:
                     return False
         unlocked.error_string = """The proposal you are editing has been set
           as uneditable. This usually occurs when your proposal has been 
-          submitted."""
+          submitted, or after a proposal call has ended."""
 
         # The dispatcher works by splitting the path string in pieces by the
         # directory dilemiter '/', testing permissions, then if permissions 
@@ -353,7 +353,8 @@ class Connector:
         if cpss.options['cycle_' + prop_type] != '':
             cycle = cpss.db.cycle_info(cpss.options['cycle_' + prop_type])
             if cycle['create'] != 1:
-                self.forward('list')
+                raise CpssUserErr("""No %s proposals are being accepted at
+                                     this time.""" % prop_type)
                 return
 
             template = cpss.Template.Template(cycle, None, True, Fetch=False)
