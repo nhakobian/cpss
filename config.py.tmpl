@@ -20,14 +20,14 @@ config = {
     # (not just the admin account), for debugging purposes.
     'debug' : False,
     # 'error_email' is the address that proposal system error tracebacks are
-    # sent to.
-    'error_email' : '',
+    # sent to. For multiple addresses, specify a list.
+    'error_email' : [''],
     # 'fast_email' is the address as the high site that fast proposals are
-    # sent to.
-    'fast_email' : '',
+    # sent to. For multiple addresses, pass a list.
+    'fast_email' : [''],
     # 'submit_notify' is/are the address(es) that are emailed about a new ddt
-    # or fast-track proposal submission.
-    'submit_notify' : '',
+    # or fast-track proposal submission. For multiple addresses, specify a list.
+    'submit_notify' : [''],
     # The database information
     'db' : { 'host' : '',
              'user' : '',

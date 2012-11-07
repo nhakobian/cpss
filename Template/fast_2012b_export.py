@@ -582,9 +582,11 @@ def fast_email(carmaid):
     fast_dir = cpss.config['data_directory'] + 'fast/'
     from_email = "Fast-track Robot <no-reply@carma-prop.astro.illinois.edu>"
 
+    CS = ', '
+
     mail = MIMEMultipart()
     mail['Subject'] = carmaid
-    mail['To'] = cpss.config['fast_email']
+    mail['To'] = CS.join(cpss.config['fast_email'])
     mail['From'] = from_email
 
     export_name = carmaid + '_export.xml'

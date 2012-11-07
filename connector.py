@@ -778,10 +778,11 @@ submission into the CARMA Project Database.
         else:
             return
 
+        CS = ', '
         mail = MIMEMultipart()
         mail['Subject'] = '[Prop-Notify] %s - %s Proposal Submitted' % (carmaid, type_string)
         mail['From'] = "CARMA Proposal System <no-reply@carma-prop.astro.illinois.edu>"
-        mail['To'] = cpss.config['submit_notify']
+        mail['To'] = CS.join(cpss.config['submit_notify'])
         
         pdf = open(cpss.config['data_directory'] + 'pdf/' + str(proposal['proposalid'])
                    + '.pdf')
@@ -799,7 +800,7 @@ submission into the CARMA Project Database.
 
         mailer = smtplib.SMTP()
         mailer.connect()
-        mailer.sendmail(mail['From'], mail['To'], mail.as_string())
+        mailer.sendmail(mail['From'], cpss.config['submit_notify'], mail.as_string())
         mailer.quit()
 
     def ddt(self):
