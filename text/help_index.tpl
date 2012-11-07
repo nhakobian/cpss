@@ -41,7 +41,7 @@
 <br>
 If you have an issue or question (whether it is a technical problem
 with the proposal site or a clarification on what type of information
-is expected) please send an e-mail to proposal-help@astro.uiuc.edu
+is expected) please send an e-mail to proposal-help@astro.illinois.edu
 . If it is a technical issue, please make sure to give exact
 information as to what you were trying to do, and what the error
 message (if any) said.

@@ -6,8 +6,8 @@
 <p>Welcome to the CARMA Proposal System. This system is used to propose
 for time on the CARMA array during TAC-approved proposal calls. If you
 have comments, or encounter difficulties and need help, please send
-email to: <a href="mailto:proposal-help@astro.uiuc.edu">
-proposal-help@astro.uiuc.edu</a></p>
+email to: <a href="mailto:proposal-help@astro.illinois.edu">
+proposal-help@astro.illinois.edu</a></p>
 
 <p>Information for proposers, including a link to information on the
 CARMA Array status, is available at: <a href="http://www.mmarray.org/">

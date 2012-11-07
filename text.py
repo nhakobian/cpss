@@ -65,7 +65,7 @@ file.
 
 error_ps_large=r"""The postscript image you are trying to upload is greater than the
 allowed size of 14MB. If you must upload an image greater than this
-size please send a message to proposal-help@astro.uiuc.edu for help.
+size please send a message to proposal-help@astro.illinois.edu for help.
 """
 
 help_abstract=r"""
@@ -184,7 +184,7 @@ help_index=r"""<span style="font-weight:bold;font-size:14pt">
 <br>
 If you have an issue or question (whether it is a technical problem
 with the proposal site or a clarification on what type of information
-is expected) please send an e-mail to proposal-help@astro.uiuc.edu
+is expected) please send an e-mail to proposal-help@astro.illinois.edu
 . If it is a technical issue, please make sure to give exact
 information as to what you were trying to do, and what the error
 message (if any) said.
@@ -660,8 +660,8 @@ page_main=r"""  <h2 class="center">
 <p>Welcome to the CARMA Proposal System. This system is used to propose
 for time on the CARMA array during TAC-approved proposal calls. If you
 have comments, or encounter difficulties and need help, please send
-email to: <a href="mailto:proposal-help@astro.uiuc.edu">
-proposal-help@astro.uiuc.edu</a></p>
+email to: <a href="mailto:proposal-help@astro.illinois.edu">
+proposal-help@astro.illinois.edu</a></p>
 
 <p>Information for proposers, including a link to information on the
 CARMA Array status, is available at: <a href="http://www.mmarray.org/">
@@ -867,7 +867,7 @@ submit_failed_size=r"""
   system can handle. The usual cause of this is using large bitmapped
   images in your proposal. One way of reducing this size is to reduce
   the resolution of your source image. If you still have a problem,
-  please contact someone at proposal-help@astro.uiuc.edu.  Click <a
+  please contact someone at proposal-help@astro.illinois.edu.  Click <a
   href="proposal/edit/%s">here</a> to continue.
 </div>
 """

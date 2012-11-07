@@ -5,6 +5,6 @@
   system can handle. The usual cause of this is using large bitmapped
   images in your proposal. One way of reducing this size is to reduce
   the resolution of your source image. If you still have a problem,
-  please contact someone at proposal-help@astro.uiuc.edu.  Click <a
+  please contact someone at proposal-help@astro.illinois.edu.  Click <a
   href="proposal/edit/%s">here</a> to continue.
 </div>
