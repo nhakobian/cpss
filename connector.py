@@ -564,8 +564,21 @@ class Connector:
 
         if (retval != 0) and (retval != 1):
             self.do_header()
+
+            (rtype, retval) = retval
+            if rtype == 'coversheet':
+                add_text = (cpss.text.error_coversheet)
+            elif rtype == 'justification':
+                add_text = (cpss.text.error_justification)
+            else:
+                add_text = ''
+
             cpss.w("""<b>A LaTeX error occured. The output is displayed 
-                   below:</b><br><br>%s""" % (self.lines2text(retval[7:])))
+                   below:</b>
+                   %s
+                   <div class="latex_error">
+                     <pre>%s</pre>
+                   </div>""" % (add_text, "".join(retval[8:])))
             self.do_footer()
 
     def finalpdf(self, propid, proposal=None):
@@ -629,7 +642,14 @@ class Connector:
             error_obsblock = template.obsblock_verify()
             #add other checks in here...
 
-            if (error_obsblock == False):
+            if proposal['pdf_justification'] == 1:
+                just = cpss.db.justification_get_data(proposal['proposalid'])
+                if just == None:
+                    error2 = True
+                    cpss.w("""External justification has not been uploaded.</li>""")
+                else:
+                    error2 = False
+            elif (error_obsblock == False):
                 error2 = False
                 cpss.w("""<span style="color:green;font-weight:bold;">
                           done</span></li>""")

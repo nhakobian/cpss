@@ -10,6 +10,7 @@
 \usepackage{filecontents}
 \usepackage{ltxtable}
 \usepackage{hyphenat}
+\usepackage[update]{epstopdf}
 
 \pagestyle{empty}
 \geometry{left=0.5in, right=0.5in, top=0.5in, bottom=0.5in}
@@ -53,9 +54,9 @@
 \setlength{\carmaindent}{\parindent}
 \setlength{\parindent}{0in}
 \setlength{\parskip}{0in}
-  \mbox{\includegraphics[scale=.2]{../../static/carma.eps}}
+  \mbox{\includegraphics[scale=.2]{../../static/carma.pdf}}
   \newlength{\carmaheight}
-  \settoheight{\carmaheight}{\includegraphics[scale=.2]{../../static/carma.eps}}
+  \settoheight{\carmaheight}{\includegraphics[scale=.2]{../../static/carma.pdf}}
   \hfill
   \parbox[b][\carmaheight][t]{4in}{
     \begin{center}

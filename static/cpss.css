@@ -501,3 +501,26 @@ table.stats tr:hover {
     width : 8%;
     text-align : center;
 }
+
+.latex_error {
+    height : 300px;
+    overflow-y : scroll;
+    border : 1px solid black;
+}
+
+.latex_error pre {
+    margin : 0;
+    padding : 0;
+}
+
+.latex_error_msg {
+    margin : 1em 5em;
+    font-size : small;
+    min-height : 60px;
+}
+
+.latex_error_msg img {
+    float : left;
+    height : 60px;
+    margin-right : 1em;
+}

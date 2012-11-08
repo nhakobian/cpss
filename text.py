@@ -58,6 +58,24 @@ CARMA Proposal Staff
 proposal-help@astro.illinois.edu
 """
 
+error_coversheet=r"""<div class="latex_error_msg">
+<img src="./static/exclaimation.png">
+A LaTeX error has occurred on the generated coversheet. This usually is caused by a 
+LaTeX character in your title, author information, or abstract that is not correctly
+escaped. Most commonly, '&' is used instead of '\&', or '%' instead of '\%'. Also
+note, that non-ASCII characters are currently not supported. If you are still
+receiving this error, please contact the Proposal-help team 
+<proposal-help@astro.illinois.edu> for more assistance.
+</div>"""
+
+error_justification=r"""<div class="latex_error_msg">
+<img src="./static/exclaimation.png">
+A LaTeX error has occurred in your justification attachment. The output from LaTeX is
+displayed below to assist you in finding your error. If you need additional 
+assistance, please contact the 
+<a href="mailto:proposal-help@astro.illinois.edu">Proposal-help team</a>.
+</div>"""
+
 error_latex_large=r"""The LaTeX file you are trying to upload is greater than the allowed
 size of 10MB. Please check to make sure you are uploading the correct
 file.
@@ -955,6 +973,38 @@ tmpl_just=r"""\documentclass[preprint, letterpaper, 12pt]{aastex}
 \sectitlel{Techical Justification}
 
 %s
+
+\end{document}
+"""
+
+tmpl_nojust=r"""\documentclass[preprint, letterpaper, 12pt]{aastex}
+\usepackage[table,rgb]{xcolor}
+\usepackage[letterpaper]{geometry}
+\usepackage{helvet}
+\usepackage{tabularx}
+\pagestyle{empty}
+\geometry{left=0.75in, right=0.75in, top=0.75in, bottom=0.75in}
+\begin{document}
+\newlength{\carmaindent}
+\setlength{\carmaindent}{\parindent}
+\setlength{\parskip}{0in}
+\newlength{\sectitlelength}
+\newcommand{\sectitlel}[1]{
+  \setlength{\sectitlelength}{\parindent}
+  \setlength{\parindent}{0in}
+  \vskip 0.15in
+  \begin{tabularx}{\textwidth}{@{}l@{}}
+    \hiderowcolors
+    {\sffamily \Large \textbf{#1} \normalfont} \\
+    \hline
+    \showrowcolors
+  \end{tabularx}
+  \setlength{\parindent}{\sectitlelength}
+  \vskip -0.3cm
+}
+
+You have not attached your \LaTeX\ justification. Please upload using the proposal 
+website.
 
 \end{document}
 """

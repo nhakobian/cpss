@@ -1276,18 +1276,15 @@ class Template:
         tfile.write(out)
         tfile.close()
 
-        # Run latex twice to get any references correct
-        for i in xrange(0, 2):
-            latex = os.popen("""cd %s; /usr/bin/latex -interaction=nonstopmode %s""" % (prop_dir, prop_dir + 'latex.tex'), 'r')
+        # Run latex three times to get any references correct and tables.
+        for i in xrange(0, 3):
+            latex = os.popen("""cd %s; /usr/bin/pdflatex -interaction=nonstopmode %s""" 
+                             % (prop_dir, prop_dir + 'latex.tex'), 'r')
             latex_info = latex.readlines()
             retval = latex.close()
 
             if (retval != None):
-                return latex_info
-
-        at = os.popen("""cd %s; dvips -t letter -o - %slatex.dvi | ps2pdf14 - %slatex.pdf""" % (prop_dir, prop_dir, prop_dir))
-        at.close()
-
+                return ('coversheet', latex_info)
 
         if self.cycleinfo['type'] in ['fast', 'cs']:
             # If the proposal type doesnt have a justification, dump out file
@@ -1327,7 +1324,7 @@ class Template:
                                  'wb')
             data = cpss.db.justification_get_data(self.propid)
             if (data == None):
-                justification.write('')
+                justification.write(cpss.text.tmpl_nojust)
                 just_skip = 1
             else:
                 justification.write(data)
@@ -1340,7 +1337,7 @@ class Template:
             retval = latex.close()
 
             if (retval != None):
-                return latex_info
+                return ('justification', latex_info)
 
         at = os.popen("""cd %sjustification/; dvips -t letter -o - %sjustification/justification.dvi | ps2pdf14 - %sjustification/justification.pdf""" % (prop_dir, prop_dir, prop_dir))
         at.close()
