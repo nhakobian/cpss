@@ -67,7 +67,7 @@ ${PI}${CoIs}  </investigators>
   <keyProject>${key_project}</keyProject>
   <category>${scientific_category}</category>
   <abstract>${abstract}</abstract>
-${Obsblocks}</project>
+${Obsblocks}</project><time>${time}</time>
 """)
 
 ScriptTemplate = Template("""<pid>${carmaid}</pid>
@@ -476,45 +476,46 @@ def export_xml(propinfo, template):
     cursor.execute("""SELECT * 
                       FROM %(source_table)s 
                       WHERE `proposalid`=%(propid)s
-                      ORDER BY numb""" % 
+                      ORDER BY numb
+                      LIMIT 1""" % 
                    { 'source_table' : propinfo['source'],
                      'propid' : propinfo['proposalid']} )
-    sources = cursor.fetchall()
+    source = cursor.fetchone()
 
     Obsblocks = ""
-    for source in sources:
-        corr = source['f_corrconfig']
-        freq = source['f_freq']
-        bw = source['f_slbw']
-        modes = template.tempclass.fast_modes
-        mode = modes[corr]
 
-        if mode['userFreq'] == False:
-            freq = mode['freq']
+    corr = source['f_corrconfig']
+    freq = source['f_freq']
+    bw = source['f_slbw']
+    modes = template.tempclass.fast_modes
+    mode = modes[corr]
 
-        if corr.find('SCI1') != -1:
-            arrayconf = 'X'
-        elif corr.find('SCI2') != -1:
-            arrayconf = 'SX'
+    if mode['userFreq'] == False:
+        freq = mode['freq']
 
-        obsblock_name = obsblockgen(source['numb'], arrayconf,
-                                    freq, source['f_sourcename'])
+    if corr.find('SCI1') != -1:
+        arrayconf = 'X'
+    elif corr.find('SCI2') != -1:
+        arrayconf = 'SX'
 
-        Obsblocks += ObsblockTemplate.substitute(
-            obsblock = obsblock_name,
-            frequency_band = '',
-            array_config = arrayconf,
-            fill = '0',
-            numb_fields = '',
-            species = '',
-            name = source['f_sourcename'],
-            ra = source['f_ra'],
-            dec = source['f_dec'],
-            self_cal = '0',
-            rest_frequency = freq,
-            observation_type = mode['obsmode'],
-            imgvssnr = '',
-            )
+    obsblock_name = obsblockgen(source['numb'], arrayconf,
+                                freq, source['f_sourcename'])
+
+    Obsblocks += ObsblockTemplate.substitute(
+        obsblock = obsblock_name,
+        frequency_band = '',
+        array_config = arrayconf,
+        fill = '0',
+        numb_fields = '',
+        species = '',
+        name = source['f_sourcename'],
+        ra = source['f_ra'],
+        dec = source['f_dec'],
+        self_cal = '0',
+        rest_frequency = freq,
+        observation_type = mode['obsmode'],
+        imgvssnr = '',
+        )
 
     # Grab and filter the abstract
     proposal['abstract'] = proposal['abstract'].replace('\n', ' ')
@@ -535,7 +536,8 @@ def export_xml(propinfo, template):
         toe = proposal['toe'],
         scientific_category =category_map[proposal['scientific_category']],
         abstract = proposal['abstract'],
-        Obsblocks = Obsblocks
+        Obsblocks = Obsblocks,
+        time = source['f_time']
         )
         
     xml_strip = xml_proposal.replace('\n', '')
