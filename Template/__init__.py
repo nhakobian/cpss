@@ -350,8 +350,8 @@ class Template:
                     # Make sure that the add more source lines option isnt
                     # available for fast mode proposals since they can have 
                     # only one source line.
-                    if ((self.cycleinfo['type'] != 'fast') and 
-                        (section['section'] != 'source')):
+                    if not((self.cycleinfo['type'] == 'fast') and 
+                        (section['section'] == 'source')):
                         cpss.w(repeat_add % { 'propid'  : self.propid, 
                                               'section' : section['section']})
                 for lines in groups:
