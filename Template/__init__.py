@@ -1434,6 +1434,7 @@ class ErrorCheck:
                       'FastdecCheck',
                       'obsblockCheck',
                       'timeCheck',
+                      'FastArrayConfig',
                       'antCheck',
                       'FastBWCheck',
                       'FastFreqCheck',
@@ -1836,3 +1837,35 @@ class ErrorCheck:
         except:
             self.AddError("Invalid format: must be (+/-) DD:MM:SS.SS")
 
+    def FastArrayConfig(self, array_config):
+        if 'f_corrconfig' not in self.tmpLinescan:
+            self.AddError("Invalid Mode Template")
+            return # Check to make sure that the following lines dont fail.
+        
+        if not hasattr(self.tempclass, 'fast_modes'):
+            self.AddError("Invalid Mode Template.")
+            return
+        
+        mode = self.tmpLinescan['f_corrconfig']
+        if mode == None:
+            self.AddError("A correlator mode must be selected.")
+            return
+
+        sci1_configs = ['A', 'B', 'C', 'D', 'E']
+        sci2_configs = ['SH', 'SL']
+
+        # Check if array config exists, error if it doesnt.
+        if (array_config in sci1_configs):
+            sci1 = True
+            sci2 = False
+        elif (array_config in sci2_configs):
+            sci1 = False
+            sci2 = True
+        else:
+            self.AddError("Configuration does not exist.")
+            return
+            
+        if sci1 and ('SCI1_' not in mode):
+            self.AddError("Array Configuration %s unavailable in SCI2 correlator mode." % array_config)
+        elif sci2 and ('SCI2_' not in mode):
+            self.AddError("Array Configuration %s unavailable in SCI1 correlator mode." % array_config)

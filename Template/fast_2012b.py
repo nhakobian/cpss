@@ -459,6 +459,16 @@ def setCorrelator(tuning):
                 'check' : ['NoNull', 'Numeric', 'FastTrackLength'],
                 },
             {
+                'name':'Array Configuration',
+                'shortname':'Array',
+                'fieldname' : 'f_array',
+                'fieldtype' : ['A', 'B', 'C', 'D', 'E', 'SH', 'SL'],
+                'section' : 'source',
+                'line' : 1,
+                #'info' : '',
+                'check' : ['NoNull', 'FastArrayConfig'],
+                },
+            {
                 'name':'Correlator Mode',
                 'shortname':'Mode',
                 'fieldname' : 'f_corrconfig',
@@ -508,10 +518,11 @@ def setCorrelator(tuning):
             4 : 'f_dec',
             5 : 'f_vlsr',
             6 : 'f_time',
-            7 : 'f_corrconfig',
-            8 : 'f_freq',
-            9 : 'f_slbw',
-            10: 'f_mosaic',
+            7 : 'f_array',
+            8 : 'f_corrconfig',
+            9 : 'f_freq',
+            10 : 'f_slbw',
+            11 : 'f_mosaic',
             }
                               
        

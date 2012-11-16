@@ -493,18 +493,13 @@ def export_xml(propinfo, template):
     if mode['userFreq'] == False:
         freq = mode['freq']
 
-    if corr.find('SCI1') != -1:
-        arrayconf = 'X'
-    elif corr.find('SCI2') != -1:
-        arrayconf = 'SX'
-
-    obsblock_name = obsblockgen(source['numb'], arrayconf,
+    obsblock_name = obsblockgen(source['numb'], source['f_array'],
                                 freq, source['f_sourcename'])
 
     Obsblocks += ObsblockTemplate.substitute(
         obsblock = obsblock_name,
         frequency_band = '',
-        array_config = arrayconf,
+        array_config = source['f_array'],
         fill = '0',
         numb_fields = '',
         species = '',
