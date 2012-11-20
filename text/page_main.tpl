@@ -67,7 +67,7 @@ requirements are different. <b>Make sure you select the 'Key Project'
 option listed in the 'General Proposal Information' section. Adjustments
 to the length of key projects are listed below.</b> For more information
 about these projects, visit the <a 
-href="http://cedarflat.mmarray.org/observing/proposals/KP_call2011b.html">Key
+href="http://cedarflat.mmarray.org/observing/proposals/KP_call2013a.html">Key
 Project</a> page. For the Key Project justification, you must upload a
 LaTeX file containing the content. We provide a <a
 href="static/justification_key.tar.gz">template</a> that you must
