@@ -208,6 +208,17 @@ def setCorrelator(tuning):
                 'userBW' : False,
                 'userFreq' : True,
                 'freqRange' : [80.0, 116.0],
+                'config' : (
+"""
+tuning = {
+    'restfreq' : %(freq)s # [GHz] Line rest frequency
+    'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
+    'IFfreq'   : 2.5, # [GHz] IF frequency
+
+def setCorrelator(tuning):
+#    lo1 = %(freq)s - 2.5
+    configwideastroband('CARMA23', bits=CORR_2BIT)
+""")
                 },
             'SCI1_3MM_C23_SL' : {
                 'obsmode' : 'CARMA23',
@@ -263,6 +274,17 @@ def setCorrelator(tuning):
                 'userBW' : False,
                 'userFreq' : True,
                 'freqRange' : [215.0, 270.0],
+                'config' : (
+"""
+tuning = {
+    'restfreq' : %(freq)s # [GHz] Line rest frequency
+    'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
+    'IFfreq'   : 2.5, # [GHz] IF frequency
+
+def setCorrelator(tuning):
+#    lo1 = %(freq)s - 2.5
+    configwideastroband('LL', bits=CORR_2BIT)
+""")
                 },
             'SCI1_1MM_SP_SL' : { 
                 'obsmode' : 'SINGLEPOL',
@@ -300,6 +322,17 @@ def setCorrelator(tuning):
                 'userBW' : False,
                 'userFreq' : True,
                 'freqRange' : [215.0, 270.0],
+                'config' : (
+"""
+tuning = {
+    'restfreq' : %(freq)s # [GHz] Line rest frequency
+    'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
+    'IFfreq'   : 2.5, # [GHz] IF frequency
+
+def setCorrelator(tuning):
+#    lo1 = %(freq)s - 2.5
+    configwideastroband('DUALPOL', bits=CORR_2BIT)
+""")
                 },
             'SCI1_1MM_DP_SL' : { 
                 'obsmode' : 'DUALPOL',
@@ -333,6 +366,17 @@ def setCorrelator(tuning):
                 'userBW' : False,
                 'userFreq' : True,
                 'freqRange' : [215.0, 270.0],
+                'config' : (
+"""
+tuning = {
+    'restfreq' : %(freq)s # [GHz] Line rest frequency
+    'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
+    'IFfreq'   : 2.5, # [GHz] IF frequency
+
+def setCorrelator(tuning):
+#    lo1 = %(freq)s - 2.5
+    configwideastroband('FULLPOL', bits=CORR_2BIT)
+""")
                 },
             'SCI1_1MM_FP_SL' : {
                 'obsmode' : 'FULLPOL',
