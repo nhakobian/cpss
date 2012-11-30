@@ -125,6 +125,7 @@ tuning = {
     'restfreq' : %(freq)s # [GHz] Line rest frequency
     'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
+}
 
 def setCorrelator(tuning):
 #    lo1 = %(freq)s - 2.5
@@ -142,6 +143,7 @@ tuning = {
     'restfreq' : %(freq)s # [GHz] Line rest frequency
     'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
+}
 
 def setCorrelator(tuning):
 #    lo1 = %(freq)s - 2.5
@@ -166,6 +168,7 @@ tuning = {
     'sideband' : USB,    # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.535,   # [GHz] IF frequency
 }
+
 def setCorrelator(tuning):
 #    lo1 = 108.021042
     configastroband(1, "LL", %(userBW)s, 109.78216, AUTO, 109.78216, 'none', bits=CORR_2BIT) # C18O (USB)
@@ -190,6 +193,7 @@ tuning = {
     'sideband' : USB,    # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.05,   # [GHz] IF frequency
 }
+
 def setCorrelator(tuning):
 #    lo1 = 91.0199
     configastroband(1, "LL", %(userBW)s, 93.173505, AUTO, 93.173505, 'none', bits=CORR_2BIT) # N2H+ (USB)
@@ -214,6 +218,7 @@ tuning = {
     'restfreq' : %(freq)s # [GHz] Line rest frequency
     'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
+}
 
 def setCorrelator(tuning):
 #    lo1 = %(freq)s - 2.5
@@ -238,6 +243,7 @@ tuning = {
     'sideband' : USB,    # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.535,   # [GHz] IF frequency
 }
+
 def setCorrelator(tuning):
 #    lo1 = 108.021042
     configwideastroband(conf="MAXSENS_CARMA23")
@@ -259,6 +265,7 @@ tuning = {
     'sideband' : USB,    # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5,   # [GHz] IF frequency
 }
+
 def setCorrelator(tuning):
 #    lo1 = 85
     configwideastroband(conf="MAXSENS_CARMA23")
@@ -280,6 +287,7 @@ tuning = {
     'restfreq' : %(freq)s # [GHz] Line rest frequency
     'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
+}
 
 def setCorrelator(tuning):
 #    lo1 = %(freq)s - 2.5
@@ -304,6 +312,7 @@ tuning = {
     'sideband' : USB,    # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.75,   # [GHz] IF frequency
 }
+
 def setCorrelator(tuning):
 #    lo1 = 222.25
     configastroband(1, "LL", BW500, 221.00, AUTO, 'none', 'none', bits=CORR_2BIT)
@@ -328,6 +337,7 @@ tuning = {
     'restfreq' : %(freq)s # [GHz] Line rest frequency
     'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
+}
 
 def setCorrelator(tuning):
 #    lo1 = %(freq)s - 2.5
@@ -352,6 +362,7 @@ tuning = {
     'sideband' : USB,    # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.75,   # [GHz] IF frequency
 }
+
 def setCorrelator(tuning):
 #    lo1 = 222.25
     configastroband(1, "DUALPOL", BW500, 221.00, AUTO, 'none', 'none', bits=CORR_2BIT)
@@ -372,6 +383,7 @@ tuning = {
     'restfreq' : %(freq)s # [GHz] Line rest frequency
     'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
+}
 
 def setCorrelator(tuning):
 #    lo1 = %(freq)s - 2.5
@@ -396,6 +408,7 @@ tuning = {
     'sideband' : USB,    # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.75,   # [GHz] IF frequency
 }
+
 def setCorrelator(tuning):
 #    lo1 = 222.25
     configastroband(1, "FULLSTOKES", BW500, 221.00, AUTO, 'none', 'none', bits=CORR_2BIT)
@@ -416,6 +429,7 @@ tuning = {
     'restfreq' : 35.938 # [GHz] Line rest frequency
     'sideband' : 'LSB',  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 0, # [GHz] IF frequency
+}
 
 def setCorrelator(tuning):
     configwideastroband('LL', bits=CORR_2BIT)
@@ -432,6 +446,7 @@ tuning = {
     'restfreq' : %(freq)s # [GHz] Line rest frequency
     'sideband' : 'LSB',  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 0, # [GHz] IF frequency
+}
 
 def setCorrelator(tuning):
     configwideastroband('LL', bits=CORR_2BIT)

@@ -74,11 +74,12 @@ ScriptTemplate = Template("""<pid>${carmaid}</pid>
 <pi>${pi}</pi>
 <email>${email}</email>
 <obsblock>${obsblock}</obsblock>
+<config>${config}</config>
 <source>${source}</source>
 <ra>${ra}</ra>
 <dec>${dec}</dec>
 <vlsr>${vlsr}</vlsr>
-<restfreq>${freq}</freq>
+<restfreq>${freq}</restfreq>
 <corrconfig>
 ${corrconfig}
 </corrconfig>
@@ -552,6 +553,7 @@ def export_xml(propinfo, template):
         pi = PIdata['name'],
         email = PIdata['email'],
         obsblock = obsblock_name,
+        config = source['f_array'],
         source = source['f_sourcename'],
         ra = source['f_ra'],
         dec = source['f_dec'],
