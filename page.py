@@ -162,6 +162,12 @@ def proposal_list(list, name):
             if ((entry['lock'] == 1) or 
                 ((entry['create'] == 0) and entry['lock'] == None)):
                 edit = ''
+                # If an unsubmitted proposal is viewed after the end of a
+                # propsoal call, remove the delete icon (proposal cant be
+                # deleted anyways). These proposals should be cleaned out
+                # anyways.
+                if 'delete' in pdf:
+                    pdf = ''
             else:
                 edit = ("""<a href="view/%s"><img 
                             src="static/page_white_edit.png"></a>""" %
