@@ -458,28 +458,111 @@ class Template:
         if not unlocked:
             cpss.w("</div>")
 
-    def fast_corrconfig(self):
-        for section in self.sections:
-            if section['section'] == 'source':
-                source = section['data'][0][1]
+    def fast_corrconfig(self, mode=None, freq=None, slbw=None):
+        # Pull data from coversheet structure if not explicitely given
+        if (mode == None) or (freq == None) or (slbw == None):
+            for section in self.sections:
+                if section['section'] == 'source':
+                    source = section['data'][0][1]
 
-        for element in source:
-            if element['fieldname'] == 'f_corrconfig':
-                mode = element
-            elif element['fieldname'] == 'f_freq':
-                freq = element
-            elif element['fieldname'] == 'f_slbw':
-                slbw = element
+            for element in source:
+                if element['fieldname'] == 'f_corrconfig':
+                    mode = element
+                elif element['fieldname'] == 'f_freq':
+                    freq = element
+                elif element['fieldname'] == 'f_slbw':
+                    slbw = element
 
-        if mode['error'] != '':
-            return ''
-        if freq['error'] != '':
-            return ''
-        if slbw['error'] != '':
-            return ''
+            if mode['error'] != '':
+                return ''
+            if freq['error'] != '':
+                return ''
+            if slbw['error'] != '':
+                return ''
 
-        buf = (self.tempclass.fast_modes[mode['data']]['config'] % { 'userBW' : slbw['data'],
-                                                                     'freq' : freq['data']})
+            mode = mode['data']
+            freq = freq['data']
+            slbw = slbw['data']
+        # Otherwise mode, freq, slbw explicitely passed and we assume that
+        # it is correct.
+
+        # Pull the config string from the template.
+        config = self.tempclass.fast_modes[mode]['config']
+
+        # For the user specified spectral line modes ('_SL'), this gets a 
+        # little more complicated. configWideAstroband is used to set up
+        # all modes except for the spectral line band. But which one is best
+        # to use, and how to we set up the 1st LO? The following is based
+        # on an email from Doug Friedel on Dec 3, 2012:
+        #
+        # configWideAstroband puts bands at the following IF freqs:
+        # 1.425, 1.875, 2.325, 2.775, 3.225, 3.675, 4.125, 4.575
+        #
+        # So would recommend the following:
+        #
+        # 3mm:
+        # above 91 GHz tune to the USB
+        # below 91 GHz tune to the LSB
+        #
+        # between 91 and 109 GHz use band 3 with an IF of 2.325 GHz
+        # below 91 and above 109 use band 7 with an IF of 4.125 GHz
+        #
+        # 1mm:
+        # same as for 3mm but substitute 221 for 91 and 259 for 109
+        #
+        # 1cm:
+        # I don;t know what the tuning range or sideband is for these yet.
+
+        if '_SL' in mode:
+            # For this we need the frequency to be a float.
+            freq = float(freq)
+
+            # This code should be correctly set up to accomidate a 1CM
+            # SL mode when the correct ranges are known and the modes
+            # are added to the semester_fast.py file.
+            frange = { '3MM' : (91.0, 109.0),
+                       '1MM' : (221.0, 259.0),
+                       '1CM' : (0.0, 0.0), # Update this when modes are avail.
+                       }
+            
+            # Choose correct band:
+            if '_3MM_' in mode:
+                band = frange['3MM']
+            elif '_1MM_' in mode:
+                band = frange['1MM']
+            elif '_1CM_' in mode:
+                band = frange['1CM']
+
+            # Choose to tune to LSB or USB:
+            # If the 1cm recievers can ONLY tune to the USB, then setting
+            # frange['1CM'][0] = 0.0 above should correctly do this.
+            if freq < band[0]:
+                tune = 'LSB'
+            else:
+                tune = 'USB'
+
+            # Choose LO frequency of spectral line band:
+            if (freq > band[0]) and (freq < band[1]):
+                if_freq = 2.325
+                corr_band = 3
+            else:
+                if_freq = 4.125
+                corr_band = 7
+
+            # Calculate 1st LO (not needed, but as a comment in file)
+            if tune == 'LSB':
+                first_lo = freq + if_freq
+            elif tune == 'USB':
+                first_lo = freq - if_freq
+                
+            buf = (config % { 'tune' : tune, 'if_freq' : if_freq, 
+                              'corr_band' : corr_band, 'freq' : freq,
+                              'first_lo' : first_lo, 'slbw' : slbw } )
+        else:
+            # This is a 'standard' mode, so only replace slbw and freq.
+            # If a mode doesnt need one of these two variables, it wont
+            # be used in the template.
+            buf = (config % { 'userBW' : slbw, 'freq' : freq })
         return buf
 
     def make_html(self, section_choose=False, id=False):

@@ -118,7 +118,7 @@ class template:
                 'obsmode' : 'SINGLEPOL',
                 'userBW' : False,
                 'userFreq' : True,
-                'freqRange' : [80.0, 116.0],
+                'freqRange' : [85.0, 116.0],
                 'config' : (
 """
 tuning = {
@@ -136,25 +136,22 @@ def setCorrelator(tuning):
                 'obsmode' : 'SINGLEPOL',
                 'userBW' : True,
                 'userFreq' : True,
-                'freqRange' : [80.0, 116.0],
+                'freqRange' : [85.0, 116.0],
                 'config' : (
 """
 tuning = {
     'restfreq' : %(freq)s # [GHz] Line rest frequency
-    'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
-    'IFfreq'   : 2.5, # [GHz] IF frequency
+    'sideband' : '%(tune)s',  # Sideband for first LO (LSB or USB)
+    'IFfreq'   : %(if_freq)s, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
-#    lo1 = %(freq)s - 2.5
-    if (tuning['restfreq'] > 92.0) and (tuning['restfreq'] < 113.0):
-        slband = 2
-    else:
-        slband = 7
+    # 1st LO set to: %(first_lo)s GHz (not including doppler corrections)
+    # Requested spectral line will be in the %(tune)s window of Band %(corr_band)s.
 
     configwideastroband('LL')
-    configastroband(slband, "LL", %(userBW)s, AUTO, %s, 'none', bits=CORR_2BIT) # Custom Spectral Line
-""")
+    configastroband(%(corr_band)s, 'LL', %(slbw)s, AUTO, %(freq)s, 'none', bits=CORR_2BIT) # Custom Spectral Line
+"""),
                 },
             'SCI1_3MM_SP_CO' : { 
                 'obsmode' : 'SINGLEPOL',
@@ -211,7 +208,7 @@ def setCorrelator(tuning):
                 'obsmode' : 'CARMA23',
                 'userBW' : False,
                 'userFreq' : True,
-                'freqRange' : [80.0, 116.0],
+                'freqRange' : [85.0, 116.0],
                 'config' : (
 """
 tuning = {
@@ -229,7 +226,22 @@ def setCorrelator(tuning):
                 'obsmode' : 'CARMA23',
                 'userBW' : True,
                 'userFreq' : True,
-                'freqRange' : [80.0, 116.0],
+                'freqRange' : [85.0, 116.0],
+                'config' : (
+"""
+tuning = {
+    'restfreq' : %(freq)s # [GHz] Line rest frequency
+    'sideband' : '%(tune)s',  # Sideband for first LO (LSB or USB)
+    'IFfreq'   : %(if_freq)s, # [GHz] IF frequency
+}
+
+def setCorrelator(tuning):
+    # 1st LO set to: %(first_lo)s GHz (not including doppler corrections)
+    # Requested spectral line will be in the %(tune)s window of Band %(corr_band)s.
+
+    configwideastroband('MAXSENS_CARMA23')
+    configastroband(%(corr_band)s, 'CARMA23', %(slbw)s, AUTO, %(freq)s, 'none', bits=CORR_2BIT) # Custom Spectral Line
+""")
                 },
             'SCI1_3MM_C23_CO' : { 
                 'obsmode' : 'CARMA23',
@@ -299,6 +311,21 @@ def setCorrelator(tuning):
                 'userBW' : True,
                 'userFreq' : True,
                 'freqRange' : [215.0, 270.0],
+                'config' : (
+"""
+tuning = {
+    'restfreq' : %(freq)s # [GHz] Line rest frequency
+    'sideband' : '%(tune)s',  # Sideband for first LO (LSB or USB)
+    'IFfreq'   : %(if_freq)s, # [GHz] IF frequency
+}
+
+def setCorrelator(tuning):
+    # 1st LO set to: %(first_lo)s GHz (not including doppler corrections)
+    # Requested spectral line will be in the %(tune)s window of Band %(corr_band)s.
+
+    configwideastroband('LL')
+    configastroband(%(corr_band)s, 'LL', %(slbw)s, AUTO, %(freq)s, 'none', bits=CORR_2BIT) # Custom Spectral Line
+"""),
                 },
             'SCI1_1MM_SP_CO' : {
                 'obsmode' : 'SINGLEPOL',
@@ -349,7 +376,23 @@ def setCorrelator(tuning):
                 'userBW' : True,
                 'userFreq' : True,
                 'freqRange' : [215.0, 270.0],
+                'config' : (
+"""
+tuning = {
+    'restfreq' : %(freq)s # [GHz] Line rest frequency
+    'sideband' : '%(tune)s',  # Sideband for first LO (LSB or USB)
+    'IFfreq'   : %(if_freq)s, # [GHz] IF frequency
+}
+
+def setCorrelator(tuning):
+    # 1st LO set to: %(first_lo)s GHz (not including doppler corrections)
+    # Requested spectral line will be in the %(tune)s window of Band %(corr_band)s.
+
+    configwideastroband('DUALPOL')
+    configastroband(%(corr_band)s, 'DUALPOL', %(slbw)s, AUTO, %(freq)s, 'none', bits=CORR_2BIT) # Custom Spectral Line
+"""),
                 },
+
             'SCI1_1MM_DP_CO' : {
                 'obsmode' : 'DUALPOL',
                 'userBW' : True,
@@ -395,6 +438,21 @@ def setCorrelator(tuning):
                 'userBW' : True,
                 'userFreq' : True,
                 'freqRange' : [215.0, 270.0],
+                'config' : (
+"""
+tuning = {
+    'restfreq' : %(freq)s # [GHz] Line rest frequency
+    'sideband' : '%(tune)s',  # Sideband for first LO (LSB or USB)
+    'IFfreq'   : %(if_freq)s, # [GHz] IF frequency
+}
+
+def setCorrelator(tuning):
+    # 1st LO set to: %(first_lo)s GHz (not including doppler corrections)
+    # Requested spectral line will be in the %(tune)s window of Band %(corr_band)s.
+
+    configwideastroband('FULLSTOKES')
+    configastroband(%(corr_band)s, 'FULLSTOKES', %(slbw)s, AUTO, %(freq)s, 'none', bits=CORR_2BIT) # Custom Spectral Line
+"""),
                 },
             'SCI1_1MM_FP_CO' : {
                 'obsmode' : 'FULLPOL',

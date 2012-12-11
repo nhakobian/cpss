@@ -89,7 +89,7 @@ ${corrconfig}
 
 category_map = { 
     #'' : 'GALACTIC',
-    #'' : 'COMET',
+    'Cometary'                        : 'COMET',
     #'' : 'EXTRAGALACTIC'
     #'' : 'OTHER',
     'Planetary'                       : 'PLANET',
@@ -491,6 +491,8 @@ def export_xml(propinfo, template):
     modes = template.tempclass.fast_modes
     mode = modes[corr]
 
+    corrconfig_mode = template.fast_corrconfig(mode=corr, freq=freq, slbw=bw)
+
     if mode['userFreq'] == False:
         freq = mode['freq']
 
@@ -559,8 +561,7 @@ def export_xml(propinfo, template):
         dec = source['f_dec'],
         vlsr = source['f_vlsr'],
         freq = freq,
-        corrconfig = ( mode['config'] % { 'userBW' : source['f_slbw'], 
-                                          'freq' : source['f_freq'] } ),
+        corrconfig = corrconfig_mode,
         obsmode = mode['obsmode'],
         mosaic = source['f_mosaic'],
         )
