@@ -122,14 +122,15 @@ class template:
                 'config' : (
 """
 tuning = {
-    'restfreq' : %(freq)s # [GHz] Line rest frequency
-    'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
+    'restfreq' : %(freq)s, # [GHz] Line rest frequency
+    'sideband' : USB,  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
-#    lo1 = %(freq)s - 2.5
-    configwideastroband('LL', bits=CORR_2BIT)
+    # lo1 = %(freq)s - 2.5
+    clearastroband(0)
+    configwideastroband(conf='LL')
 """)
                 },
             'SCI1_3MM_SP_SL' : {
@@ -140,17 +141,17 @@ def setCorrelator(tuning):
                 'config' : (
 """
 tuning = {
-    'restfreq' : %(freq)s # [GHz] Line rest frequency
-    'sideband' : '%(tune)s',  # Sideband for first LO (LSB or USB)
+    'restfreq' : %(freq)s, # [GHz] Line rest frequency
+    'sideband' : %(tune)s,  # Sideband for first LO (LSB or USB)
     'IFfreq'   : %(if_freq)s, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
     # 1st LO set to: %(first_lo)s GHz (not including doppler corrections)
     # Requested spectral line will be in the %(tune)s window of Band %(corr_band)s.
-
-    configwideastroband('LL')
-    configastroband(%(corr_band)s, 'LL', %(slbw)s, AUTO, %(freq)s, 'none', bits=CORR_2BIT) # Custom Spectral Line
+    clearastroband(0)
+    configwideastroband(conf='LL')
+    configastroband(%(corr_band)s, 'LL', %(slbw)s, %(freq)s, AUTO, 'none', 'none', bits=CORR_2BIT) # Custom Spectral Line
 """),
                 },
             'SCI1_3MM_SP_CO' : { 
@@ -167,15 +168,16 @@ tuning = {
 }
 
 def setCorrelator(tuning):
-#    lo1 = 108.021042
-    configastroband(1, "LL", %(userBW)s, 109.78216, AUTO, 109.78216, 'none', bits=CORR_2BIT) # C18O (USB)
-    configastroband(2, "LL", %(userBW)s, 110.201353, AUTO, 110.201353, 'none', bits=CORR_2BIT) # 13CO (USB)
-    configastroband(3, "LL", BW500, 102.560475, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(4, "LL", BW500, 104.254851, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(5, "LL", BW500, 103.615539, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(6, "LL", BW500, 101.906132, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(7, "LL", BW500, 101.201919, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(8, "LL", %(userBW)s, 115.271204, AUTO, 115.271204, 'none', bits=CORR_2BIT) # 12CO (USB)
+    clearastroband(0)
+    # lo1 = 108.021042
+    configastroband(1, 'LL', %(userBW)s, 109.78216, AUTO, 109.78216, 'none', bits=CORR_2BIT) # C18O (USB)
+    configastroband(2, 'LL', %(userBW)s, 110.201353, AUTO, 110.201353, 'none', bits=CORR_2BIT) # 13CO (USB)
+    configastroband(3, 'LL', BW500, 102.560475, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(4, 'LL', BW500, 104.254851, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(5, 'LL', BW500, 103.615539, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(6, 'LL', BW500, 101.906132, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(7, 'LL', BW500, 101.201919, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(8, 'LL', %(userBW)s, 115.271204, AUTO, 115.271204, 'none', bits=CORR_2BIT) # 12CO (USB)
 """)
                 },
             'SCI1_3MM_SP_HCO+' : {
@@ -192,15 +194,16 @@ tuning = {
 }
 
 def setCorrelator(tuning):
-#    lo1 = 91.0199
-    configastroband(1, "LL", %(userBW)s, 93.173505, AUTO, 93.173505, 'none', bits=CORR_2BIT) # N2H+ (USB)
-    configastroband(2, "LL", %(userBW)s, 88.631847, AUTO, 88.631847, 'none', bits=CORR_2BIT) # HCN (LSB)
-    configastroband(3, "LL", %(userBW)s, 89.188518, AUTO, 89.188518, 'none', bits=CORR_2BIT) # HCO+ (LSB)
-    configastroband(4, "LL", %(userBW)s, 85.925684, AUTO, 85.925684, 'none', bits=CORR_2BIT) # NH2D (LSB)
-    configastroband(5, "LL", %(userBW)s, 86.754288, AUTO, 86.754288, 'none', bits=CORR_2BIT) # H13CO+ (LSB)
-    configastroband(6, "LL", %(userBW)s, 86.340176, AUTO, 86.340176, 'none', bits=CORR_2BIT) # H13CN (LSB)
-    configastroband(7, "LL", %(userBW)s, 97.980968, AUTO, 97.980968, 'none', bits=CORR_2BIT) # CS (USB)
-    configastroband(8, "LL", BW500, 88.002153, AUTO, 'none', 'none', bits=CORR_2BIT)
+    clearastroband(0)
+    # lo1 = 91.0199
+    configastroband(1, 'LL', %(userBW)s, 93.173505, AUTO, 93.173505, 'none', bits=CORR_2BIT) # N2H+ (USB)
+    configastroband(2, 'LL', %(userBW)s, 88.631847, AUTO, 88.631847, 'none', bits=CORR_2BIT) # HCN (LSB)
+    configastroband(3, 'LL', %(userBW)s, 89.188518, AUTO, 89.188518, 'none', bits=CORR_2BIT) # HCO+ (LSB)
+    configastroband(4, 'LL', %(userBW)s, 85.925684, AUTO, 85.925684, 'none', bits=CORR_2BIT) # NH2D (LSB)
+    configastroband(5, 'LL', %(userBW)s, 86.754288, AUTO, 86.754288, 'none', bits=CORR_2BIT) # H13CO+ (LSB)
+    configastroband(6, 'LL', %(userBW)s, 86.340176, AUTO, 86.340176, 'none', bits=CORR_2BIT) # H13CN (LSB)
+    configastroband(7, 'LL', %(userBW)s, 97.980968, AUTO, 97.980968, 'none', bits=CORR_2BIT) # CS (USB)
+    configastroband(8, 'LL', BW500, 88.002153, AUTO, 'none', 'none', bits=CORR_2BIT)
 """)
                 },
             
@@ -212,14 +215,15 @@ def setCorrelator(tuning):
                 'config' : (
 """
 tuning = {
-    'restfreq' : %(freq)s # [GHz] Line rest frequency
-    'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
+    'restfreq' : %(freq)s, # [GHz] Line rest frequency
+    'sideband' : USB,  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
-#    lo1 = %(freq)s - 2.5
-    configwideastroband('CARMA23', bits=CORR_2BIT)
+    clearastroband(0)
+    # lo1 = %(freq)s - 2.5
+    configwideastroband(conf='CARMA23', bits=CORR_2BIT)
 """)
                 },
             'SCI1_3MM_C23_SL' : {
@@ -230,17 +234,17 @@ def setCorrelator(tuning):
                 'config' : (
 """
 tuning = {
-    'restfreq' : %(freq)s # [GHz] Line rest frequency
-    'sideband' : '%(tune)s',  # Sideband for first LO (LSB or USB)
+    'restfreq' : %(freq)s, # [GHz] Line rest frequency
+    'sideband' : %(tune)s,  # Sideband for first LO (LSB or USB)
     'IFfreq'   : %(if_freq)s, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
+    clearastroband(0)
     # 1st LO set to: %(first_lo)s GHz (not including doppler corrections)
     # Requested spectral line will be in the %(tune)s window of Band %(corr_band)s.
-
-    configwideastroband('MAXSENS_CARMA23')
-    configastroband(%(corr_band)s, 'CARMA23', %(slbw)s, AUTO, %(freq)s, 'none', bits=CORR_2BIT) # Custom Spectral Line
+    configwideastroband(conf='MAXSENS_CARMA23')
+    configastroband(%(corr_band)s, 'CARMA23', %(slbw)s, %(freq)s, AUTO, 'none', 'none', bits=CORR_2BIT) # Custom Spectral Line
 """)
                 },
             'SCI1_3MM_C23_CO' : { 
@@ -257,12 +261,13 @@ tuning = {
 }
 
 def setCorrelator(tuning):
-#    lo1 = 108.021042
-    configwideastroband(conf="MAXSENS_CARMA23")
-    configastroband(1, "CARMA23", BW500, 101.201919, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(3, "CARMA23", %(userBW)s, 109.78216, AUTO, 109.78216, 'none', bits=CORR_2BIT) # C18O (USB)
-    configastroband(5, "CARMA23", %(userBW)s, 110.201353, AUTO, 110.201353, 'none', bits=CORR_2BIT) # 13CO (USB)
-    configastroband(7, "CARMA23", %(userBW)s, 115.271204, AUTO, 115.271204, 'none', bits=CORR_2BIT) # 12CO (USB)
+    clearastroband(0)
+    # lo1 = 108.021042
+    configwideastroband(conf='MAXSENS_CARMA23')
+    configastroband(1, 'CARMA23', BW500, 101.201919, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(3, 'CARMA23', %(userBW)s, 109.78216, AUTO, 109.78216, 'none', bits=CORR_2BIT) # C18O (USB)
+    configastroband(5, 'CARMA23', %(userBW)s, 110.201353, AUTO, 110.201353, 'none', bits=CORR_2BIT) # 13CO (USB)
+    configastroband(7, 'CARMA23', %(userBW)s, 115.271204, AUTO, 115.271204, 'none', bits=CORR_2BIT) # 12CO (USB)
 """)
                 },
             'SCI1_3MM_C23_HCO+' : {
@@ -279,12 +284,13 @@ tuning = {
 }
 
 def setCorrelator(tuning):
-#    lo1 = 85
-    configwideastroband(conf="MAXSENS_CARMA23")
-    configastroband(1, "CARMA23", BW500, 88.25, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(3, "CARMA23", %(userBW)s, 88.631847, AUTO, 88.631847, 'none', bits=CORR_2BIT) # HCN
-    configastroband(5, "CARMA23", %(userBW)s, 89.188518, AUTO, 89.188518, 'none', bits=CORR_2BIT) # HCO+
-    configastroband(7, "CARMA23", %(userBW)s, 93.173505, AUTO, 93.173505, 'none', bits=CORR_2BIT) # N2H+
+    clearastroband(0)
+    # lo1 = 85
+    configwideastroband(conf='MAXSENS_CARMA23')
+    configastroband(1, 'CARMA23', BW500, 88.25, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(3, 'CARMA23', %(userBW)s, 88.631847, AUTO, 88.631847, 'none', bits=CORR_2BIT) # HCN
+    configastroband(5, 'CARMA23', %(userBW)s, 89.188518, AUTO, 89.188518, 'none', bits=CORR_2BIT) # HCO+
+    configastroband(7, 'CARMA23', %(userBW)s, 93.173505, AUTO, 93.173505, 'none', bits=CORR_2BIT) # N2H+
 """)
                 },
             
@@ -296,14 +302,15 @@ def setCorrelator(tuning):
                 'config' : (
 """
 tuning = {
-    'restfreq' : %(freq)s # [GHz] Line rest frequency
-    'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
+    'restfreq' : %(freq)s, # [GHz] Line rest frequency
+    'sideband' : USB,  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
-#    lo1 = %(freq)s - 2.5
-    configwideastroband('LL', bits=CORR_2BIT)
+    clearastroband(0)
+    # lo1 = %(freq)s - 2.5
+    configwideastroband(conf='LL', bits=CORR_2BIT)
 """)
                 },
             'SCI1_1MM_SP_SL' : { 
@@ -314,17 +321,17 @@ def setCorrelator(tuning):
                 'config' : (
 """
 tuning = {
-    'restfreq' : %(freq)s # [GHz] Line rest frequency
-    'sideband' : '%(tune)s',  # Sideband for first LO (LSB or USB)
+    'restfreq' : %(freq)s,  # [GHz] Line rest frequency
+    'sideband' : %(tune)s,  # Sideband for first LO (LSB or USB)
     'IFfreq'   : %(if_freq)s, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
+    clearastroband(0)
     # 1st LO set to: %(first_lo)s GHz (not including doppler corrections)
     # Requested spectral line will be in the %(tune)s window of Band %(corr_band)s.
-
-    configwideastroband('LL')
-    configastroband(%(corr_band)s, 'LL', %(slbw)s, AUTO, %(freq)s, 'none', bits=CORR_2BIT) # Custom Spectral Line
+    configwideastroband(conf='LL')
+    configastroband(%(corr_band)s, 'LL', %(slbw)s, %(freq)s, AUTO, 'none', 'none', bits=CORR_2BIT) # Custom Spectral Line
 """),
                 },
             'SCI1_1MM_SP_CO' : {
@@ -341,15 +348,16 @@ tuning = {
 }
 
 def setCorrelator(tuning):
-#    lo1 = 222.25
-    configastroband(1, "LL", BW500, 221.00, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(2, "LL", %(userBW)s, 219.560319, AUTO, 219.560319, 'none', bits=CORR_2BIT) # C18O (LSB)
-    configastroband(3, "LL", %(userBW)s, 220.398686, AUTO, 220.398686, 'none', bits=CORR_2BIT) # 13CO (LSB)
-    configastroband(4, "LL", %(userBW)s, 230.538, AUTO, 230.538, 'none', bits=CORR_2BIT) # 12CO (USB)
-    configastroband(5, "LL", BW500, 217.56, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(6, "LL", BW500, 216.25, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(7, "LL", BW500, 219.25, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(8, "LL", BW500, 218.45, AUTO, 'none', 'none', bits=CORR_2BIT)
+    clearastroband(0)
+    # lo1 = 222.25
+    configastroband(1, 'LL', BW500, 221.00, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(2, 'LL', %(userBW)s, 219.560319, AUTO, 219.560319, 'none', bits=CORR_2BIT) # C18O (LSB)
+    configastroband(3, 'LL', %(userBW)s, 220.398686, AUTO, 220.398686, 'none', bits=CORR_2BIT) # 13CO (LSB)
+    configastroband(4, 'LL', %(userBW)s, 230.538, AUTO, 230.538, 'none', bits=CORR_2BIT) # 12CO (USB)
+    configastroband(5, 'LL', BW500, 217.56, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(6, 'LL', BW500, 216.25, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(7, 'LL', BW500, 219.25, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(8, 'LL', BW500, 218.45, AUTO, 'none', 'none', bits=CORR_2BIT)
 """)
                 },
             
@@ -361,14 +369,15 @@ def setCorrelator(tuning):
                 'config' : (
 """
 tuning = {
-    'restfreq' : %(freq)s # [GHz] Line rest frequency
-    'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
+    'restfreq' : %(freq)s, # [GHz] Line rest frequency
+    'sideband' : USB,  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
-#    lo1 = %(freq)s - 2.5
-    configwideastroband('DUALPOL', bits=CORR_2BIT)
+    clearastroband(0)
+    # lo1 = %(freq)s - 2.5
+    configwideastroband(conf='DUALPOL', bits=CORR_2BIT)
 """)
                 },
             'SCI1_1MM_DP_SL' : { 
@@ -379,17 +388,17 @@ def setCorrelator(tuning):
                 'config' : (
 """
 tuning = {
-    'restfreq' : %(freq)s # [GHz] Line rest frequency
-    'sideband' : '%(tune)s',  # Sideband for first LO (LSB or USB)
+    'restfreq' : %(freq)s, # [GHz] Line rest frequency
+    'sideband' : %(tune)s,  # Sideband for first LO (LSB or USB)
     'IFfreq'   : %(if_freq)s, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
+    clearastroband(0)
     # 1st LO set to: %(first_lo)s GHz (not including doppler corrections)
     # Requested spectral line will be in the %(tune)s window of Band %(corr_band)s.
-
-    configwideastroband('DUALPOL')
-    configastroband(%(corr_band)s, 'DUALPOL', %(slbw)s, AUTO, %(freq)s, 'none', bits=CORR_2BIT) # Custom Spectral Line
+    configwideastroband(conf='DUALPOL')
+    configastroband(%(corr_band)s, 'DUALPOL', %(slbw)s, %(freq)s, AUTO, 'none', 'none', bits=CORR_2BIT) # Custom Spectral Line
 """),
                 },
 
@@ -407,11 +416,12 @@ tuning = {
 }
 
 def setCorrelator(tuning):
-#    lo1 = 222.25
-    configastroband(1, "DUALPOL", BW500, 221.00, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(3, "DUALPOL", %(userBW)s, 219.560319, AUTO, 219.560319, 'none', bits=CORR_2BIT) # C18O (LSB)
-    configastroband(5, "DUALPOL", %(userBW)s, 220.398686, AUTO, 220.398686, 'none', bits=CORR_2BIT) # 13CO (LSB)
-    configastroband(7, "DUALPOL", %(userBW)s, 230.538, AUTO, 230.538, 'none', bits=CORR_2BIT) # 12CO (USB)
+    clearastroband(0)
+    # lo1 = 222.25
+    configastroband(1, 'DUALPOL', BW500, 221.00, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(3, 'DUALPOL', %(userBW)s, 219.560319, AUTO, 219.560319, 'none', bits=CORR_2BIT) # C18O (LSB)
+    configastroband(5, 'DUALPOL', %(userBW)s, 220.398686, AUTO, 220.398686, 'none', bits=CORR_2BIT) # 13CO (LSB)
+    configastroband(7, 'DUALPOL', %(userBW)s, 230.538, AUTO, 230.538, 'none', bits=CORR_2BIT) # 12CO (USB)
 """)
                 },
             
@@ -423,14 +433,15 @@ def setCorrelator(tuning):
                 'config' : (
 """
 tuning = {
-    'restfreq' : %(freq)s # [GHz] Line rest frequency
-    'sideband' : 'USB',  # Sideband for first LO (LSB or USB)
+    'restfreq' : %(freq)s, # [GHz] Line rest frequency
+    'sideband' : USB,  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 2.5, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
-#    lo1 = %(freq)s - 2.5
-    configwideastroband('FULLPOL', bits=CORR_2BIT)
+    clearastroband(0)
+    # lo1 = %(freq)s - 2.5
+    configwideastroband(conf='FULLPOL', bits=CORR_2BIT)
 """)
                 },
             'SCI1_1MM_FP_SL' : {
@@ -441,17 +452,17 @@ def setCorrelator(tuning):
                 'config' : (
 """
 tuning = {
-    'restfreq' : %(freq)s # [GHz] Line rest frequency
-    'sideband' : '%(tune)s',  # Sideband for first LO (LSB or USB)
+    'restfreq' : %(freq)s, # [GHz] Line rest frequency
+    'sideband' : %(tune)s,  # Sideband for first LO (LSB or USB)
     'IFfreq'   : %(if_freq)s, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
+    clearastroband(0)
     # 1st LO set to: %(first_lo)s GHz (not including doppler corrections)
     # Requested spectral line will be in the %(tune)s window of Band %(corr_band)s.
-
-    configwideastroband('FULLSTOKES')
-    configastroband(%(corr_band)s, 'FULLSTOKES', %(slbw)s, AUTO, %(freq)s, 'none', bits=CORR_2BIT) # Custom Spectral Line
+    configwideastroband(conf='FULLSTOKES')
+    configastroband(%(corr_band)s, 'FULLSTOKES', %(slbw)s, %(freq)s, AUTO, 'none', 'none', bits=CORR_2BIT) # Custom Spectral Line
 """),
                 },
             'SCI1_1MM_FP_CO' : {
@@ -468,11 +479,12 @@ tuning = {
 }
 
 def setCorrelator(tuning):
-#    lo1 = 222.25
-    configastroband(1, "FULLSTOKES", BW500, 221.00, AUTO, 'none', 'none', bits=CORR_2BIT)
-    configastroband(3, "FULLSTOKES", %(userBW)s, 219.560319, AUTO, 219.560319, 'none', bits=CORR_2BIT) # C18O (LSB)
-    configastroband(5, "FULLSTOKES", %(userBW)s, 220.398686, AUTO, 220.398686, 'none', bits=CORR_2BIT) # 13CO (LSB)
-    configastroband(7, "FULLSTOKES", %(userBW)s, 230.538, AUTO, 230.538, 'none', bits=CORR_2BIT) # 12CO (USB)
+    clearastroband(0)
+    # lo1 = 222.25
+    configastroband(1, 'FULLSTOKES', BW500, 221.00, AUTO, 'none', 'none', bits=CORR_2BIT)
+    configastroband(3, 'FULLSTOKES', %(userBW)s, 219.560319, AUTO, 219.560319, 'none', bits=CORR_2BIT) # C18O (LSB)
+    configastroband(5, 'FULLSTOKES', %(userBW)s, 220.398686, AUTO, 220.398686, 'none', bits=CORR_2BIT) # 13CO (LSB)
+    configastroband(7, 'FULLSTOKES', %(userBW)s, 230.538, AUTO, 230.538, 'none', bits=CORR_2BIT) # 12CO (USB)
 """)
                     },
             
@@ -484,13 +496,14 @@ def setCorrelator(tuning):
                 'config' : (
 """
 tuning = {
-    'restfreq' : 35.938 # [GHz] Line rest frequency
-    'sideband' : 'LSB',  # Sideband for first LO (LSB or USB)
+    'restfreq' : 35.938, # [GHz] Line rest frequency
+    'sideband' : LSB,  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 0, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
-    configwideastroband('LL', bits=CORR_2BIT)
+    clearastroband(0)
+    configwideastroband(conf='LL', bits=CORR_2BIT)
 """)
                 },
             'SCI2_3MM_SP_WB' : { 
@@ -501,13 +514,14 @@ def setCorrelator(tuning):
                 'config' : (
 """
 tuning = {
-    'restfreq' : %(freq)s # [GHz] Line rest frequency
-    'sideband' : 'LSB',  # Sideband for first LO (LSB or USB)
+    'restfreq' : %(freq)s, # [GHz] Line rest frequency
+    'sideband' : LSB,  # Sideband for first LO (LSB or USB)
     'IFfreq'   : 0, # [GHz] IF frequency
 }
 
 def setCorrelator(tuning):
-    configwideastroband('LL', bits=CORR_2BIT)
+    clearastroband(0)
+    configwideastroband(conf='LL', bits=CORR_2BIT)
 """)
                 },
             }
