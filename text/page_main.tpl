@@ -1,7 +1,8 @@
+<!--
   <h2 class="center">
     Semester 2013a: Deadline 05 December 2012 5PM CST (UTC-6)
   </h2>
-
+-->
 
 <p>Welcome to the CARMA Proposal System. This system is used to propose
 for time on the CARMA array during TAC-approved proposal calls. If you
