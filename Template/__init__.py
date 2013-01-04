@@ -1501,6 +1501,7 @@ class ErrorCheck:
                       'NoDualPol',
                       'NoFullPol',
                       'Numeric',
+                      'num_float',
                       'OBType',
                       'Only3mmInC23', # Placing this here in the chain guarantees
                                       # that the value is already a number.
@@ -1952,3 +1953,11 @@ class ErrorCheck:
             self.AddError("Array Configuration %s unavailable in SCI2 correlator mode." % array_config)
         elif sci2 and ('SCI2_' not in mode):
             self.AddError("Array Configuration %s unavailable in SCI1 correlator mode." % array_config)
+
+    def num_float(self, value):
+        try:
+            float(value)
+        except ValueError:
+            self.AddError("This field must only contain numbers.")
+        return
+

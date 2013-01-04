@@ -577,7 +577,7 @@ def setCorrelator(tuning):
                 'section' : 'source',
                 'line' : 1,
                 #'info' : '',
-                'check' : ['NoNull', 'Numeric'],
+                'check' : ['NoNull', 'num_float'],
                 },
             {
                 'name':'Track Length',
