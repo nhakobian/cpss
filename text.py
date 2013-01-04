@@ -86,6 +86,16 @@ allowed size of 14MB. If you must upload an image greater than this
 size please send a message to proposal-help@astro.illinois.edu for help.
 """
 
+fast_submit_success=r"""
+<div class=submitted>
+  Congratulations! You have sucessfully submitted your proposal!<br>
+
+  To view your final proposal, click on the Proposals button above to
+  return to the screen which lists your proposals, and click on the
+  "view final pdf" link available there.<br><br>
+</div>
+"""
+
 help_abstract=r"""
 <div class="helptext">
   Please keep the abstract to 1/4 of a page maximum. You may use LaTeX

@@ -751,7 +751,6 @@ class Connector:
             else:
                 cpss.db.pdf_add_update(proposalid, pdf_data)
                 cpss.db.proposal_submit(proposalid)
-                cpss.w(cpss.text.submit_success)
                 # Fast proposal system integration. This is a three part procedure.
                 # It locks the proposal for further editing, this is done since the
                 # output is sent directly to the CARMA RTS. If the proposer were to
@@ -767,6 +766,11 @@ class Connector:
                 # Email notification of DDT and Fast-track proposal submissions.
                 if proposal['type'] in ['fast', 'ddt']:
                     self.email_notify(proposal)
+                # Change the submitted text for fast-track proposals.
+                if proposal['type'] == 'fast':
+                    cpss.w(cpss.text.fast_submit_success)
+                else:
+                    cpss.w(cpss.text.submit_success)                    
 
         self.do_footer()
 
