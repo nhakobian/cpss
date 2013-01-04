@@ -92,3 +92,144 @@
   telescope. To allow this, and receive compensation in the form of
   increased observation time will be made if you elect this option.
 </div>
+
+<a name="f_sourcename" />
+<div class="helptitle">Fast-Track Proposals</div>
+
+<div class="helptitle">Source Name</div>
+<div class="helptext">
+  A short, simple, descriptive name for the object that you are
+  observing.
+</div>
+
+<a name="f_ra" />
+<div class="helptitle">Right Ascension</div>
+<div class="helptext">
+  Specify your Right Ascension in the format HH:MM:SS.SS.
+</div>
+
+<a name="f_dec" />
+<div class="helptitle">Declination</div>
+<div class="helptext">
+  Specify your Declination in the format HH:MM:SS.SS.
+</div>
+
+<a name="f_vlsr" />
+<div class="helptitle">LSR Velocity</div>
+<div class="helptext">
+  Specify your source's LSR Velocity in km/s.
+</div>
+
+<a name="f_time" />
+<div class="helptitle">Track Length</div>
+<div class="helptext">
+  Specify the requested time for the observing track. You can
+  request 1 to 3 hour long tracks with this tool.
+</div>
+
+<a name="f_array" />
+<div class="helptitle">Array Configuration</div>
+<div class="helptext">
+  Choose the array configuration that your track should be
+  observed in. Some correlator modes are only available in
+  specific array configurations. See the help on correlator
+  modes for more information.  
+</div>
+
+<a name="f_corrconfig" />
+<div class="helptitle">Correlator Mode</div>
+<div class="helptext">
+<b>SCI1_1MM_DP_CO</b> : Dual polarization (1mm) observations
+of CO, 13CO and C18O, a bandwidth must also be selected, one
+band is set to continuum.<br>
+
+<b>SCI1_1MM_DP_SL</b> : Dual polarization (1mm) observations
+of a user specified spectral line, a bandwidth and line rest
+frequency must also be specified, 3 bands are set to 
+continuum.<br>
+
+<b>SCI1_1MM_DP_WB</b> : Dual polarization (1mm) continuum, a
+rest frequency must also be given.<br>
+
+<b>SCI1_1MM_FP_CO</b> : Full stokes (1mm) observations of CO,
+13CO and C18O, a bandwidth must also be selected, one band is
+set to continuum.<br>
+
+<b>SCI1_1MM_FP_SL</b> : Full stokes (1mm) observations of a
+user specified spectral line, a bandwidth and line rest 
+frequency must also be specified, 3 bands are set to 
+continuum.<br>
+
+<b>SCI1_1MM_FP_WB</b> : Full stokes (1mm) continuum, a rest 
+frequency must also be given.<br>
+
+<b>SCI1_1MM_SP_CO</b> : 1mm observations of CO, 13CO and C18O, 
+a bandwidth must also be selected, five bands are set to 
+continuum.<br>
+
+<b>SCI1_1MM_SP_SL</b> : 1mm observations of a user specified 
+spectral line, a bandwidth and line rest frequency must also 
+be specified, 7 bands are set to continuum.<br>
+
+<b>SCI1_1MM_SP_WB</b> : 1mm continuum, a rest frequency must 
+also be given.<br>
+
+<b>SCI1_3MM_C23_CO</b> : CARMA 23 3mm observations of CO, 
+13CO and C18O, a bandwidth must also be selected, one band 
+is set to continuum.<br>
+
+<b>SCI1_3MM_C23_HCO+</b> : CARMA 23 3mm observations of HCN, 
+HCO+, and N2H+, a bandwidth must also be selected, one band 
+is set to continuum.<br>
+
+<b>SCI1_3MM_C23_SL</b> : CARMA 23 3mm observations of a user
+specified spectral line, a bandwidth and line rest frequency 
+must also be specified, 3 bands are set to continuum.<br>
+
+<b>SCI1_3MM_C23_WB</b> : CARMA 23 3mm continuum, a rest 
+frequency must also be given.<br>
+
+<b>SCI1_3MM_SP_CO</b> : 3mm observations of CO, 13CO and C18O, 
+a bandwidth must also be selected, 5 bands are set to 
+continuum.<br>
+
+<b>SCI1_3MM_SP_HCO+</b> : 3mm observations of N2H+, HCN, HCO+, 
+NH2D, H13CO+, H13CN, and CS, a bandwidth must also be 
+selected, one band is set to continuum.<br>
+
+<b>SCI1_3MM_SP_SL</b> : 3mm observations of a user specified 
+spectral line, a bandwidth and line rest frequency must also 
+be specified, 7 bands are set to continuum.<br>
+
+<b>SCI1_3MM_SP_WB</b> : 3mm continuum, a rest frequency must 
+also be given.<br>
+
+<b>SCI2_1CM_SP_WB</b> : 1cm continuum, 3.5m antennas only.<br>
+
+<b>SCI2_3MM_SP_WB</b> : 3mm continuum, 3.5m antennas only, a 
+rest frequency must also be given.<br>
+</div>
+
+<a name="f_freq" />
+<div class="helptitle">Frequency</div>
+<div class="helptext">
+  Specify your observing frequency in (GHz) for correlator
+  modes that require a user specified frequency. Leave this
+  field blank for modes that do not require a frequency.
+</div>
+
+<a name="f_slbw" />
+<div class="helptitle">Spectral Line Bandwidth</div>
+<div class="helptext">
+  For correlator modes that require a user specified bandwidth,
+  select one of the options in the drop down box. Select 'No Value
+  Set' for modes that do not require a specified bandwidth.
+</div>
+
+<a name="f_mosaic" />
+<div class="helptitle">Mosaic</div>
+<div class="helptext">
+  Currently the fast-track system only supports standard 7 Point 
+  mosaics. If you do not wish to perform mosaic observations,
+  select 'No Value Set'.
+</div>

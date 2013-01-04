@@ -576,7 +576,7 @@ def setCorrelator(tuning):
                 'fieldtype' : 'text',
                 'section' : 'source',
                 'line' : 1,
-                #'info' : '',
+                'info' : 'km/s',
                 'check' : ['NoNull', 'num_float'],
                 },
             {
