@@ -1901,7 +1901,7 @@ class ErrorCheck:
 
         try:
             if "{0:+03d}".format(int(degrees)) == degrees:
-                if (int(degrees) < -40) or (int(degrees) > 60):
+                if (int(degrees) < -40) or (int(degrees) > 90):
                     self.AddError("""Invalid degrees value: must be -40 < DD <= 90""")
                     raise ValueError
             else:
