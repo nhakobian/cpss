@@ -556,7 +556,7 @@ def export_xml(propinfo, template):
         email = PIdata['email'],
         obsblock = obsblock_name,
         config = source['f_array'],
-        source = source['f_sourcename'],
+        source = source['f_sourcename'].replace(' ', '')[0:8],
         ra = source['f_ra'],
         dec = source['f_dec'],
         vlsr = source['f_vlsr'],
