@@ -550,6 +550,9 @@ def export_xml(propinfo, template):
     file_strip.write(xml_strip)
     file_strip.write('\n')
 
+    if source['f_mosaic'] != '7 Point':
+        source['f_mosaic'] = 'None'
+
     script = ScriptTemplate.substitute(
         carmaid = proposal['carmaid'],
         pi = PIdata['name'],

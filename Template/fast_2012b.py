@@ -633,11 +633,11 @@ def setCorrelator(tuning):
                 'name':'Mosaic',
                 'shortname':'Mosaic',
                 'fieldname' : 'f_mosaic',
-                'fieldtype' : ['7 Point'],
+                'fieldtype' : ['1 Point', '7 Point'],
                 'section' : 'source',
                 'line' : 1,
                 #'info' : '',
-                'check' : [],
+                'check' : ['NoNull'],
                 },
             
             ]
