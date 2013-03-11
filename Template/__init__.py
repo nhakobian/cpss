@@ -919,6 +919,9 @@ class Template:
                 data_field['data'] = 'CURDATE()'
             elif (fields.__contains__(data_field['fieldname']) == True):
                 data_field['data'] = fields[data_field['fieldname']]
+                if (data_field['fieldtype'] == 'fast_corrconfig'):
+                    if (data_field['data'] == "No Value Set"):
+                        data_field['data'] = None
                 if (type(data_field['fieldtype']) == type(list())):
                     if (data_field['data'] == "No Value Set"):
                         data_field['data'] = None
@@ -1056,6 +1059,75 @@ class Template:
                     element['html'] += ("""<input type="text" name="%s"
                                            value="%s">""" %
                                         (element['fieldname'],element['data']))
+            if (view == True):
+                element['html'] = element['data']
+        #######################################################################
+        elif (element['fieldtype'] == 'fast_corrconfig'):
+            element['sqltype'] = 'text'
+            if (edit == True):
+                values = ['No Value Set'] + sorted(element['fielddata'].keys())
+
+                # Populate freqbool and slbwbool:
+                freqbool = ['False']
+                slbwbool = ['False']
+                for i in values:
+                    if i == 'No Value Set':
+                        continue
+                    if element['fielddata'][i]['userFreq'] == True:
+                        freqbool.append("True")
+                    else:
+                        freqbool.append("False")
+                    if element['fielddata'][i]['userBW'] == True:
+                        slbwbool.append("True")
+                    else:
+                        slbwbool.append("False")
+
+                element['html'] = ("""<select name="%(fieldname)s" onChange="
+                                   freq = form.f_freq;
+                                   slbw = form.f_slbw;
+                                   selbox = form.%(fieldname)s;
+                                   var freqbool=[%(fb)s];
+                                   var slbwbool=[%(sb)s];
+                                   if (freqbool[selbox.selectedIndex] == 'False')
+                                   {
+                                       freq.value='';
+                                       freq.disabled=true;
+                                   }
+                                   else
+                                   {
+                                       freq.disabled=false;
+                                   }
+                                   if (slbwbool[selbox.selectedIndex] == 'False')
+                                   {
+                                       slbw.value='No Value Set';
+                                       slbw.disabled=true;
+                                   }
+                                   else
+                                   {
+                                       slbw.disabled=false;
+                                   }">""" % {'fieldname' : element['fieldname'], 
+                                             'fb' : ("'" + "','".join(freqbool) + "'"),
+                                             'sb' : ("'" + "','".join(slbwbool) + "'"),
+                                             })
+
+                for value in values:
+                    if (element['data'] != None):
+                        if (element['data'] == value):
+                            element['html'] += ("""<option value="%s" selected>
+                                                %s""" % (value, value))
+                        else:
+                            element['html'] += ("""<option value="%s">%s""" %
+                                                (value, value))
+                    else:
+                        element['html'] += ("""<option value="%s">%s""" %
+                                            (value, value))
+                element['html'] += ("</select><script> window.onload=form.%s.onchange;</script>" % (element['fieldname']))
+            if (view == True):
+                element['html'] = element['data']
+                if element['error'] != None:
+                    element['text'] = ("{\cellcolor{red!45}%s}" % element['data'])
+
+
             if (view == True):
                 element['html'] = element['data']
         #######################################################################
@@ -1809,7 +1881,12 @@ class ErrorCheck:
             self.AddError("A correlator mode must be selected.")
             return
 
-        userBW = self.tempclass.fast_modes[mode]['userBW']
+        try:
+            userBW = self.tempclass.fast_modes[mode]['userBW']
+        except:
+            self.AddError("A correlator mode must be selected.")
+            return
+
         if (userBW == False) and (bw != None):
             self.AddError("Selected Mode does not allow for a user selected bandwidth.")
             
@@ -1830,7 +1907,12 @@ class ErrorCheck:
             self.AddError("A correlator mode must be selected.")
             return
 
-        userFreq = self.tempclass.fast_modes[mode]['userFreq']
+        try:
+            userFreq = self.tempclass.fast_modes[mode]['userFreq']
+        except:
+            self.AddError("A correlator mode must be selected.")
+            return
+
         if (userFreq == False) and (freq != None):
             self.AddError("Selected Mode does not allow for a user selected frequency.")
 
