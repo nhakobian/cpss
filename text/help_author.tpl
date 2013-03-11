@@ -6,26 +6,26 @@
   graduate students.
 </div>
 
-<a name="name" />
+<a name="name"></a>
 <div class="helptitle">Name</div>
 <div class="helptext">
   Please insert your/your co-author(s) name(s) here.
 </div>
 
-<a name="email" />
+<a name="email"></a>
 <div class="helptitle">E-mail</div>
 <div class="helptext">
   Please enter the e-mail addresses of you and your colleagues
   here.
 </div>
 
-<a name="phone" />
+<a name="phone"></a>
 <div class="helptitle">Phone Number</div>
 <div class="helptext">
   Please enter the contact phone number here.
 </div>
 
-<a name="institution" />
+<a name="institution"></a>
 <div class="helptitle">Institution</div>
 <div class="helptext">
   Please select your institution name here from the drop down box.  If
@@ -33,13 +33,13 @@
   and enter your institution name in the box that appears below.
 </div>
 
-<a name="grad" />
+<a name="grad"></a>
 <div class="helptitle">Graduate Student</div>
 <div class="helptext">
   Is this person a graduate student?
 </div>
 
-<a name="thesis" />
+<a name="thesis"></a>
 <div class="helptitle">Thesis</div>
 <div class="helptext">
   Is this proposal part of an approved graduate student thesis

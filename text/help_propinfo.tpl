@@ -5,20 +5,20 @@
   this section.
 </div>
 
-<a name="title" />
+<a name="title"></a>
 <div class="helptitle">Title</div>
 <div class="helptext">
   The title of your proposal (no LaTeX characters are allowed).<br>
 </div>
 
-<a name="date" />
+<a name="date"></a>
 <div class="helptitle">Date</div>
 <div class="helptext">
   This date is set automatically to when you last edited the
   information on your proposal.
 </div>
 
-<a name="toe" />
+<a name="toe"></a>
 <div class="helptitle">Time Critical</div>
 <div class="helptext">
   Check this box if the object(s) you wish to observe need to be
@@ -27,7 +27,7 @@
   follow-up, coordinated observations).
 </div>
 
-<a name="priority" />
+<a name="priority"></a>
 <div class="helptitle">Priority</div>
 <div class="helptext">
   If you are submitting several proposals, you may assign a priority
@@ -36,26 +36,26 @@
   this field.
 </div>
 
-<a name="scientific_category" />
+<a name="scientific_category"></a>
 <div class="helptitle">Scientific Category</div>
 <div class="helptext">
   What general category best describes your project?
 </div>
 
-<a name="type_of_observation" />
+<a name="type_of_observation"></a>
 <div class="helptitle">Type of Observation</div>
 <div class="helptext">
   Is this a spectral line observation, continuum observation, or
   both?
 </div>
 
-<a name="frequency_band" />
+<a name="frequency_band"></a>
 <div class="helptitle">Frequency / Receiver Band</div>
 <div class="helptext">
   What receiver band are you requesting for your obervations?
 </div>
 
-<a name="help_required" />
+<a name="help_required"></a>
 <div class="helptitle">Level of Help Required</div>
 <div class="helptext">
   Choose "Consultation" for help preparing for your observations. A
