@@ -524,3 +524,16 @@ table.stats tr:hover {
     height : 60px;
     margin-right : 1em;
 }
+
+#redinfo {
+    margin : 0 auto;
+    width : 50%;
+    border : 1px solid black;
+    margin-bottom : 1em;
+    padding : 0.5em;
+    text-align : center;
+    font-size : 14px;
+    font-weight : bold;
+    background : #F0F0F0;
+    color: red;
+}

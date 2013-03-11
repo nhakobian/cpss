@@ -236,6 +236,10 @@ class Template:
                             "submit_verify/" + str(self.propid)))
 
         cpss.w("""</div>""")
+
+        cpss.w("""<div id='redinfo'>Fields highlighted in red must contain valid information 
+                  before your proposal can be submitted.</div>""")
+
         ###End Page Header
 
     def make_html_proposal(self):
