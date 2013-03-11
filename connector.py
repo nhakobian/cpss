@@ -907,7 +907,7 @@ submission into the CARMA Project Database.
     def Help(self, item='index', small=False):
         if (small == True):
             cpss.req.content_type="text/html"
-            cpss.w("""<html><head>
+            cpss.w("""<!DOCTYPE html><head>
             <base href="%s" />
             <title>Help</title>
             <link rel="stylesheet" href="static/cpss.css" type="text/css">

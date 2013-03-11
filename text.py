@@ -113,26 +113,26 @@ help_author=r"""
   graduate students.
 </div>
 
-<a name="name" />
+<a name="name"></a>
 <div class="helptitle">Name</div>
 <div class="helptext">
   Please insert your/your co-author(s) name(s) here.
 </div>
 
-<a name="email" />
+<a name="email"></a>
 <div class="helptitle">E-mail</div>
 <div class="helptext">
   Please enter the e-mail addresses of you and your colleagues
   here.
 </div>
 
-<a name="phone" />
+<a name="phone"></a>
 <div class="helptitle">Phone Number</div>
 <div class="helptext">
   Please enter the contact phone number here.
 </div>
 
-<a name="institution" />
+<a name="institution"></a>
 <div class="helptitle">Institution</div>
 <div class="helptext">
   Please select your institution name here from the drop down box.  If
@@ -140,13 +140,13 @@ help_author=r"""
   and enter your institution name in the box that appears below.
 </div>
 
-<a name="grad" />
+<a name="grad"></a>
 <div class="helptitle">Graduate Student</div>
 <div class="helptext">
   Is this person a graduate student?
 </div>
 
-<a name="thesis" />
+<a name="thesis"></a>
 <div class="helptitle">Thesis</div>
 <div class="helptext">
   Is this proposal part of an approved graduate student thesis
@@ -234,20 +234,20 @@ help_propinfo=r"""<div class="helptext">
   this section.
 </div>
 
-<a name="title" />
+<a name="title"></a>
 <div class="helptitle">Title</div>
 <div class="helptext">
   The title of your proposal (no LaTeX characters are allowed).<br>
 </div>
 
-<a name="date" />
+<a name="date"></a>
 <div class="helptitle">Date</div>
 <div class="helptext">
   This date is set automatically to when you last edited the
   information on your proposal.
 </div>
 
-<a name="toe" />
+<a name="toe"></a>
 <div class="helptitle">Time Critical</div>
 <div class="helptext">
   Check this box if the object(s) you wish to observe need to be
@@ -256,7 +256,7 @@ help_propinfo=r"""<div class="helptext">
   follow-up, coordinated observations).
 </div>
 
-<a name="priority" />
+<a name="priority"></a>
 <div class="helptitle">Priority</div>
 <div class="helptext">
   If you are submitting several proposals, you may assign a priority
@@ -265,26 +265,26 @@ help_propinfo=r"""<div class="helptext">
   this field.
 </div>
 
-<a name="scientific_category" />
+<a name="scientific_category"></a>
 <div class="helptitle">Scientific Category</div>
 <div class="helptext">
   What general category best describes your project?
 </div>
 
-<a name="type_of_observation" />
+<a name="type_of_observation"></a>
 <div class="helptitle">Type of Observation</div>
 <div class="helptext">
   Is this a spectral line observation, continuum observation, or
   both?
 </div>
 
-<a name="frequency_band" />
+<a name="frequency_band"></a>
 <div class="helptitle">Frequency / Receiver Band</div>
 <div class="helptext">
   What receiver band are you requesting for your obervations?
 </div>
 
-<a name="help_required" />
+<a name="help_required"></a>
 <div class="helptitle">Level of Help Required</div>
 <div class="helptext">
   Choose "Consultation" for help preparing for your observations. A
@@ -314,7 +314,7 @@ help_source=r"""
   enter sources in the list in priority order.
 </div>
 
-<a name="array_config" />
+<a name="array_config"></a>
 <div class="helptitle">Array Configuration</div>
 <div class="helptext">
   Which array configuration(s) are you requesting? See <a
@@ -324,20 +324,20 @@ help_source=r"""
   requested.
 </div>
 
-<a name="corr_frequency" />
+<a name="corr_frequency"></a>
 <div class="helptitle">Frequency of Observation</div>
 <div class="helptext">
   Please give the frequency of your observations in GHz.
 </div>
 
-<a name="name" />
+<a name="name"></a>
 <div class="helptitle">Source Name</div>
 <div class="helptext">
   A short, simple, descriptive name for the object that you are
   observing.
 </div>
 
-<a name="ra" />
+<a name="ra"></a>
 <div class="helptitle">Right Ascension</div>
 <div class="helptext">
   Please give coordinates to the object or region that you are
@@ -346,21 +346,21 @@ help_source=r"""
   your Right Ascension is in the format HH MM or HH:MM.
 </div>
 
-<a name="dec" />
+<a name="dec"></a>
 <div class="helptitle">Declination</div>
 <div class="helptext">
   Please give the Declination of the object you are observing. See the
   restrictions and notes for Right Ascension above.
 </div>
 
-<a name="numb_fields" />
+<a name="numb_fields"></a>
 <div class="helptitle">Number of Mosaic Fields</div>
 <div class="helptext">
   How many different pointings are involved in the observations of
   this source?
 </div>
 
-<a name="species" />
+<a name="species"></a>
 <div class="helptitle">Species / Transition Name</div>
 <div class="helptext">
   If these are molecular line observations what species and transition
@@ -368,13 +368,13 @@ help_source=r"""
   "continuum".
 </div>
 
-<a name="self_cal" />
+<a name="self_cal"></a>
 <div class="helptitle">Can Self-Calibrate</div>
 <div class="helptext">
   Can your source be self-calibrated?
 </div>
 
-<a name="min_max" />          
+<a name="min_max"></a>          
 <div class="helptitle">Time Requested</div>
 <div class="helptext">
   How long are you requesting to observe this obsblock in hours (this
@@ -388,7 +388,7 @@ help_source=r"""
   target="_blank">this page</a> for more details.
 </div>
 
-<a name="imaging" />
+<a name="imaging"></a>
 <div class="helptitle">Imaging/SNR</div>
 <div class="helptext">
   If the aim of this obsblock is to get the most complete UV coverage
@@ -400,7 +400,7 @@ help_source=r"""
   increased observation time will be made if you elect this option.
 </div>
 
-<a name="f_sourcename" />
+<a name="f_sourcename"></a>
 <div class="helptitle">Fast-Track Proposals</div>
 
 <div class="helptitle">Source Name</div>
@@ -409,32 +409,32 @@ help_source=r"""
   observing.
 </div>
 
-<a name="f_ra" />
+<a name="f_ra"></a>
 <div class="helptitle">Right Ascension</div>
 <div class="helptext">
   Specify your Right Ascension in the format HH:MM:SS.SS.
 </div>
 
-<a name="f_dec" />
+<a name="f_dec"></a>
 <div class="helptitle">Declination</div>
 <div class="helptext">
   Specify your Declination in the format HH:MM:SS.SS.
 </div>
 
-<a name="f_vlsr" />
+<a name="f_vlsr"></a>
 <div class="helptitle">LSR Velocity</div>
 <div class="helptext">
   Specify your source's LSR Velocity in km/s.
 </div>
 
-<a name="f_time" />
+<a name="f_time"></a>
 <div class="helptitle">Track Length</div>
 <div class="helptext">
   Specify the requested time for the observing track. You can
   request 1 to 3 hour long tracks with this tool.
 </div>
 
-<a name="f_array" />
+<a name="f_array"></a>
 <div class="helptitle">Array Configuration</div>
 <div class="helptext">
   Choose the array configuration that your track should be
@@ -443,7 +443,7 @@ help_source=r"""
   modes for more information.  
 </div>
 
-<a name="f_corrconfig" />
+<a name="f_corrconfig"></a>
 <div class="helptitle">Correlator Mode</div>
 <div class="helptext">
 <b>SCI1_1MM_DP_CO</b> : Dual polarization (1mm) observations
@@ -517,7 +517,7 @@ also be given.<br>
 rest frequency must also be given.<br>
 </div>
 
-<a name="f_freq" />
+<a name="f_freq"></a>
 <div class="helptitle">Frequency</div>
 <div class="helptext">
   Specify your observing frequency in (GHz) for correlator
@@ -525,7 +525,7 @@ rest frequency must also be given.<br>
   field blank for modes that do not require a frequency.
 </div>
 
-<a name="f_slbw" />
+<a name="f_slbw"></a>
 <div class="helptitle">Spectral Line Bandwidth</div>
 <div class="helptext">
   For correlator modes that require a user specified bandwidth,
@@ -533,7 +533,7 @@ rest frequency must also be given.<br>
   Set' for modes that do not require a specified bandwidth.
 </div>
 
-<a name="f_mosaic" />
+<a name="f_mosaic"></a>
 <div class="helptitle">Mosaic</div>
 <div class="helptext">
   Currently the fast-track system only supports standard 7 Point 
