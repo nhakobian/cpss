@@ -1987,8 +1987,20 @@ class ErrorCheck:
         seconds = dec[2]
 
         try:
-            if "{0:+03d}".format(int(degrees)) == degrees:
-                if (int(degrees) < -40) or (int(degrees) > 90):
+            # Support -00 degrees:
+            if (degrees[0] == '-'):
+                coef = -1
+                degrees = degrees[1:]
+            elif (degrees[0] == '+'):
+                coef = 1
+                degrees = degrees[1:]
+            elif (degrees[0].isdigit() == True):
+                coef = 1
+            else:
+                raise ValueError
+                            
+            if "{0:02d}".format(int(degrees)) == degrees:
+                if ((int(degrees)*coef) < -40) or ((int(degrees)*coef) > 90):
                     self.AddError("""Invalid degrees value: must be -40 < DD <= 90""")
                     raise ValueError
             else:
