@@ -26,6 +26,7 @@ template_list = [ 'main_10',
                   'cs_10',
                   'cs_2011',
                   'cs_2012',
+                  'cs_2013',
                   'fast_2012b',
                   ]
 
