@@ -60,6 +60,7 @@ class Backend:
         # 1 : STATS - Can see stats page of calls.
         flags = {
             'STATS' : 1,
+            'CSADD' : 2,
             }
         if flag in flags.keys():
             if (result['flags'] & flags[flag]) == flags[flag]:

@@ -345,7 +345,15 @@ class Connector:
         if prop_type not in ['main', 'ddt', 'cs', 'fast']:
             self.do_404()
             return
-        
+
+        # Dont let users create a CS proposal unless they are on the
+        # list of approved users (flags = CSADD = 2)
+        if prop_type == 'cs':
+            if cpss.db.test_userflag(cpss.session['username'], 
+                                     'CSADD') != True:
+                self.do_404()
+                return
+
         # Add check to see if proposal creation is enabled
         # Get the cyclename they are requesting a new proposal for.
         # Never allow adding a proposal if there isnt a cycle defined
