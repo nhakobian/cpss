@@ -136,6 +136,11 @@ def proposal_list(list, name):
     else:
         cpss.w("""<h3>%s's Proposals</h3>""" % name)
 
+    # If you have permissions to add a CS proposal, display the link to:
+    if cpss.db.test_userflag(cpss.session['username'], 'CSADD') == True:
+        cpss.w("""<h3><a href="add/cs">Add New Summerschool Proposal</a>
+                  </h3>""")
+
     if (len(list) == 0):
         cpss.w("""<div id="proplist"><p><i>You have no saved
             proposals. Click the new button above to add one.</i></p></div>""")
